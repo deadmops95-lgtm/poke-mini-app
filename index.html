@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PokéHunter MMO 3.0</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-main: #0c0f17;
+      --bg-card: rgba(22, 27, 39, 0.75);
+      --bg-card-hover: rgba(30, 38, 56, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --accent-star: #f59e0b;
+      --accent-epic: #8b5cf6;
+      --accent-legend: #eab308;
+      --accent-danger: #ef4444;
+      --accent-blue: #3b82f6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 85px;
+      position: relative;
+    }
+
+    /* Верхняя статус-панель */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(12, 15, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 16px;
+    }
+
+    .user-profile {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #fff;
+      font-size: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .user-details h3 {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .vip-badge {
+      font-size: 10px;
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+      color: #000;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-weight: 800;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .energy-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .energy-bar {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .energy-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      width: 100%;
+      transition: width 0.3s ease;
+    }
+
+    /* Контейнеры контента */
+    .tab-content {
+      display: none;
+      padding: 16px;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Карточки и стеклянные контейнеры */
+    .glass-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 🌿 ОХОТА */
+    .biome-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .biome-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .biome-btn.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 12px var(--primary-glow);
+      background: var(--bg-card-hover);
+    }
+
+    .biome-btn h4 { font-size: 13px; margin-bottom: 2px; }
+    .biome-btn span { font-size: 11px; color: var(--text-muted); }
+
+    .action-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), #059669);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      transition: transform 0.1s ease, filter 0.2s;
+    }
+
+    .action-btn:active { transform: scale(0.98); }
+    .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* 🎒 ПОКЕДЕКС */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .filter-chip.active {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 14px;
+    }
+
+    .pokedex-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .poke-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, border-color 0.2s;
+    }
+
+    .poke-card:active { transform: scale(0.96); }
+    .poke-card.shiny { border-color: var(--accent-star); box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
+    .poke-card.shadow { border-color: var(--accent-epic); }
+
+    .poke-card img {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    }
+
+    .poke-card h5 { font-size: 12px; margin: 4px 0 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .poke-card .cp-tag { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+
+    /* 🏰 7 БАШЕН */
+    .tower-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .tower-btn {
+      background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* 🏪 МАГАЗИН И STARS */
+    .stars-banner {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 179, 8, 0.05));
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .shop-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .shop-item h4 { font-size: 13px; margin: 6px 0 2px 0; }
+    .shop-item p { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+
+    .buy-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 0;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: background 0.2s;
+    }
+
+    .buy-btn.stars {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #000;
+      border: none;
+    }
+
+    /* 🏆 АЧИВКИ (30 ШТУК) */
+    .achieve-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .achieve-info h4 { font-size: 13px; margin-bottom: 2px; }
+    .achieve-info p { font-size: 11px; color: var(--text-muted); }
+
+    /* МОДАЛЬНЫЕ ОКНА */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-card {
+      background: #161b27;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      position: relative;
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* НИЖНЯЯ НАВИГАЦИЯ */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: rgba(12, 15, 23, 0.92);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 40;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s, transform 0.1s;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div class="user-profile">
+      <div class="user-info">
+        <div class="avatar" id="user-avatar">P</div>
+        <div class="user-details">
+          <h3 id="user-name">Тренер <span class="vip-badge" id="vip-tag" style="display:none;">VIP</span></h3>
+          <div class="energy-bar-wrap">
+            <span>⚡️ <span id="energy-val">100</span>/100</span>
+            <div class="energy-bar"><div class="energy-bar-fill" id="energy-fill"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-pill">🪙 <span id="coins-val">500</span></div>
+        <div class="stat-pill">🍬 <span id="candies-val">12</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="tab-hunt" class="tab-content active">
+    <div class="glass-card">
+      <div class="section-title">📍 Выберите локацию (Биом)</div>
+      <div class="biome-grid">
+        <div class="biome-btn active" onclick="setBiome(this, 'forest')">
+          <h4>🌲 Густой Лес</h4>
+          <span>Трава, Насекомые</span>
+        </div>
+        <div class="biome-btn" onclick="setBiome(this, 'lake')">
+          <h4>🌊 Озеро Валора</h4>
+          <span>Вода, Лед</span>
+        </div>
+        <div class="biome-btn" onclick="setBiome(this, 'volcano')">
+          <h4>🌋 Вулкан Лаваридж</h4>
+          <span>Огонь, Земля</span>
+        </div>
+        <div class="biome-btn" onclick="setBiome(this, 'ruins')">
+          <h4>🌌 Руины Синно</h4>
+          <span>Драконы, Психика</span>
+        </div>
+      </div>
+      <button class="action-btn" id="hunt-btn" onclick="startHunt()">
+        <span>🌿 Искать покемона (-20 ⚡️)</span>
+      </button>
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">🥚 Инкубатор Яиц</div>
+      <div style="display: flex; align-items: center; justify-content: space-between;" id="egg-status-box">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="font-size: 32px;" id="egg-icon">🥚</div>
+          <div>
+            <h4 style="font-size:14px;" id="egg-name">Редкое Яйцо</h4>
+            <p style="font-size:11px; color:var(--text-muted);" id="egg-timer">Осталось: 02:45:10</p>
+          </div>
+        </div>
+        <button class="buy-btn" onclick="hatchEggDemo()" id="egg-hatch-btn">🐣 Вылупить</button>
+      </div>
+    </div>
+  </main>
+
+  <main id="tab-pokedex" class="tab-content">
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="filterGen(this, 0)">Все (649)</div>
+      <div class="filter-chip" onclick="filterGen(this, 1)">Канто (1-151)</div>
+      <div class="filter-chip" onclick="filterGen(this, 2)">Джото (152-251)</div>
+      <div class="filter-chip" onclick="filterGen(this, 3)">Хоэнн (252-386)</div>
+      <div class="filter-chip" onclick="filterGen(this, 4)">Синно (387-493)</div>
+      <div class="filter-chip" onclick="filterGen(this, 5)">Юнова (494-649)</div>
+    </div>
+    <input type="text" class="search-input" placeholder="🔍 Поиск покемона по имени..." oninput="searchPokemon(this.value)">
+
+    <div class="pokedex-grid" id="pokedex-list">
+      </div>
+  </main>
+
+  <main id="tab-towers" class="tab-content">
+    <div class="glass-card" style="margin-bottom: 12px;">
+      <div class="section-title">🏰 Башни Чемпионов (7 Регионов)</div>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom: 14px;">
+        Захватывайте троны башен и получайте пассивный доход каждый час!
+      </p>
+
+      <div id="towers-list">
+        </div>
+    </div>
+  </main>
+
+  <main id="tab-shop" class="tab-content">
+    <div class="stars-banner">
+      <h3 style="font-size:16px; color:#f59e0b; margin-bottom:4px;">⭐ Магазин Telegram Stars</h3>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Официальные покупки за Звёзды Telegram</p>
+      <div style="display:flex; gap:8px;">
+        <button class="buy-btn stars" style="flex:1;" onclick="buyStarsItem('1000 Coins', 50)">1 000 🪙 (50 ⭐)</button>
+        <button class="buy-btn stars" style="flex:1;" onclick="buyStarsItem('Legend Egg', 150)">🟡 Лег. Яйцо (150 ⭐)</button>
+      </div>
+    </div>
+
+    <div class="section-title">📦 Товары за монеты</div>
+    <div class="shop-grid">
+      <div class="shop-item">
+        <div style="font-size:28px;">🍖</div>
+        <h4>Приманка</h4>
+        <p>+100 ⚡️ Энергии</p>
+        <button class="buy-btn" onclick="buyShopItem('lure', 15)">15 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="font-size:28px;">🔘</div>
+        <h4>Ультрабол</h4>
+        <p>100% Поимка</p>
+        <button class="buy-btn" onclick="buyShopItem('ultraball', 25)">25 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="font-size:28px;">🍬</div>
+        <h4>Конфеты x3</h4>
+        <p>Для эволюций</p>
+        <button class="buy-btn" onclick="buyShopItem('candies', 35)">35 🪙</button>
+      </div>
+      <div class="shop-item">
+        <div style="font-size:28px;">🥚</div>
+        <h4>Редкое Яйцо</h4>
+        <p>Инкубатор 5ч</p>
+        <button class="buy-btn" onclick="buyShopItem('egg', 100)">100 🪙</button>
+      </div>
+    </div>
+  </main>
+
+  <main id="tab-achievements" class="tab-content">
+    <div class="section-title">🏆 Достижения Тренера (30 шт.)</div>
+    <div id="achievements-list">
+      </div>
+  </main>
+
+  <div class="modal-overlay" id="encounter-modal">
+    <div class="modal-card">
+      <h3 style="font-size:16px; margin-bottom:8px;" id="modal-title">Дикий покемон!</h3>
+      <img id="modal-poke-img" src="" style="width:120px; height:120px; object-fit:contain; margin:10px auto;">
+      <h4 id="modal-poke-name" style="font-size:15px; margin-bottom:4px;">Пикачу</h4>
+      <p id="modal-poke-stats" style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">⚡️ Электро | 450 CP</p>
+      
+      <button class="action-btn" style="margin-bottom:8px;" onclick="catchPokemonAction('poke')">Бросить Покебол 🔴</button>
+      <button class="action-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); margin-bottom:8px;" onclick="catchPokemonAction('ultra')">Бросить Ультрабол 🔘</button>
+      <button class="buy-btn" style="width:100%;" onclick="closeModal()">Убежать 💨</button>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab(this, 'tab-hunt')">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+      <span>Охота</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(this, 'tab-pokedex')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.41 0 8 3.59 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg>
+      <span>Покедекс</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(this, 'tab-towers')">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+      <span>Башни</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(this, 'tab-shop')">
+      <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12z"/></svg>
+      <span>Магазин</span>
+    </div>
+    <div class="nav-item" onclick="switchTab(this, 'tab-achievements')">
+      <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+      <span>Ачивки</span>
+    </div>
+  </nav>
+
+  <script>
+    // 1. Инициализация Telegram Web App
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      if (tg.initDataUnsafe?.user) {
+        document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name || 'Тренер';
+        document.getElementById('user-avatar').innerText = (tg.initDataUnsafe.user.first_name || 'T')[0].toUpperCase();
+      }
+    }
+
+    function triggerHaptic(style = 'medium') {
+      if (tg?.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred(style);
+      }
+    }
+
+    // 2. Игровое состояние (State)
+    let gameState = {
+      coins: 500,
+      candies: 12,
+      energy: 100,
+      currentGen: 0,
+      pokedex: []
+    };
+
+    // 3. Базовый датасет (Выборка популярных покемонов 1-5 поколений)
+    const SAMPLE_POKEMON = [
+      { id: 1, name: "Бульбазавр", gen: 1, type: "🌿 Трава", rarity: "Common", cp: 420 },
+      { id: 4, name: "Чармандер", gen: 1, type: "🔥 Огонь", rarity: "Common", cp: 460 },
+      { id: 7, name: "Сквиртл", gen: 1, type: "💧 Вода", rarity: "Common", cp: 440 },
+      { id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 890, shiny: true },
+      { id: 150, name: "Мьюту", gen: 1, type: "🔮 Психик", rarity: "Legendary", cp: 4100 },
+      { id: 152, name: "Чикорита", gen: 2, type: "🌿 Трава", rarity: "Common", cp: 410 },
+      { id: 155, name: "Синдаквил", gen: 2, type: "🔥 Огонь", rarity: "Common", cp: 450 },
+      { id: 158, name: "Тотодайл", gen: 2, type: "💧 Вода", rarity: "Common", cp: 430 },
+      { id: 249, name: "Лугия", gen: 2, type: "🔮 Психик", rarity: "Legendary", cp: 4250 },
+      { id: 252, name: "Трико", gen: 3, type: "🌿 Трава", rarity: "Common", cp: 430 },
+      { id: 255, name: "Торчик", gen: 3, type: "🔥 Огонь", rarity: "Common", cp: 470 },
+      { id: 258, name: "Мадкип", gen: 3, type: "💧 Вода", rarity: "Common", cp: 460 },
+      { id: 384, name: "Райкваза", gen: 3, type: "🐲 Дракон", rarity: "Legendary", cp: 4450 },
+      { id: 387, name: "Туртвиг", gen: 4, type: "🌿 Трава", rarity: "Common", cp: 440 },
+      { id: 390, name: "Чимчар", gen: 4, type: "🔥 Огонь", rarity: "Common", cp: 480 },
+      { id: 448, name: "Лукарио", gen: 4, type: "🥋 Боевой", rarity: "Epic", cp: 2900 },
+      { id: 493, name: "Аркеус", gen: 4, type: "⚪️ Обычный", rarity: "Legendary", cp: 5000 },
+      { id: 495, name: "Снайви", gen: 5, type: "🌿 Трава", rarity: "Common", cp: 430 },
+      { id: 498, name: "Тепиг", gen: 5, type: "🔥 Огонь", rarity: "Common", cp: 470 },
+      { id: 571, name: "Зороарк", gen: 5, type: "🌑 Темный", rarity: "Epic", cp: 2750 },
+      { id: 643, name: "Реширам", gen: 5, type: "🐲 Дракон", rarity: "Legendary", cp: 4380 }
+    ];
+
+    gameState.pokedex = [...SAMPLE_POKEMON];
+
+    // 4. Переключение вкладок
+    function switchTab(el, tabId) {
+      triggerHaptic('light');
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      el.classList.add('active');
+    }
+
+    // 5. Рендер Покедекса
+    function renderPokedex(list = gameState.pokedex) {
+      const container = document.getElementById('pokedex-list');
+      container.innerHTML = '';
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = `poke-card ${p.shiny ? 'shiny' : ''}`;
+        card.innerHTML = `
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" loading="lazy">
+          <h5>${p.shiny ? '✨ ' : ''}${p.name}</h5>
+          <div class="cp-tag">${p.cp} CP</div>
+        `;
+        card.onclick = () => showPokeModal(p);
+        container.appendChild(card);
+      });
+    }
+
+    function filterGen(el, gen) {
+      triggerHaptic('light');
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      gameState.currentGen = gen;
+      const filtered = gen === 0 ? gameState.pokedex : gameState.pokedex.filter(p => p.gen === gen);
+      renderPokedex(filtered);
+    }
+
+    function searchPokemon(query) {
+      const q = query.toLowerCase().trim();
+      const filtered = gameState.pokedex.filter(p => 
+        (gameState.currentGen === 0 || p.gen === gameState.currentGen) &&
+        p.name.toLowerCase().includes(q)
+      );
+      renderPokedex(filtered);
+    }
+
+    // 6. Охота
+    let currentEncounter = null;
+    function setBiome(el, biome) {
+      triggerHaptic('light');
+      document.querySelectorAll('.biome-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function startHunt() {
+      if (gameState.energy < 20) {
+        alert('⚡️ Недостаточно энергии! Подождите или купите Приманку в Магазине.');
+        return;
+      }
+      triggerHaptic('medium');
+      gameState.energy -= 20;
+      updateUI();
+
+      currentEncounter = SAMPLE_POKEMON[Math.floor(Math.random() * SAMPLE_POKEMON.length)];
+      
+      document.getElementById('modal-title').innerText = "🌿 Дикий покемон найден!";
+      document.getElementById('modal-poke-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentEncounter.id}.png`;
+      document.getElementById('modal-poke-name').innerText = currentEncounter.name;
+      document.getElementById('modal-poke-stats').innerText = `${currentEncounter.type} | ${currentEncounter.cp} CP`;
+      document.getElementById('encounter-modal').classList.add('active');
+    }
+
+    function catchPokemonAction(ballType) {
+      triggerHaptic('heavy');
+      const isUltra = ballType === 'ultra';
+      const success = isUltra || Math.random() < 0.75;
+
+      if (success) {
+        alert(`🎉 Вы успешно поймали: ${currentEncounter.name} (${currentEncounter.cp} CP)!`);
+        gameState.pokedex.unshift({ ...currentEncounter, cp: currentEncounter.cp + Math.floor(Math.random()*50) });
+        renderPokedex();
+      } else {
+        alert(`💨 ${currentEncounter.name} вырвался из покебола и убежал!`);
+      }
+      closeModal();
+    }
+
+    function closeModal() {
+      document.getElementById('encounter-modal').classList.remove('active');
+    }
+
+    // 7. Башни Чемпионов (7 Башен)
+    const TOWERS = [
+      { id: 1, name: "🥉 Башня Канто", cp: 500, champ: "Геодуд (550 CP)", rate: 10 },
+      { id: 2, name: "🥈 Башня Джото", cp: 1200, champ: "Скизор (1350 CP)", rate: 25 },
+      { id: 3, name: "🥇 Башня Хоэнна", cp: 2200, champ: "Саламенс (2400 CP)", rate: 45 },
+      { id: 4, name: "💠 Башня Синно", cp: 3100, champ: "Лукарио (3300 CP)", rate: 70 },
+      { id: 5, name: "👑 Башня Юновы", cp: 4000, champ: "Зороарк (4200 CP)", rate: 100 },
+      { id: 6, name: "☠️ Башня Теней", cp: 4600, champ: "Теневой Мьюту (4800 CP)", rate: 130 },
+      { id: 7, name: "🌌 Башня Создателя", cp: 5200, champ: "Аркеус (5500 CP)", rate: 200 }
+    ];
+
+    function renderTowers() {
+      const container = document.getElementById('towers-list');
+      container.innerHTML = '';
+      TOWERS.forEach(t => {
+        const el = document.createElement('div');
+        el.className = 'tower-card';
+        el.innerHTML = `
+          <div>
+            <h4 style="font-size:14px;">${t.name} (от ${t.cp} CP)</h4>
+            <p style="font-size:11px; color:var(--text-muted);">👑 ${t.champ} | +${t.rate} 🪙/час</p>
+          </div>
+          <button class="tower-btn" onclick="attackTower(${t.id}, '${t.name}')">⚔️ Штурм</button>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    function attackTower(id, name) {
+      triggerHaptic('heavy');
+      alert(`⚔️ Штурм ${name}! Ваш сильнейший боец вышел на арену... Вы победили и заняли трон!`);
+    }
+
+    // 8. 30 Достижений
+    const ACHIEVEMENTS = [
+      { id: 1, name: "Первый шаг", desc: "Поймать 1 покемона", reward: "+25 🪙" },
+      { id: 2, name: "Начинающий ловец", desc: "Поймать 25 покемонов", reward: "+50 🪙, +2 🍬" },
+      { id: 3, name: "Охотник за головами", desc: "Поймать 100 покемонов", reward: "+200 🪙, +5 🍬" },
+      { id: 4, name: "Мастер пяти миров", desc: "Поймать 300 покемонов", reward: "+500 🪙, +10 🍬" },
+      { id: 5, name: "Легендарный исследователь", desc: "Поймать 500 покемонов", reward: "+1000 🪙, 🥚 Редкое яйцо" },
+      { id: 6, name: "Золотой блеск", desc: "Поймать 1 Шайни ✨", reward: "+100 🪙, +3 🍬" },
+      { id: 7, name: "Коллекционер сияния", desc: "Собрать 5 Шайни покемонов", reward: "+350 🪙, +10 🍬" },
+      { id: 8, name: "Гроза Бандитов", desc: "Победить Команду R 5 раз", reward: "+150 🪙" },
+      { id: 9, name: "Искоренитель зла", desc: "Победить Команду R 25 раз", reward: "+400 🪙, +5 🍬" },
+      { id: 10, name: "Экзорцист", desc: "Очистить 5 Теневых покемонов", reward: "+150 🪙, +3 🍬" },
+      { id: 11, name: "Первая мутация", desc: "Провести 1 эволюцию", reward: "+50 🪙" },
+      { id: 12, name: "Генетик", desc: "Провести 15 эволюций", reward: "+250 🪙, +5 🍬" },
+      { id: 13, name: "Верховный эволюционер", desc: "Провести 50 эволюций", reward: "+600 🪙, +15 🍬" },
+      { id: 14, name: "Первая кровь", desc: "Выиграть 1 PvP дуэль", reward: "+50 🪙" },
+      { id: 15, name: "Гладиатор Арены", desc: "Выиграть 20 PvP дуэлей", reward: "+300 🪙, +5 🍬" },
+      { id: 16, name: "Непобедимый боец", desc: "Выиграть 100 PvP дуэлей", reward: "+1000 🪙, 🔘 5 Ультраболов" },
+      { id: 17, name: "Штурмовик", desc: "Захватить любую Башню", reward: "+100 🪙" },
+      { id: 18, name: "Властелин Башен", desc: "Захватить все 7 Башен", reward: "+777 🪙, +10 🍬" },
+      { id: 19, name: "Глава Стадиона", desc: "Стать Лидером Стадиона", reward: "+500 🪙" },
+      { id: 20, name: "Первый птенец", desc: "Вырастить 1 яйцо в инкубаторе", reward: "+50 🪙" },
+      { id: 21, name: "Инкубатор-мастер", desc: "Вырастить 10 яиц", reward: "+300 🪙, +5 🍬" },
+      { id: 22, name: "Рождение Бога", desc: "Вырастить 1 Легендарное яйцо", reward: "+1000 🪙, +20 🍬" },
+      { id: 23, name: "Дальний поход", desc: "Завершить 15 экспедиций", reward: "+200 🪙" },
+      { id: 24, name: "Эрудит стихий", desc: "Ответить на 25 викторин", reward: "+250 🪙" },
+      { id: 25, name: "Любимчик Фортуны", desc: "Сделать 30 спинов в рулетке", reward: "+150 🪙, +3 🍖" },
+      { id: 26, name: "Уолл-Стрит Тренер", desc: "Продать 5 покемонов на рынке", reward: "+100 🪙" },
+      { id: 27, name: "Богач", desc: "Накопить 5 000 🪙", reward: "+500 🪙" },
+      { id: 28, name: "Железная воля", desc: "Удержать стрик 7 дней", reward: "+300 🪙, +5 🍬" },
+      { id: 29, name: "Несокрушимый отряд", desc: "Собрать команду 3v3 с 10 000+ CP", reward: "+500 🪙, 🔘 3 Ультрабола" },
+      { id: 30, name: "Живая Легенда", desc: "Войти в ТОП-3 Лиги", reward: "🟡 1 Лег. яйцо + 2000 🪙" }
+    ];
+
+    function renderAchievements() {
+      const container = document.getElementById('achievements-list');
+      container.innerHTML = '';
+      ACHIEVEMENTS.forEach(a => {
+        const el = document.createElement('div');
+        el.className = 'achieve-item';
+        el.innerHTML = `
+          <div class="achieve-info">
+            <h4>${a.id}. ${a.name}</h4>
+            <p>${a.desc}</p>
+          </div>
+          <span style="font-size:11px; font-weight:700; color:var(--accent-star);">${a.reward}</span>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    // 9. Магазин и Stars
+    function buyShopItem(type, cost) {
+      if (gameState.coins < cost) {
+        alert('❌ Недостаточно монет!');
+        return;
+      }
+      triggerHaptic('medium');
+      gameState.coins -= cost;
+      if (type === 'lure') gameState.energy = 100;
+      if (type === 'candies') gameState.candies += 3;
+      updateUI();
+      alert('✅ Успешная покупка!');
+    }
+
+    function buyStarsItem(title, stars) {
+      triggerHaptic('heavy');
+      if (tg?.openInvoice) {
+        // Вызов окна инвойса Telegram
+        tg.openInvoice(`https://t.me/$poke_stars_${stars}`, (status) => {
+          if (status === 'paid') {
+            alert('🎉 Оплата Telegram Stars прошла успешно!');
+          }
+        });
+      } else {
+        alert(`⭐ Демо-оплата [${title}] за ${stars} Звёзд Telegram!`);
+      }
+    }
+
+    function hatchEggDemo() {
+      triggerHaptic('heavy');
+      alert('🐣 Яйцо раскололось! Вы получили: 🟣 Лукарио (2 900 CP)!');
+    }
+
+    function updateUI() {
+      document.getElementById('coins-val').innerText = gameState.coins;
+      document.getElementById('candies-val').innerText = gameState.candies;
+      document.getElementById('energy-val').innerText = gameState.energy;
+      document.getElementById('energy-fill').style.width = `${gameState.energy}%`;
+    }
+
+    // Инициализация при загрузке
+    window.onload = () => {
+      renderPokedex();
+      renderTowers();
+      renderAchievements();
+      updateUI();
+    };
+  </script>
+</body>
+</html>
