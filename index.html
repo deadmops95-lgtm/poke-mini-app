@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 8.0</title>
+  <title>PokéHunter MMO 9.0</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -200,7 +200,7 @@
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
-      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:6px;">📅 Расписание событий (МСК)</h3>
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:6px;">📅 Расписание событий (00:00 - 23:59 МСК)</h3>
       <div style="font-size:11px; color:var(--muted); line-height: 1.6;">
         • <b>Пн:</b> 🏆 День Гранд-Лиги<br>
         • <b>Вт:</b> 🔥 Стихийный Кубок Огня<br>
@@ -213,7 +213,7 @@
     </div>
   </div>
 
-  <!-- 5. МАГАЗИН (ПОЛНЫЙ НА 18 ТОВАРОВ) -->
+  <!-- 5. МАГАЗИН -->
   <div id="tab-shop" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (8 товаров за Stars)</h3>
@@ -267,8 +267,14 @@
     </div>
   </div>
 
-  <!-- 7. ИГРЫ -->
+  <!-- 7. ИГРЫ (ЕЖЕДНЕВНЫЙ БОНУС, КОЛЕСО, ВИКТОРИНА) -->
   <div id="tab-games" class="tab-content">
+    <div class="card" style="text-align:center; background:linear-gradient(135deg, rgba(16,185,129,0.1), var(--card)); border-color:rgba(16,185,129,0.3);">
+      <h3 style="font-size:15px; margin-bottom:2px;">🎁 Ежедневный бонус</h3>
+      <p style="font-size:11px; color:var(--muted);" id="daily-bonus-timer">Награда: +100 🪙 и +5 🔴</p>
+      <button class="btn-main btn-gold" onclick="claimDailyBonus()" style="margin-top:8px;">Забрать бонус 🎁</button>
+    </div>
+
     <div class="card" style="text-align:center;">
       <h3 style="font-size:15px; margin-bottom:2px;">🎰 Колесо Фортуны</h3>
       <p style="font-size:11px; color:var(--muted);" id="wheel-timer-text">1 спин в 24 часа</p>
@@ -290,7 +296,7 @@
     </div>
   </div>
 
-  <!-- 8. АЧИВКИ (20 ШТ.) -->
+  <!-- 8. АЧИВКИ -->
   <div id="tab-achieve" class="tab-content">
     <h3 style="font-size:15px; margin-bottom:10px;">🏆 Достижения (20 шт.)</h3>
     <div id="achieve-list"></div>
@@ -409,6 +415,7 @@
       quizAttempts: 3,
       lastQuizReset: Date.now(),
       lastWheelSpin: 0,
+      lastDailyBonus: 0,
       achievements: {},
       towers: [
         { id: 1, name: "🥉 Башня Канто", req: 500, pName: "Геодуд", pid: 74, champ: "Страж Лиги", rate: 15 },
@@ -471,6 +478,17 @@
       }
       saveState();
       renderDex();
+    }
+
+    // ЕЖЕДНЕВНЫЙ БОНУС
+    function claimDailyBonus() {
+      const now = Date.now();
+      if (now - (state.lastDailyBonus || 0) < 86400000) { alert('⏳ Бонус уже получен! Приходите завтра.'); return; }
+      state.lastDailyBonus = now;
+      state.coins += 100;
+      state.pokeballs += 5;
+      saveState();
+      alert('🎁 Ежедневный бонус получен: +100 🪙 и +5 🔴 покеболов!');
     }
 
     function buyStarsItem(title, stars, itemType) {
@@ -558,6 +576,36 @@
       alert(`🐣 Вылупился покемон: ${p.name}!`);
     }
 
+    // ПИТОМНИК СКРЕЩИВАНИЯ
+    let currentNurserySlot = 1;
+    function openNurseryPicker(slotNum) {
+      currentNurserySlot = slotNum;
+      const list = document.getElementById('nursery-list-select');
+      list.innerHTML = '';
+      state.myPokedex.forEach(p => {
+        list.innerHTML += `<div class="card" style="padding:6px; display:flex; justify-content:space-between; align-items:center;" onclick="selectNursery(${p.id})"><span>${p.name}</span><button class="chip active">Выбрать</button></div>`;
+      });
+      openModal('nursery-picker-modal');
+    }
+
+    function selectNursery(id) {
+      const p = state.myPokedex.find(x => x.id === id);
+      if (currentNurserySlot === 1) state.nurserySlot1 = p;
+      else state.nurserySlot2 = p;
+      closeModal('nursery-picker-modal');
+      renderNurseryUI();
+    }
+
+    function renderNurseryUI() {
+      if (state.nurserySlot1) document.getElementById('nursery-s1').innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${state.nurserySlot1.id}.png">`;
+      if (state.nurserySlot2) document.getElementById('nursery-s2').innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${state.nurserySlot2.id}.png">`;
+    }
+
+    function startBreedingProcess() {
+      if (!state.nurserySlot1 || !state.nurserySlot2) { alert('Выберите двоих покемонов!'); return; }
+      alert('❤️ Пара отправлена в питомник на 1 час!');
+    }
+
     // ВИКТОРИНА С КАРТИНКОЙ И ЛИМИТОМ
     let currentQuizPoke = null;
     function renderQuizUI() {
@@ -609,11 +657,11 @@
       alert('🎰 Вы выиграли +75 🪙!');
     }
 
-    // ЧЕСТНЫЕ БОИ С АНИМАЦИЕЙ И СРАВНЕНИЕМ CP
+    // ЧЕСТНЫЕ БОИ С ЗАХВАТОМ БАШЕН
     let pendingBattle = null;
-    function openFighterPicker(enemyName, enemyId, enemyCp, type) {
+    function openFighterPicker(enemyName, enemyId, enemyCp, type, metaId = 0) {
       if (state.myPokedex.length === 0) { alert('У вас нет покемонов для боя!'); return; }
-      pendingBattle = { enemyName, enemyId, enemyCp, type };
+      pendingBattle = { enemyName, enemyId, enemyCp, type, metaId };
       const list = document.getElementById('picker-list');
       list.innerHTML = '';
       state.myPokedex.forEach(p => {
@@ -645,13 +693,21 @@
         if (isWin) {
           state.coins += 100;
           document.getElementById('b-p2-hp').style.width = '0%';
-          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP выше. Награда: +100 🪙!`;
+          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Награда: +100 🪙!`;
           trackAchieve(12, 1);
-          if (enemy.type === 'tower') trackAchieve(14, 1);
+          if (enemy.type === 'tower') {
+            trackAchieve(14, 1);
+            const tower = state.towers.find(t => t.id === enemy.metaId);
+            if (tower) {
+              tower.champ = "Вы (@prokudin95)";
+              tower.pName = myPoke.name;
+              renderTowers();
+            }
+          }
           if (enemy.type === 'gym') trackAchieve(16, 1);
         } else {
           document.getElementById('b-p1-hp').style.width = '0%';
-          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Соперник сильнее вашему покемону (${myPoke.cp} против ${enemy.enemyCp} CP).`;
+          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Соперник сильнее (${myPoke.cp} против ${enemy.enemyCp} CP).`;
         }
         saveState();
       }, 1200);
@@ -668,7 +724,7 @@
       const container = document.getElementById('towers-list');
       container.innerHTML = '';
       state.towers.forEach(t => {
-        container.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><h4 style="font-size:12px;">${t.name} (от ${t.req} CP)</h4><p style="font-size:10px; color:var(--muted);">👑 ${t.champ} | +${t.rate} 🪙/ч</p></div><button class="chip active" style="background:var(--accent-blue); color:#fff;" onclick="openFighterPicker('${t.name}', ${t.pid}, ${t.req}, 'tower')">⚔️ Штурм</button></div>`;
+        container.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><h4 style="font-size:12px;">${t.name} (от ${t.req} CP)</h4><p style="font-size:10px; color:var(--muted);">👑 ${t.champ} (${t.pName}) | +${t.rate} 🪙/ч</p></div><button class="chip active" style="background:var(--accent-blue); color:#fff;" onclick="openFighterPicker('${t.name}', ${t.pid}, ${t.req}, 'tower', ${t.id})">⚔️ Штурм</button></div>`;
       });
     }
 
@@ -676,7 +732,7 @@
       const container = document.getElementById('gyms-list');
       container.innerHTML = '';
       state.gyms.forEach(g => {
-        container.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><h4 style="font-size:12px;">${g.name} (3v3)</h4><p style="font-size:10px; color:var(--muted);">👑 ${g.champ} (${g.cp} CP)</p></div><button class="chip active" style="background:var(--accent-epic); color:#fff;" onclick="openFighterPicker('${g.name}', ${g.pid}, ${g.cp}, 'gym')">🥊 Бой</button></div>`;
+        container.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><h4 style="font-size:12px;">${g.name} (3v3)</h4><p style="font-size:10px; color:var(--muted);">👑 ${g.champ} (${g.cp} CP)</p></div><button class="chip active" style="background:var(--accent-epic); color:#fff;" onclick="openFighterPicker('${g.name}', ${g.pid}, ${g.cp}, 'gym', ${g.id})">🥊 Бой</button></div>`;
       });
     }
 
@@ -821,9 +877,9 @@
       document.getElementById('adm-stat-shiny').innerText = state.stats.shiny;
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v80';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v90';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v70');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v80');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -833,6 +889,7 @@
           state.myPokedex = p.myPokedex || state.myPokedex;
           state.stats = p.stats || state.stats;
           state.achievements = p.achievements || {};
+          state.towers = p.towers || state.towers;
         } catch(e) {}
       }
       saveState();
