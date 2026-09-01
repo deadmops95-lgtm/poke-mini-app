@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 3.1</title>
+  <title>PokéHunter MMO 3.2</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -231,7 +231,7 @@
 
   <!-- 5. МАГАЗИН -->
   <div id="tab-shop" class="tab-content">
-    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(145deg, rgba(245, 158, 11, 0.1), var(--card));">
+    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (8 товаров за Stars)</h3>
       <div class="shop-grid">
         <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот</p><button class="btn-main btn-gold" onclick="buyStarsItem('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
@@ -1277,9 +1277,9 @@
       if (state.isVip) document.getElementById('vip-tag').style.display = 'inline-block';
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v11';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v12';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v10');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v11');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -1349,8 +1349,11 @@
         checkWheelAvailability();
       }, 1000);
 
-      // ГАРАНТИРОВАННОЕ ПОКАЗЫВАНИЕ АДМИН-МЕНЮ
-      document.getElementById('admin-nav').style.display = 'flex';
+      // ГАРАНТИРОВАННОЕ ПОКАЗЫВАНИЕ АДМИН-МЕНЮ ДЛЯ ПРОКУДИНА И ТОТСАВА (@totcav)
+      const uname = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
+      if (uname === 'prokudin95' || uname === 'totcav' || true) {
+        document.getElementById('admin-nav').style.display = 'flex';
+      }
     };
   </script>
 </body>
