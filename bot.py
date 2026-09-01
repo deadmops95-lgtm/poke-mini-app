@@ -132,7 +132,7 @@ async def admin_give(data: AdminGive):
     
     if not row:
         conn.close()
-        raise HTTPException(status_code=404, detail="Игрок не найден в базе данных!")
+        raise HTTPException(status_code=404, detail="Игрок не найден!")
     
     user_id, coins, candies, pokeballs, pokedex_json = row[0], row[1], row[2], row[3], row[4]
     try:
@@ -149,15 +149,15 @@ async def admin_give(data: AdminGive):
     elif data.item_type == "coins":
         coins += data.amount
         cursor.execute("UPDATE users SET coins = ? WHERE user_id = ?", (coins, user_id))
-        msg_text = f"🎁 Администратор начислил монеты: <b>+{data.amount} 🪙</b>!"
+        msg_text = f"🎁 Начислено монеты: <b>+{data.amount} 🪙</b>!"
     elif data.item_type == "candies":
         candies += data.amount
         cursor.execute("UPDATE users SET candies = ? WHERE user_id = ?", (candies, user_id))
-        msg_text = f"🎁 Администратор начислил конфеты: <b>+{data.amount} 🍬</b>!"
+        msg_text = f"🎁 Начислено конфеты: <b>+{data.amount} 🍬</b>!"
     elif data.item_type == "pokeballs":
         pokeballs += data.amount
         cursor.execute("UPDATE users SET pokeballs = ? WHERE user_id = ?", (pokeballs, user_id))
-        msg_text = f"🎁 Администратор начислил покеболы: <b>+{data.amount} 🔴</b>!"
+        msg_text = f"🎁 Начислено покеболы: <b>+{data.amount} 🔴</b>!"
 
     conn.commit()
     conn.close()
