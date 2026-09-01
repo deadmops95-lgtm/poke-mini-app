@@ -42,7 +42,8 @@ def init_db():
             energy INTEGER DEFAULT 100,
             last_energy_calc REAL DEFAULT 0,
             dungeon_floor INTEGER DEFAULT 1,
-            tourney_stage INTEGER DEFAULT 1
+            tourney_stage INTEGER DEFAULT 1,
+            extra_incubator INTEGER DEFAULT 0
         );
     """)
     cur.execute("""
@@ -161,7 +162,7 @@ async def api_hunt_handler(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# ЧЕСТНЫЙ БОЕВОЙ ДВИЖОК И ПОИСК СИЛЬНЕЙШЕГО ПОКЕМОНА ИГРОКА
+# ЧЕСТНЫЙ ДВИЖОК БОЕВ С ПРОВЕРКОЙ CP И УВЕДОМЛЕНИЯМИ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -173,7 +174,6 @@ async def api_battle_handler(request):
         enemy_cp = int(data.get("enemy_cp", 1000))
         enemy_name = data.get("enemy_name", "Соперник")
 
-        # Если это PvP вызов по нику — ищем реального игрока и его сильнейшего покемона в БД
         bot_instance = request.app['bot']
         if battle_type == "pvp" and target_query:
             clean_target = target_query.lstrip("@").lower()
@@ -189,11 +189,10 @@ async def api_battle_handler(request):
                     enemy_name = f"@{clean_target} ({p_row[0]})"
                     enemy_cp = p_row[1]
                 
-                # Отправляем оповещение игроку, которого вызвали на бой
                 try:
                     await bot_instance.send_message(
                         target_uid, 
-                        f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>\nСоперник проверил вашу защиту. Готовьтесь к отпору!",
+                        f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>\nСоперник проверил вашу защиту.",
                         parse_mode="HTML"
                     )
                 except Exception:
@@ -201,7 +200,7 @@ async def api_battle_handler(request):
             cur.close()
             conn.close()
 
-        # ЧЕСТНЫЙ РАСЧЕТ БОЯ: Сравнение CP
+        # Честная проверка победы по CP
         is_win = my_cp >= enemy_cp
 
         reward_coins = 50
@@ -252,7 +251,7 @@ async def cmd_start(message: types.Message):
     get_user_data(message.from_user.id, message.from_user.username or "")
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="🎮 Открыть PokéHunter MMO 3.0", web_app=WebAppInfo(url=WEBAPP_URL)))
-    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Все бои и подземелья настроены честно.", reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b>", reply_markup=builder.as_markup(), parse_mode="HTML")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -260,7 +259,7 @@ async def main():
     bot = Bot(token=BOT_TOKEN)
 
     app = web.Application(middlewares=[cors_middleware])
-    app['bot'] = bot # Передаем экземпляр бота для отправки уведомлений
+    app['bot'] = bot
     app.router.add_options("/{tail:.*}", api_options_handler)
     app.router.add_post("/api/admin_stats", api_admin_stats_handler)
     app.router.add_post("/api/hunt", api_hunt_handler)
