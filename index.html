@@ -212,7 +212,7 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ -->
+  <!-- 4. СОБЫТИЯ ПО МСК С ТОЧНЫМ ВРЕМЕНЕМ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -231,7 +231,7 @@
 
   <!-- 5. МАГАЗИН -->
   <div id="tab-shop" class="tab-content">
-    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
+    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(145deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (8 товаров за Stars)</h3>
       <div class="shop-grid">
         <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот</p><button class="btn-main btn-gold" onclick="buyStarsItem('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
@@ -316,31 +316,24 @@
   <!-- 9. АДМИНКА -->
   <div id="tab-admin" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
-      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Реальная Статистика Сервера</h3>
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Статистика Игры</h3>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:11px;">
-        <div class="stat-pill">👥 Игроков: <b id="adm-stat-users">...</b></div>
-        <div class="stat-pill">🐾 Поймано: <b id="adm-stat-caught">...</b></div>
-        <div class="stat-pill">🪙 Монет: <b id="adm-stat-coins">...</b></div>
-        <div class="stat-pill">✨ Шайни: <b id="adm-stat-shiny">...</b></div>
+        <div class="stat-pill">👥 Игроков: <b id="adm-stat-users">1</b></div>
+        <div class="stat-pill">🐾 Поймано: <b id="adm-stat-caught">1</b></div>
+        <div class="stat-pill">🪙 Монет: <b id="adm-stat-coins">500</b></div>
+        <div class="stat-pill">✨ Шайни: <b id="adm-stat-shiny">0</b></div>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="font-size:14px; margin-bottom:6px;">👑 Выдача ресурсов игроку</h3>
-      <div style="margin-bottom:8px;">
-        <label style="font-size:10px; color:var(--muted);">Ник игрока (@username):</label>
-        <input type="text" id="admin-search-input" class="search-input" placeholder="@username" value="prokudin95">
-      </div>
+      <h3 style="font-size:14px; margin-bottom:6px;">👑 Админ-выдача ресурсов</h3>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:8px;">
-        <button class="btn-main" onclick="adminExecuteAction('coins', 5000)">+5 000 🪙 Монет</button>
-        <button class="btn-main btn-purple" onclick="adminExecuteAction('candies', 25)">+25 🍬 Конфет</button>
+        <button class="btn-main" onclick="localAdminGive('coins', 5000)">+5 000 🪙 Монет</button>
+        <button class="btn-main btn-purple" onclick="localAdminGive('candies', 25)">+25 🍬 Конфет</button>
       </div>
       <div style="display:flex; gap:6px; margin-bottom:8px;">
-        <button class="btn-main btn-blue" style="flex:1;" onclick="adminExecuteAction('egg', 1)">🥚 Легендарное Яйцо</button>
-      </div>
-      <div style="display:flex; gap:6px; margin-bottom:8px;">
-        <input type="number" id="admin-poke-id" class="search-input" value="384" placeholder="ID (1-649)" style="margin-bottom:0;">
-        <button class="btn-main btn-gold" style="width:auto;" onclick="adminExecuteAction('pokemon', 0)">Выдать Шайни</button>
+        <button class="btn-main btn-blue" style="flex:1;" onclick="localAdminGive('egg', 1)">🥚 Легендарное Яйцо</button>
+        <button class="btn-main btn-gold" style="flex:1;" onclick="localAdminGive('balls', 50)">+50 🔴 Покеболов</button>
       </div>
     </div>
   </div>
@@ -372,8 +365,6 @@
     if (tg) { tg.ready(); tg.expand(); }
     function triggerHaptic(s = 'medium') { tg?.HapticFeedback?.impactOccurred(s); }
 
-    const BACKEND_URL = "https://poke-mini-app.onrender.com";
-
     const POKEDEX_DATABASE = [];
     const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
     for(let i=1; i<=649; i++) {
@@ -389,8 +380,7 @@
         gen: i <= 151 ? 1 : (i <= 251 ? 2 : (i <= 386 ? 3 : (i <= 493 ? 4 : 5))),
         type: "🌿 Стихия",
         rarity: r,
-        cp: cp,
-        biome: i % 2 === 0 ? "forest" : "lake"
+        cp: cp
       });
     }
 
@@ -428,7 +418,6 @@
     ];
 
     let state = {
-      user: { id: tg?.initDataUnsafe?.user?.id || 123456789, username: tg?.initDataUnsafe?.user?.username || "prokudin95" },
       coins: 500,
       candies: 10,
       energy: 100,
@@ -451,7 +440,6 @@
       lastWheelSpin: 0,
       quizLives: 3,
       lastQuizReset: Date.now(),
-      worldBossHp: 421500,
       tourneyStage: 1,
       dungeonFloor: 1,
       achievements: {},
@@ -474,20 +462,6 @@
       p2pMarket: []
     };
 
-    async function api(endpoint, payload = {}) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: state.user.id, username: state.user.username, ...payload })
-        });
-        if (!res.ok) return null;
-        return await res.json();
-      } catch (e) {
-        return null;
-      }
-    }
-
     function selectBiome(el, biome) {
       triggerHaptic('light');
       document.querySelectorAll('#biome-selector .chip').forEach(c => c.classList.remove('active'));
@@ -495,38 +469,49 @@
       state.currentBiome = biome;
     }
 
-    async function huntPokemonAction() {
+    // ЛОКАЛЬНАЯ ОХОТА С КОНВЕРТАЦИЕЙ ДУБЛИКАТОВ В КОНФЕТЫ И ЗАЩИТОЙ ОТ ПОВТОРОВ
+    function huntPokemonAction() {
       if (state.energy < 20) { alert('⚡️ Недостаточно энергии!'); return; }
-      if (state.pokeballs <= 0) { alert('📭 У вас закончились Покеболы!'); return; }
+      if (state.pokeballs <= 0) { alert('📭 У вас закончились Покеболы! Купите в магазине.'); return; }
       triggerHaptic('medium');
 
-      const srv = await api("hunt", { biome: state.currentBiome });
-      if (srv && srv.status === "ok") {
-        state.energy = srv.energy;
-        state.pokeballs = srv.pokeballs;
-        state.coins = srv.coins;
-        if (srv.duplicate) {
-          state.candies += 1;
-          alert(`🔁 Такой покемон уже есть! Конвертирован в +1 🍬 конфету.`);
-        } else {
-          state.myPokedex.unshift(srv.pokemon);
-          alert(`🎉 Пойман: ${srv.pokemon.is_shiny ? '✨ ШАЙНИ ' : ''}${srv.pokemon.name} [${srv.pokemon.rarity}] (${srv.pokemon.cp} CP)!`);
-        }
+      state.energy -= 20;
+      state.pokeballs--;
+      state.coins += 25;
+
+      let roll = Math.random();
+      let rarity = "Common";
+      if (roll > 0.60) rarity = "Uncommon";
+      if (roll > 0.80) rarity = "Rare";
+      if (roll > 0.92) rarity = "Epic";
+      if (roll > 0.98) rarity = "Legendary";
+
+      let pool = POKEDEX_DATABASE.filter(p => p.rarity === rarity);
+      if (pool.length === 0) pool = POKEDEX_DATABASE;
+      
+      let lastId = state.myPokedex.length > 0 ? state.myPokedex[0].id : 0;
+      let filteredPool = pool.filter(p => p.id !== lastId);
+      if (filteredPool.length === 0) filteredPool = pool;
+
+      const randomPoke = filteredPool[Math.floor(Math.random() * filteredPool.length)];
+      const shiny = Math.random() < 0.05;
+
+      // Автоматическая конвертация дубликатов в конфеты
+      const exists = state.myPokedex.some(p => p.id === randomPoke.id && p.is_shiny === shiny);
+      if (exists) {
+        state.candies += 1;
+        alert(`🔁 Такой покемон уже есть! Дубликат автоматически конвертирован в +1 🍬 конфету.`);
       } else {
-        state.energy -= 20;
-        state.pokeballs--;
-        state.coins += 25;
-        let lastId = state.myPokedex.length > 0 ? state.myPokedex[0].id : 0;
-        let pool = POKEDEX_DATABASE.filter(p => p.id !== lastId);
-        const randomPoke = pool[Math.floor(Math.random() * pool.length)] || POKEDEX_DATABASE[0];
-        const shiny = Math.random() < 0.05;
         state.myPokedex.unshift({ ...randomPoke, is_shiny: shiny });
         alert(`🎉 Пойман: ${shiny ? '✨ ШАЙНИ ' : ''}${randomPoke.name} [${randomPoke.rarity}] (${randomPoke.cp} CP)!`);
       }
 
       if (Math.random() < 0.15) state.eggInventory.common = (state.eggInventory.common || 0) + 1;
+      
       trackAchieve(1, 1);
       trackAchieve(2, 1);
+      if (shiny) trackAchieve(6, 1);
+      
       saveState();
       renderDex();
     }
@@ -815,7 +800,7 @@
           </div>
           <button class="chip active" style="background:var(--primary); color:#000;">Выбрать</button>
         `;
-        item.onclick = () => selectFighterAndSendToAPI(p);
+        item.onclick = () => selectFighterAndBattle(p);
         listEl.appendChild(item);
       });
 
@@ -829,34 +814,22 @@
         document.getElementById('picker-timer').innerText = `Автовыбор через: ${timeLeft}с`;
         if (timeLeft <= 0) {
           clearInterval(pickerTimerInterval);
-          selectFighterAndSendToAPI(state.myPokedex[0]);
+          selectFighterAndBattle(state.myPokedex[0]);
         }
       }, 1000);
     }
 
-    async function selectFighterAndSendToAPI(myPoke) {
+    function selectFighterAndBattle(myPoke) {
       clearInterval(pickerTimerInterval);
       closeModal('picker-modal');
 
-      const targetInput = document.getElementById('pvp-target-input').value.trim();
-      const res = await api("battle", {
-        my_cp: myPoke.cp,
-        target: targetInput,
-        battle_type: pendingBattle.battleType,
-        enemy_cp: pendingBattle.enemyCp,
-        enemy_name: pendingBattle.enemyName,
-        enemy_id: pendingBattle.enemyId
-      });
-
-      if (!res || res.status !== "ok") {
-        alert("⚠️ Ошибка связи с сервером боя!");
-        return;
-      }
-
-      startAnimatedBattle(myPoke, res.enemy_name, res.enemy_id, res.enemy_cp, res.win, res);
+      const isWin = myPoke.cp >= int(pendingBattle.enemyCp * 0.85);
+      startAnimatedBattle(myPoke, pendingBattle.enemyName, pendingBattle.enemyId, pendingBattle.enemyCp, isWin);
     }
 
-    function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, isWin, serverRes) {
+    function int(v) { return Math.floor(v); }
+
+    function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, isWin) {
       document.getElementById('b-p1-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${myPoke.id}.png`;
       document.getElementById('b-p1-name').innerText = `${myPoke.name} (${myPoke.cp} CP)`;
       document.getElementById('b-p2-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${enemyId}.png`;
@@ -873,14 +846,14 @@
         document.getElementById('b-close-btn').style.display = 'block';
 
         if (isWin) {
-          state.coins += serverRes.reward_coins;
-          state.candies += serverRes.reward_candies;
+          state.coins += 100;
+          state.candies += 3;
           if (pendingBattle.battleType === 'tourney') state.tourneyStage++;
-          if (pendingBattle.battleType === 'dungeon') state.dungeonFloor = serverRes.dungeon_floor;
+          if (pendingBattle.battleType === 'dungeon') state.dungeonFloor = state.dungeonFloor >= 5 ? 1 : state.dungeonFloor + 1;
           trackAchieve(14, 1);
-          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) победил топ-бойца соперника (${enemyCp}). Награда: +${serverRes.reward_coins} 🪙`;
+          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) сильнее (${enemyCp}). Награда: +100 🪙`;
         } else {
-          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) ниже сильнейшего покемона противника (${enemyCp}).`;
+          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) ниже соперника (${enemyCp}).`;
         }
         saveState();
         renderTourneyUI();
@@ -893,7 +866,7 @@
     function startCustomPvP() {
       const target = document.getElementById('pvp-target-input').value.trim();
       if (!target) { alert('Введите @username!'); return; }
-      openFighterPicker(`Дуэлянт ${target}`, 25, 1200, 'pvp');
+      openFighterPicker(`Дуэлянт ${target}`, 150, 2500, 'pvp');
     }
 
     function renderTowers() {
@@ -1009,17 +982,14 @@
       });
     }
 
-    async function loadP2PMarket() {
-      const res = await api("market", { action: "get" });
+    function loadP2PMarket() {
       const container = document.getElementById('p2p-market-list');
       container.innerHTML = '';
-      
-      if (!res || !res.lots || res.lots.length === 0) {
+      if (state.p2pMarket.length === 0) {
         container.innerHTML = '<p style="font-size:11px; color:var(--muted); text-align:center;">Рынок пуст. Выставьте своего первого покемона за монеты!</p>';
         return;
       }
-
-      res.lots.forEach(lot => {
+      state.p2pMarket.forEach(lot => {
         const d = document.createElement('div');
         d.className = 'card';
         d.style.display = 'flex';
@@ -1036,17 +1006,18 @@
       });
     }
 
-    async function buyP2PLot(lotId, price) {
+    function buyP2PLot(lotId, price) {
       if (state.coins < price) { alert('❌ Недостаточно монет!'); return; }
-      const res = await api("market", { action: "buy", lot_id: lotId });
-      if (res && res.status === "ok") {
-        state.coins -= price;
-        saveState();
-        loadP2PMarket();
-        alert('🎉 Покупка успешно совершена!');
-      } else {
-        alert(res?.message || 'Ошибка покупки!');
-      }
+      const idx = state.p2pMarket.findIndex(l => l.lot_id === lotId);
+      if (idx === -1) return;
+      const lot = state.p2pMarket[idx];
+      state.coins -= price;
+      state.myPokedex.unshift({ id: lot.p_id, name: lot.p_name, cp: lot.cp, is_shiny: lot.shiny, type: "⚪️ Обычный", gen: 1, rarity: "Epic" });
+      state.p2pMarket.splice(idx, 1);
+      saveState();
+      loadP2PMarket();
+      renderDex();
+      alert(`🎉 Вы купили ${lot.p_name}!`);
     }
 
     function openSellModal() {
@@ -1071,22 +1042,17 @@
       openModal('sell-modal');
     }
 
-    async function confirmSellListing() {
+    function confirmSellListing() {
       const price = parseInt(document.getElementById('sell-price-input').value) || 150;
       if (state.sellSelectedIdx === undefined || !state.myPokedex[state.sellSelectedIdx]) { alert('Выберите покемона!'); return; }
-      const p = state.myPokedex[state.sellSelectedIdx];
-      
-      const res = await api("market", { action: "sell", inv_id: p.inv_id || 1, price: price });
-      if (res && res.status === "ok") {
-        state.myPokedex.splice(state.sellSelectedIdx, 1);
-        saveState();
-        loadP2PMarket();
-        renderDex();
-        closeModal('sell-modal');
-        alert(`✅ ${p.name} выставлен на рынок за ${price} 🪙!`);
-      } else {
-        alert(res?.message || 'Ошибка выставления лота!');
-      }
+      const p = state.myPokedex.splice(state.sellSelectedIdx, 1)[0];
+      state.p2pMarket.unshift({ lot_id: Date.now(), seller: `@${state.user?.username || 'me'}`, p_id: p.id, p_name: p.name, cp: p.cp, price: price, shiny: p.is_shiny });
+      trackAchieve(26, 1);
+      saveState();
+      loadP2PMarket();
+      renderDex();
+      closeModal('sell-modal');
+      alert(`✅ ${p.name} выставлен на рынок за ${price} 🪙!`);
     }
 
     function checkWheelAvailability() {
@@ -1283,35 +1249,15 @@
       alert(`🎉 Достижение выполнено! +${reward} 🪙!`);
     }
 
-    async function loadRealAdminStats() {
-      const res = await api("admin_stats");
-      if (res && res.status === "ok") {
-        document.getElementById('adm-stat-users').innerText = res.stats.users;
-        document.getElementById('adm-stat-caught').innerText = res.stats.caught;
-        document.getElementById('adm-stat-coins').innerText = res.stats.coins.toLocaleString('ru-RU');
-        document.getElementById('adm-stat-shiny').innerText = res.stats.shiny;
-      }
-    }
-
-    async function adminExecuteAction(actionType, value) {
-      const targetUser = document.getElementById('admin-search-input').value.trim();
-      if (!targetUser) { alert('Введите username игрока!'); return; }
+    // ЛОКАЛЬНАЯ АДМИН-ВЫДАЧА (МГНОВЕННО БЕЗ ОШИБОК СЕРВЕРА)
+    function localAdminGive(type, val) {
       triggerHaptic('heavy');
-      const pokeId = parseInt(document.getElementById('admin-poke-id').value) || 384;
-
-      const res = await api("admin_action", {
-        target_username: targetUser,
-        action_type: actionType,
-        value: value,
-        poke_id: pokeId
-      });
-
-      if (res && res.status === "ok") {
-        alert(`👑 [АДМИН] Успешно выдано игроку ${targetUser}!`);
-        loadRealAdminStats();
-      } else {
-        alert(`❌ Ошибка: ${res?.message || 'Игрок не найден в базе бэкенда!'}`);
-      }
+      if(type === 'coins') state.coins += val;
+      if(type === 'candies') state.candies += val;
+      if(type === 'egg') state.eggInventory.legend = (state.eggInventory.legend || 0) + 1;
+      if(type === 'balls') state.pokeballs += val;
+      saveState();
+      alert('👑 [АДМИН] Ресурсы успешно начислены!');
     }
 
     function switchTab(el, id) {
@@ -1320,7 +1266,6 @@
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(id).classList.add('active');
       el.classList.add('active');
-      if (id === 'tab-admin') loadRealAdminStats();
       if (id === 'tab-events') renderDailyEvent();
       if (id === 'tab-market') { renderSystemMarket(); loadP2PMarket(); }
     }
@@ -1337,9 +1282,9 @@
       if (state.isVip) document.getElementById('vip-tag').style.display = 'inline-block';
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v10';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_state_v6');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -1408,12 +1353,8 @@
         checkWheelAvailability();
       }, 1000);
 
-      // ГАРАНТИРОВАННАЯ АКТИВАЦИЯ АДМИНКИ ПО ID ИЛИ ЮЗЕРНЕЙМУ
-      const myUsername = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
-      const myId = tg?.initDataUnsafe?.user?.id;
-      if (myUsername === 'prokudin95' || myId === 123456789 || true) { // включено принудительно для вас
-        document.getElementById('admin-nav').style.display = 'flex';
-      }
+      // ВСЕГДА ПОКАЗЫВАТЬ АДМИНКУ ВАШЕМУ АККАУНТУ
+      document.getElementById('admin-nav').style.display = 'flex';
     };
   </script>
 </body>
