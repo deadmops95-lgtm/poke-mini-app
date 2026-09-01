@@ -332,7 +332,7 @@
     <div id="achieve-list"></div>
   </div>
 
-  <!-- 9. АДМИНКА (Рабочая выдача предметов в БД) -->
+  <!-- 9. АДМИНКА -->
   <div id="tab-admin" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Реальная Статистика Сервера</h3>
@@ -390,49 +390,26 @@
 
     const BACKEND_URL = "https://poke-mini-app.onrender.com";
 
-    const POKEDEX_DATABASE = [
-      { id: 1, name: "Бульбазавр", gen: 1, type: "🌿 Трава", rarity: "Common", cp: 420, evoTo: 2, biome: "forest" },
-      { id: 2, name: "Ивизавр", gen: 1, type: "🌿 Трава", rarity: "Uncommon", cp: 950, evoTo: 3, biome: "forest" },
-      { id: 3, name: "Венузавр", gen: 1, type: "🌿 Трава", rarity: "Epic", cp: 2800, biome: "forest" },
-      { id: 4, name: "Чармандер", gen: 1, type: "🔥 Огонь", rarity: "Common", cp: 460, evoTo: 5, biome: "volcano" },
-      { id: 5, name: "Чармелеон", gen: 1, type: "🔥 Огонь", rarity: "Uncommon", cp: 980, evoTo: 6, biome: "volcano" },
-      { id: 6, name: "Чаризард", gen: 1, type: "🔥 Огонь", rarity: "Epic", cp: 2950, biome: "volcano" },
-      { id: 7, name: "Сквиртл", gen: 1, type: "💧 Вода", rarity: "Common", cp: 430, evoTo: 8, biome: "lake" },
-      { id: 8, name: "Вартортл", gen: 1, type: "💧 Вода", rarity: "Uncommon", cp: 940, evoTo: 9, biome: "lake" },
-      { id: 9, name: "Бластойз", gen: 1, type: "💧 Вода", rarity: "Epic", cp: 2850, biome: "lake" },
-      { id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, evoTo: 26, biome: "power" },
-      { id: 26, name: "Райчу", gen: 1, type: "⚡️ Электро", rarity: "Epic", cp: 2400, biome: "power" },
-      { id: 74, name: "Геодуд", gen: 1, type: "🪨 Камень", rarity: "Common", cp: 400, evoTo: 75, biome: "cave" },
-      { id: 94, name: "Генгар", gen: 1, type: "👻 Призрак", rarity: "Epic", cp: 2700, biome: "ruins" },
-      { id: 95, name: "Оникс", gen: 1, type: "🪨 Камень", rarity: "Uncommon", cp: 1100, biome: "cave" },
-      { id: 131, name: "Лапрас", gen: 1, type: "💧 Вода", rarity: "Rare", cp: 2100, biome: "lake" },
-      { id: 133, name: "Иви", gen: 1, type: "⚪️ Обычный", rarity: "Rare", cp: 650, evoTo: 134, biome: "forest" },
-      { id: 134, name: "Вапореон", gen: 1, type: "💧 Вода", rarity: "Epic", cp: 2600, biome: "lake" },
-      { id: 144, name: "Артикуно", gen: 1, type: "❄️ Лед", rarity: "Legendary", cp: 4200, biome: "forest" },
-      { id: 145, name: "Запдос", gen: 1, type: "⚡️ Электро", rarity: "Legendary", cp: 4200, biome: "power" },
-      { id: 146, name: "Молтрес", gen: 1, type: "🔥 Огонь", rarity: "Legendary", cp: 4300, biome: "volcano" },
-      { id: 149, name: "Драгонайт", gen: 1, type: "🐲 Дракон", rarity: "Epic", cp: 3200, biome: "ruins" },
-      { id: 150, name: "Мьюту", gen: 1, type: "🔮 Психик", rarity: "Legendary", cp: 4300, biome: "ruins" },
-      { id: 152, name: "Чикорита", gen: 2, type: "🌿 Трава", rarity: "Common", cp: 410, evoTo: 153, biome: "forest" },
-      { id: 153, name: "Бейлиф", gen: 2, type: "🌿 Трава", rarity: "Uncommon", cp: 930, evoTo: 154, biome: "forest" },
-      { id: 155, name: "Синдаквил", gen: 2, type: "🔥 Огонь", rarity: "Common", cp: 450, evoTo: 156, biome: "volcano" },
-      { id: 156, name: "Квилава", gen: 2, type: "🔥 Огонь", rarity: "Uncommon", cp: 960, evoTo: 157, biome: "volcano" },
-      { id: 158, name: "Тотодайл", gen: 2, type: "💧 Вода", rarity: "Common", cp: 430, evoTo: 159, biome: "lake" },
-      { id: 159, name: "Кроконав", gen: 2, type: "💧 Вода", rarity: "Uncommon", cp: 940, evoTo: 160, biome: "lake" },
-      { id: 248, name: "Тиранитар", gen: 2, type: "🪨 Камень", rarity: "Epic", cp: 3300, biome: "volcano" },
-      { id: 249, name: "Лугия", gen: 2, type: "🔮 Психик", rarity: "Legendary", cp: 4350, biome: "lake" },
-      { id: 359, name: "Абсол", gen: 3, type: "🌑 Темный", rarity: "Rare", cp: 2100, biome: "ruins" },
-      { id: 382, name: "Кайогр", gen: 3, type: "💧 Вода", rarity: "Legendary", cp: 4600, biome: "lake" },
-      { id: 383, name: "Граудон", gen: 3, type: "🏜 Земля", rarity: "Legendary", cp: 4600, biome: "cave" },
-      { id: 384, name: "Райкваза", gen: 3, type: "🐲 Дракон", rarity: "Legendary", cp: 4500, biome: "ruins" },
-      { id: 403, name: "Шинкс", gen: 4, type: "⚡️ Электро", rarity: "Common", cp: 430, evoTo: 404, biome: "power" },
-      { id: 405, name: "Люксрэй", gen: 4, type: "⚡️ Электро", rarity: "Rare", cp: 2200, biome: "power" },
-      { id: 448, name: "Лукарио", gen: 4, type: "🥋 Боевой", rarity: "Epic", cp: 2900, biome: "cave" },
-      { id: 493, name: "Аркеус", gen: 4, type: "⚪️ Обычный", rarity: "Legendary", cp: 5000, biome: "ruins" },
-      { id: 530, name: "Экскадрил", gen: 5, type: "⚙️ Сталь", rarity: "Rare", cp: 2300, biome: "cave" },
-      { id: 571, name: "Зороарк", gen: 5, type: "🌑 Темный", rarity: "Epic", cp: 2850, biome: "ruins" },
-      { id: 643, name: "Реширам", gen: 5, type: "🐲 Дракон", rarity: "Legendary", cp: 4450, biome: "volcano" }
-    ];
+    // ГЕНЕРАТОР ВСЕХ 649 ПОКЕМОНОВ ДЛЯ ПОКЕДЕКСА
+    const POKEDEX_DATABASE = [];
+    const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
+    for(let i=1; i<=649; i++) {
+      let r = "Common";
+      let cp = 400 + (i * 3);
+      if(i > 150) r = "Uncommon";
+      if(i > 300) r = "Rare";
+      if(i > 450) r = "Epic";
+      if([144,145,146,150,151,249,250,382,383,384,493,643].includes(i)) { r = "Legendary"; cp = 4500; }
+      POKEDEX_DATABASE.push({
+        id: i,
+        name: baseNames[(i-1) % baseNames.length] + (i > baseNames.length ? " #" + i : ""),
+        gen: i <= 151 ? 1 : (i <= 251 ? 2 : (i <= 386 ? 3 : (i <= 493 ? 4 : 5))),
+        type: "🌿 Стихия",
+        rarity: r,
+        cp: cp,
+        biome: i % 2 === 0 ? "forest" : "lake"
+      });
+    }
 
     const ACHIEVEMENTS_LIST = [
       { id: 1, name: "Первый шаг", target: 1, reward: 25, desc: "Поймать 1 покемона" },
@@ -480,7 +457,7 @@
       dexMode: 'my',
       curGen: 0,
       selectedPoke: null,
-      eggInventory: { common: 2, rare: 1, legend: 0 },
+      eggInventory: { common: 2, rare: 1, legend: 1 },
       activeIncubator1: null,
       activeIncubator2: null,
       eggCracks: 3,
@@ -548,19 +525,9 @@
       } else {
         state.energy -= 20;
         state.coins += 25;
-        const biomeMap = {
-          forest: [1, 2, 3, 25, 133, 144, 152],
-          lake: [7, 8, 9, 134, 158, 249, 382],
-          volcano: [4, 5, 6, 155, 248, 146, 643],
-          power: [25, 26, 145, 403, 405],
-          cave: [74, 95, 448, 383, 530],
-          ruins: [94, 150, 384, 493, 571]
-        };
-        const allowedIds = biomeMap[state.currentBiome] || [1, 4, 7];
-        const filteredDb = POKEDEX_DATABASE.filter(p => allowedIds.includes(p.id));
-        const randomPoke = filteredDb[Math.floor(Math.random() * filteredDb.length)] || POKEDEX_DATABASE[0];
+        const randomPoke = POKEDEX_DATABASE[Math.floor(Math.random() * POKEDEX_DATABASE.length)];
         const shiny = Math.random() < 0.05;
-        state.myPokedex.unshift({ ...randomPoke, cp: randomPoke.cp + Math.floor(Math.random() * 80), is_shiny: shiny });
+        state.myPokedex.unshift({ ...randomPoke, is_shiny: shiny });
       }
 
       if (Math.random() < 0.15) state.eggInventory.common = (state.eggInventory.common || 0) + 1;
@@ -593,7 +560,7 @@
     }
 
     function placeEggInIncubator(type, durationSec) {
-      const key = type.toLowerCase();
+      const key = type.toLowerCase() === 'legendary' ? 'legend' : (type.toLowerCase() === 'rare' ? 'rare' : 'common');
       if ((state.eggInventory[key] || 0) <= 0) { alert('У вас нет яиц этого типа!'); return; }
       state.eggInventory[key]--;
       const data = { type: type, hatchTime: Date.now() + (durationSec * 1000) };
@@ -674,6 +641,7 @@
         const hatched = pool[Math.floor(Math.random() * pool.length)] || POKEDEX_DATABASE[0];
         state.myPokedex.unshift({ ...hatched, cp: hatched.cp + 150, is_shiny: Math.random() < 0.1 });
         trackAchieve(20, 1);
+        if(incType === 'Legendary') trackAchieve(22, 1);
         saveState();
         renderDex();
         renderIncubatorUI();
@@ -1301,7 +1269,6 @@
       alert(`🔍 Профиль ${query} загружен!`);
     }
 
-    // РАБОТАЮЩАЯ АДМИНСКАЯ ВЫДАЧА ЧЕРЕЗ СЕРВЕР
     async function adminExecuteAction(actionType, value) {
       const targetUser = document.getElementById('admin-search-input').value.trim();
       if (!targetUser) { alert('Введите username игрока!'); return; }
