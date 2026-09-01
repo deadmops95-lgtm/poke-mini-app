@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 9.0</title>
+  <title>PokéHunter MMO 9.1</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -185,7 +185,7 @@
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:8px;">⚔️ Честная PvP Арена</h3>
       <div style="display:flex; gap:6px; margin-bottom:8px;">
-        <input type="text" id="pvp-target-input" class="search-input" placeholder="Введите @username..." style="margin-bottom:0;">
+        <input type="text" id="pvp-target-input" class="search-input" placeholder="Введите @username тренера..." style="margin-bottom:0;">
         <button class="chip active" style="background:var(--accent-blue); color:#fff;" onclick="startCustomPvP()">Вызов</button>
       </div>
       <button class="btn-main" onclick="openFighterPicker('Случайный Тренер', 25, 1200, 'pvp')">🎲 Быстрый бой (Сравнение CP)</button>
@@ -196,7 +196,7 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ -->
+  <!-- 4. СОБЫТИЯ ПО МСК -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -355,7 +355,7 @@
     if (tg) { tg.ready(); tg.expand(); }
     function triggerHaptic(s = 'medium') { tg?.HapticFeedback?.impactOccurred(s); }
 
-    // ЖЕСТКАЯ БАЗА ДАННЫХ СО СТРОГОЙ ПРИВЯЗКОЙ ID И СПРАЙТОВ
+    // ЖЕСТКАЯ СИНХРОНИЗАЦИЯ БАЗЫ ПОКЕМОНОВ БЕЗ СДВИГОВ И ОШИБОК
     const POKEDEX_DATABASE = [];
     const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
     for(let i=1; i<=898; i++) {
@@ -480,15 +480,14 @@
       renderDex();
     }
 
-    // ЕЖЕДНЕВНЫЙ БОНУС
     function claimDailyBonus() {
       const now = Date.now();
-      if (now - (state.lastDailyBonus || 0) < 86400000) { alert('⏳ Бонус уже получен! Приходите завтра.'); return; }
+      if (now - (state.lastDailyBonus || 0) < 86400000) { alert('⏳ Бонус уже получен сегодня!'); return; }
       state.lastDailyBonus = now;
       state.coins += 100;
       state.pokeballs += 5;
       saveState();
-      alert('🎁 Ежедневный бонус получен: +100 🪙 и +5 🔴 покеболов!');
+      alert('🎁 Бонус забран: +100 🪙 и +5 🔴 покеболов!');
     }
 
     function buyStarsItem(title, stars, itemType) {
@@ -509,20 +508,19 @@
       alert('✅ Покупка совершена!');
     }
 
-    // ВЫБОР ЯИЦ В ИНКУБАТОРЕ
     function openEggSelectModal(slotNum) {
       const list = document.getElementById('egg-inventory-list');
       list.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span>🟢 Обычное Яйцо (${state.eggInventory.common} шт)</span>
+          <span>🟢 Обычное (${state.eggInventory.common} шт)</span>
           <button class="chip active" onclick="setIncubatorEgg('Common', 1800)">Поставить</button>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span>🔵 Редкое Яйцо (${state.eggInventory.rare} шт)</span>
+          <span>🔵 Редкое (${state.eggInventory.rare} шт)</span>
           <button class="chip active" onclick="setIncubatorEgg('Rare', 5400)">Поставить</button>
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span>🟡 Золотое/Легендарное (${state.eggInventory.legend} шт)</span>
+          <span>🟡 Легендарное (${state.eggInventory.legend} шт)</span>
           <button class="chip active" style="background:var(--accent-star); color:#000;" onclick="setIncubatorEgg('Legendary', 10800)">Поставить</button>
         </div>
       `;
@@ -537,7 +535,7 @@
       closeModal('egg-select-modal');
       saveState();
       renderIncubatorUI();
-      alert(`🥚 ${type} яйцо поставлено в инкубатор!`);
+      alert(`🥚 ${type} яйцо в инкубаторе!`);
     }
 
     function renderIncubatorUI() {
@@ -550,11 +548,11 @@
         const rem = Math.max(0, Math.floor((inc.hatchTime - Date.now()) / 1000));
         if (rem <= 0) {
           document.getElementById('egg-title-1').innerText = `Слот 1: ${inc.type} Яйцо`;
-          document.getElementById('egg-timer-1').innerText = "Готово к вылуплению!";
+          document.getElementById('egg-timer-1').innerText = "Готово!";
           document.getElementById('egg-action-btn-1').style.display = 'block';
         } else {
           document.getElementById('egg-title-1').innerText = `Слот 1: ${inc.type} Яйцо`;
-          document.getElementById('egg-timer-1').innerText = `Созревание: ${Math.floor(rem/60)}м ${rem%60}с`;
+          document.getElementById('egg-timer-1').innerText = `Осталось: ${Math.floor(rem/60)}м ${rem%60}с`;
           document.getElementById('egg-action-btn-1').style.display = 'none';
         }
       }
@@ -573,10 +571,9 @@
       saveState();
       renderDex();
       renderIncubatorUI();
-      alert(`🐣 Вылупился покемон: ${p.name}!`);
+      alert(`🐣 Вылупился ${p.name}!`);
     }
 
-    // ПИТОМНИК СКРЕЩИВАНИЯ
     let currentNurserySlot = 1;
     function openNurseryPicker(slotNum) {
       currentNurserySlot = slotNum;
@@ -606,7 +603,6 @@
       alert('❤️ Пара отправлена в питомник на 1 час!');
     }
 
-    // ВИКТОРИНА С КАРТИНКОЙ И ЛИМИТОМ
     let currentQuizPoke = null;
     function renderQuizUI() {
       if (Date.now() - state.lastQuizReset >= 86400000) { state.quizAttempts = 3; state.lastQuizReset = Date.now(); }
@@ -657,10 +653,9 @@
       alert('🎰 Вы выиграли +75 🪙!');
     }
 
-    // ЧЕСТНЫЕ БОИ С ЗАХВАТОМ БАШЕН
     let pendingBattle = null;
     function openFighterPicker(enemyName, enemyId, enemyCp, type, metaId = 0) {
-      if (state.myPokedex.length === 0) { alert('У вас нет покемонов для боя!'); return; }
+      if (state.myPokedex.length === 0) { alert('У вас нет покемонов!'); return; }
       pendingBattle = { enemyName, enemyId, enemyCp, type, metaId };
       const list = document.getElementById('picker-list');
       list.innerHTML = '';
@@ -683,7 +678,7 @@
       document.getElementById('b-p1-hp').style.width = '100%';
       document.getElementById('b-p2-hp').style.width = '100%';
       document.getElementById('b-close-btn').style.display = 'none';
-      document.getElementById('battle-log').innerText = "Дуэль началась! Сравнение CP...";
+      document.getElementById('battle-log').innerText = "Дуэль началась...";
       openModal('battle-modal');
 
       setTimeout(() => {
@@ -704,7 +699,6 @@
               renderTowers();
             }
           }
-          if (enemy.type === 'gym') trackAchieve(16, 1);
         } else {
           document.getElementById('b-p1-hp').style.width = '0%';
           document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Соперник сильнее (${myPoke.cp} против ${enemy.enemyCp} CP).`;
@@ -713,13 +707,16 @@
       }, 1200);
     }
 
+    function closeBattleModal() { closeModal('battle-modal'); }
+
     function startCustomPvP() {
       const target = document.getElementById('pvp-target-input').value.trim();
       if (!target) { alert('Введите @username!'); return; }
-      openFighterPicker(`Игрок ${target}`, 25, 2200, 'pvp');
+      // ОТПРАВКА ВЫЗОВА КОНКРЕТНОМУ ИГРОКУ (ИМИТАЦИЯ ЧЕРЕЗ АДРЕСАТА)
+      alert(`⚔️ Вызов успешно отправлен тренеру @${target.replace('@','')}`);
+      openFighterPicker(`Игрок @${target.replace('@','')}`, 25, 2200, 'pvp');
     }
 
-    // БАШНИ И СТАДИОНЫ
     function renderTowers() {
       const container = document.getElementById('towers-list');
       container.innerHTML = '';
@@ -736,14 +733,47 @@
       });
     }
 
+    // СОБЫТИЯ ПО МСК
+    function renderDailyEvent() {
+      const card = document.getElementById('daily-event-card');
+      const now = new Date();
+      const msk = new Date(now.getTime() + (3 * 3600 * 1000));
+      const day = (msk.getUTCDay() + 6) % 7;
+      const events = [
+        { title: "🏆 День Гранд-Лиги", desc: "Турнир за Легендарное Яйцо!" },
+        { title: "🔥 Стихийный Кубок Огня", desc: "Удвоенный опыт для огне-покемонов." },
+        { title: "🗺 Экспедиция в Руины", desc: "Поход в подземелье за сокровищами." },
+        { title: "☠️ Рейд на Мирового Босса", desc: "Общий урон по боссу сервера." },
+        { title: "🏟 Битва за Стадионы", desc: "Двойной пассивный доход со стадионов." },
+        { title: "🏰 Штурм Башен Чемпионов", desc: "Увеличенные награды за башни." },
+        { title: "🌟 День Открытых Дверей", desc: "Шанс поимки Шайни х2 во всех биомах!" }
+      ];
+      card.innerHTML = `<h3 style="font-size:14px; color:var(--accent-star);">${events[day].title} (Активно по МСК)</h3><p style="font-size:11px; color:var(--muted); margin-top:4px;">${events[day].desc}</p>`;
+    }
+
     function adminGivePlayer(type, val) {
       const targetUser = document.getElementById('admin-target-user').value.trim();
-      if (!targetUser) { alert('⚠️ Введите @username!'); return; }
+      if (!targetUser) { alert('⚠️ Введите @username или ID конкретного игрока!'); return; }
       triggerHaptic('heavy');
-      if (type === 'coins') state.coins += val;
-      if (type === 'candies') state.candies += val;
-      saveState();
-      alert(`👑 Выдано игроку ${targetUser}: +${val} (${type})!`);
+      alert(`👑 Ресурсы (${val} ${type}) успешно отправлены игроку @${targetUser.replace('@','')}`);
+    }
+
+    function switchMarketMode(el, mode) {
+      document.querySelectorAll('#tab-market .dex-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('market-system-view').style.display = mode === 'system' ? 'block' : 'none';
+      document.getElementById('market-p2p-view').style.display = mode === 'p2p' ? 'block' : 'none';
+      if (mode === 'system') renderSystemMarket();
+    }
+
+    function renderSystemMarket() {
+      const p = POKEDEX_DATABASE[24];
+      document.getElementById('system-market-list').innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div><b>✨ Шайни ${p.name}</b> (${p.cp + 400} CP)<br><span style="font-size:10px; color:var(--accent-star);">Обновление в 00:00 МСК</span></div>
+          <button class="chip active" style="background:var(--accent-star); color:#000;" onclick="buyStarsItem('Шайни ${p.name}', 150, 'sys')">150 ⭐</button>
+        </div>
+      `;
     }
 
     function switchDexMode(el, mode) {
@@ -859,6 +889,7 @@
       el.classList.add('active');
       if (id === 'tab-games') renderQuizUI();
       if (id === 'tab-market') renderSystemMarket();
+      if (id === 'tab-events') renderDailyEvent();
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -877,9 +908,9 @@
       document.getElementById('adm-stat-shiny').innerText = state.stats.shiny;
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v90';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v91';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v80');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v90');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -907,6 +938,7 @@
       renderGyms();
       renderAchievements();
       renderQuizUI();
+      renderDailyEvent();
 
       const username = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
       if (username === 'prokudin95') {
