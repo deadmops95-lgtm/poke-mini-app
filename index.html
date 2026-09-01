@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 12.1</title>
+  <title>PokéHunter MMO 13.0 Online</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -105,7 +105,6 @@
     </div>
   </header>
 
-  <!-- 1. ОХОТА И ИНКУБАТОР -->
   <div id="tab-hunt" class="tab-content active">
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:8px;">📍 6 Локаций для Охоты</h3>
@@ -138,7 +137,6 @@
     </div>
   </div>
 
-  <!-- 2. ПОКЕДЕКС -->
   <div id="tab-pokedex" class="tab-content">
     <div class="dex-switch">
       <div class="dex-tab active" onclick="switchDexMode(this, 'my')">🎒 Моя коллекция (<span id="my-count">0</span>)</div>
@@ -146,16 +144,15 @@
     </div>
     <div class="filter-scroll">
       <div class="chip active" onclick="filterGen(this, 0)">Все Gen</div>
-      <div class="chip" onclick="filterGen(this, 1)">1 Gen (Канто)</div>
-      <div class="chip" onclick="filterGen(this, 2)">2 Gen (Джото)</div>
-      <div class="chip" onclick="filterGen(this, 3)">3 Gen (Хоэнн)</div>
-      <div class="chip" onclick="filterGen(this, 4)">4 Gen (Синно)</div>
+      <div class="chip" onclick="filterGen(this, 1)">1 Gen</div>
+      <div class="chip" onclick="filterGen(this, 2)">2 Gen</div>
+      <div class="chip" onclick="filterGen(this, 3)">3 Gen</div>
+      <div class="chip" onclick="filterGen(this, 4)">4 Gen</div>
     </div>
     <input type="text" class="search-input" placeholder="🔍 Поиск по имени покемона..." oninput="searchDex(this.value)">
     <div class="grid" id="pokedex-grid"></div>
   </div>
 
-  <!-- 3. СТАДИОНЫ И ДУЭЛИ -->
   <div id="tab-battle" class="tab-content">
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:8px;">⚔️ PvP Дуэль с тренером</h3>
@@ -165,16 +162,14 @@
       </div>
       <button class="btn-main" onclick="openFighterPicker('Случайный Тренер', 25, 1200, 'pvp', 0)">🎲 Быстрый бой (+50 🪙)</button>
     </div>
-    <h3 style="font-size:14px; margin: 12px 0 8px 0;">🏟 5 Стадионов Лиги (Битвы за титул)</h3>
+    <h3 style="font-size:14px; margin: 12px 0 8px 0;">🏟 5 Стадионов Лиги</h3>
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
   </div>
 
-  <!-- 5. МАГАЗИН -->
   <div id="tab-shop" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (6 товаров за Stars)</h3>
@@ -199,7 +194,6 @@
     </div>
   </div>
 
-  <!-- 6. ЕЖЕДНЕВНЫЙ БОНУС -->
   <div id="tab-games" class="tab-content">
     <div class="card" style="text-align:center; background:linear-gradient(135deg, rgba(16,185,129,0.1), var(--card)); border-color:rgba(16,185,129,0.3);">
       <h3 style="font-size:15px; margin-bottom:2px;">🎁 Ежедневный бонус за вход</h3>
@@ -208,20 +202,19 @@
     </div>
   </div>
 
-  <!-- 7. АДМИН-ПАНЕЛЬ -->
   <div id="tab-admin" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
-      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Статистика Сервера</h3>
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 База Данных Сервера (Live)</h3>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:11px; margin-bottom:4px;">
-        <div class="stat-pill">👥 Онлайн: <b id="adm-stat-users">1</b></div>
-        <div class="stat-pill">🐾 Поймано: <b id="adm-stat-caught">1</b></div>
-        <div class="stat-pill">🪙 Монет: <b id="adm-stat-coins">500</b></div>
-        <div class="stat-pill">✨ Шайни: <b id="adm-stat-shiny">0</b></div>
+        <div class="stat-pill">👥 Игроков в БД: <b id="adm-stat-users">...</b></div>
+        <div class="stat-pill">🐾 Поймано всего: <b id="adm-stat-caught">...</b></div>
+        <div class="stat-pill">🪙 Монет в игре: <b id="adm-stat-coins">...</b></div>
+        <div class="stat-pill">✨ Статус: <b style="color:var(--primary);">Online DB</b></div>
       </div>
     </div>
 
     <div class="card">
-      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">👑 Панель управления и выдачи</h3>
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">👑 Панель выдачи ресурсов</h3>
       <div style="display:flex; gap:6px; margin-bottom:8px;">
         <button class="chip active" id="admin-mode-ind" style="flex:1; background:var(--primary); color:#000;" onclick="setAdminMode('individual')">👤 Индивидуально</button>
         <button class="chip" id="admin-mode-mass" style="flex:1;" onclick="setAdminMode('mass')">🌍 Массово (всем)</button>
@@ -235,7 +228,6 @@
       </div>
       <div style="display:flex; gap:6px; margin-bottom:12px;">
         <button class="btn-main btn-blue" style="flex:1;" onclick="adminGivePlayer('balls', 50)">+50 🔴</button>
-        <button class="btn-main btn-gold" style="flex:1;" onclick="adminGivePlayer('egg', 1)">🥚 Легенд. Яйцо</button>
       </div>
       <div style="border-top:1px solid var(--border); padding-top:10px;">
         <h4 style="font-size:12px; margin-bottom:6px;">🐾 Выдать покемона по ID (1-493)</h4>
@@ -247,7 +239,6 @@
     </div>
   </div>
 
-  <!-- МОДАЛКИ -->
   <div class="modal" id="egg-select-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:8px;">🥚 Выберите яйцо</h3><div id="egg-inventory-list" style="margin-bottom:12px;"></div><button class="chip" style="width:100%;" onclick="closeModal('egg-select-modal')">Закрыть</button></div></div>
   <div class="modal" id="picker-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:4px;">⚔️ Выберите бойца</h3><div style="max-height:220px; overflow-y:auto; margin-bottom:10px;" id="picker-list"></div><button class="chip" style="width:100%;" onclick="closeModal('picker-modal')">Отмена</button></div></div>
   <div class="modal" id="battle-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:4px;">⚔️ Битва</h3><div class="battle-field"><div class="fighter"><img id="b-p1-img" src=""><h5 id="b-p1-name" style="font-size:11px;">Мой</h5><div class="hp-bar-bg"><div class="hp-bar-fill" id="b-p1-hp"></div></div></div><div style="font-weight:900; font-size:16px; color:var(--accent-danger);">VS</div><div class="fighter"><img id="b-p2-img" src=""><h5 id="b-p2-name" style="font-size:11px;">Лидер</h5><div class="hp-bar-bg"><div class="hp-bar-fill" id="b-p2-hp"></div></div></div></div><p id="battle-log" style="font-size:12px; color:var(--muted); margin-bottom:12px;">Идет бой...</p><button class="btn-main" id="b-close-btn" style="display:none;" onclick="closeBattleModal()">Закрыть</button></div></div>
@@ -286,6 +277,9 @@
       });
     }
 
+    const userId = tg?.initDataUnsafe?.user?.id || 12345678;
+    const username = tg?.initDataUnsafe?.user?.username || "prokudin95";
+
     let state = {
       coins: 500, candies: 10, energy: 100, pokeballs: 15,
       myPokedex: [{ id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, is_shiny: false, evoTo: 26 }],
@@ -300,6 +294,62 @@
       ],
       stats: { caught: 1, shiny: 0 }
     };
+
+    // ЗАГРУЗКА ДАННЫХ ИЗ БАЗЫ СЕРВЕРА
+    async function loadUserData() {
+      try {
+        const res = await fetch(`/api/user/${userId}`);
+        const data = await res.json();
+        if (data.exists) {
+          state.coins = data.coins;
+          state.candies = data.candies;
+          state.pokeballs = data.pokeballs;
+          state.energy = data.energy;
+          state.myPokedex = JSON.parse(data.pokedex || '[]');
+          state.stats.caught = data.stats_caught;
+          state.stats.shiny = data.stats_shiny;
+          if (state.myPokedex.length === 0) {
+            state.myPokedex = [{ id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, is_shiny: false, evoTo: 26 }];
+          }
+        } else {
+          saveState(); // Регистрация нового игрока на сервере
+        }
+      } catch (e) {
+        console.log("Load error, using local:", e);
+      }
+      renderDex();
+      updateUI();
+    }
+
+    // СОХРАНЕНИЕ ДАННЫХ НА СЕРВЕР В БД
+    function saveState() {
+      updateUI();
+      fetch('/api/user/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          username: username,
+          coins: state.coins,
+          candies: state.candies,
+          pokeballs: state.pokeballs,
+          energy: state.energy,
+          pokedex: JSON.stringify(state.myPokedex),
+          stats_caught: state.stats.caught,
+          stats_shiny: state.stats.shiny
+        })
+      }).catch(err => console.log("Save error:", err));
+    }
+
+    async function loadServerStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        const data = await res.json();
+        document.getElementById('adm-stat-users').innerText = data.online_users;
+        document.getElementById('adm-stat-caught').innerText = data.total_caught;
+        document.getElementById('adm-stat-coins').innerText = data.total_coins;
+      } catch(e) {}
+    }
 
     function selectBiome(el, biome) {
       document.querySelectorAll('#biome-selector .chip').forEach(c => c.classList.remove('active'));
@@ -424,7 +474,7 @@
           document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! +100 🪙!`;
           if (enemy.type === 'gym') {
             const g = state.gyms.find(x => x.id === enemy.gymId);
-            if (g) { g.champ = "Вы (@prokudin95)"; g.pName = myPoke.name; renderGyms(); }
+            if (g) { g.champ = `Вы (@${username})`; g.pName = myPoke.name; renderGyms(); }
           }
         } else {
           document.getElementById('b-p1-hp').style.width = '0%';
@@ -436,30 +486,23 @@
 
     function closeBattleModal() { closeModal('battle-modal'); }
 
-    // АВТО-ЗАЩИТА СИЛЬНЕЙШИМ ПОКЕМОНОМ И УВЕДОМЛЕНИЕ СОПЕРНИКА
     function startCustomPvP() {
       const defenderId = document.getElementById('pvp-target-input').value.trim();
       if (!defenderId) { alert('Введите Telegram ID соперника!'); return; }
       if (state.myPokedex.length === 0) { alert('У вас нет покемонов!'); return; }
-
-      // 1. Автоматически выбираем самого сильного покемона из коллекции по CP
       let strongestPoke = state.myPokedex.reduce((max, p) => p.cp > max.cp ? p : max, state.myPokedex[0]);
       
-      const attackerName = tg?.initDataUnsafe?.user?.username || tg?.initDataUnsafe?.user?.first_name || "Тренер";
-
-      // 2. Отправляем запрос на сервер для уведомления защищающегося игрока в Telegram
       fetch('/api/attack', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           defender_id: parseInt(defenderId),
-          attacker_name: attackerName,
+          attacker_name: username,
           defender_poke: strongestPoke.name,
           defender_cp: strongestPoke.cp
         })
       }).catch(err => console.log("Notify error:", err));
 
-      // 3. Запускаем красивую дуэль против авто-защиты соперника (его сильнейшего покемона)
       openFighterPicker(`Защитник (ID ${defenderId})`, strongestPoke.id, strongestPoke.cp + 100, 'pvp', 0);
     }
 
@@ -469,11 +512,6 @@
       state.gyms.forEach(g => {
         container.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><h4 style="font-size:12px;">${g.name}</h4><p style="font-size:10px; color:var(--muted);">👑 ${g.champ} (${g.pName})</p></div><button class="chip active" style="background:var(--accent-epic); color:#fff;" onclick="openFighterPicker('${g.name}', ${g.pid}, ${g.cp}, 'gym', ${g.id})">⚔️ Битва</button></div>`;
       });
-    }
-
-    function renderDailyEvent() {
-      const card = document.getElementById('daily-event-card');
-      card.innerHTML = `<h3 style="font-size:14px; color:var(--accent-star);">⚡ Событие Лиги</h3><p style="font-size:11px; color:var(--muted); margin-top:4px;">🏆 День Лиги: Удвоенный рейтинг за бои!</p>`;
     }
 
     let adminMode = 'individual';
@@ -530,7 +568,7 @@
 
     function evolveSelectedPokemon() {
       const p = state.selectedPoke;
-      if (!p || !p.evoTo || state.candies < 3 || state.coins < 150) { alert('❌ Недостаточно ресурсов или нет эволюции!'); return; }
+      if (!p || !p.evoTo || state.candies < 3 || state.coins < 150) { alert('❌ Недостаточно ресурсов!'); return; }
       state.candies -= 3; state.coins -= 150;
       const nextPoke = POKEDEX_DATABASE.find(x => x.id === p.evoTo);
       p.id = nextPoke.id; p.name = nextPoke.name; p.cp += 350; p.evoTo = nextPoke.evoTo;
@@ -541,6 +579,7 @@
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.getElementById(id).classList.add('active'); el.classList.add('active');
+      if (id === 'tab-admin') loadServerStats();
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -552,19 +591,15 @@
       document.getElementById('u-energy').innerText = state.energy;
       document.getElementById('u-balls').innerText = state.pokeballs;
       document.getElementById('energy-fill').style.width = `${state.energy}%`;
-      document.getElementById('adm-stat-coins').innerText = state.coins;
-    }
-
-    function saveState() {
-      localStorage.setItem('poke_mmo_master_v121', JSON.stringify(state));
-      updateUI();
+      document.getElementById('u-name').innerText = username;
     }
 
     window.onload = () => {
-      const saved = localStorage.getItem('poke_mmo_master_v121');
-      if (saved) { try { state = JSON.parse(saved); } catch(e){} }
-      renderDex(); renderGyms(); renderDailyEvent(); renderIncubatorUI(); updateUI();
-      if ((window.Telegram?.WebApp?.initDataUnsafe?.user?.username || '').toLowerCase() === 'prokudin95' || !window.Telegram?.WebApp?.initDataUnsafe?.user) {
+      loadUserData();
+      renderGyms();
+      renderIncubatorUI();
+
+      if (username.toLowerCase() === 'prokudin95' || !tg?.initDataUnsafe?.user) {
         document.getElementById('admin-nav').style.display = 'flex';
       }
     };
