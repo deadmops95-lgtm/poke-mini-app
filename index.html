@@ -127,20 +127,34 @@
       <button class="btn-main" onclick="huntPokemonAction()">🌿 Искать покемона (-20 ⚡️)</button>
     </div>
 
+    <!-- Инкубаторы (Слот 1 и Слот 2) -->
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <h3 style="font-size:14px;">🥚 Инкубатор Яиц</h3>
-        <button class="chip" style="background:var(--accent-blue); color:#fff;" onclick="openEggSelectModal()">Выбрать яйцо</button>
+        <h3 style="font-size:14px;">🥚 Инкубаторы Яиц</h3>
+        <button class="chip" style="background:var(--accent-blue); color:#fff;" onclick="openEggSelectModal(1)">Слот 1</button>
       </div>
-      <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <div id="egg-icon" style="font-size:36px;">🥚</div>
+          <div id="egg-icon-1" style="font-size:32px;">🥚</div>
           <div>
-            <h4 id="egg-title" style="font-size:13px;">Инкубатор пуст</h4>
-            <p id="egg-timer" style="font-size:11px; color:var(--muted);">Нажмите «Выбрать яйцо»</p>
+            <h4 id="egg-title-1" style="font-size:12px;">Слот 1: Пуст</h4>
+            <p id="egg-timer-1" style="font-size:10px; color:var(--muted);">Нажмите «Слот 1»</p>
           </div>
         </div>
-        <button class="chip active" id="egg-action-btn" style="background:var(--accent-star); color:#000; display:none;" onclick="handleEggAction()">🐣 Вылупить</button>
+        <button class="chip active" id="egg-action-btn-1" style="background:var(--accent-star); color:#000; display:none;" onclick="handleEggAction(1)">🐣 Вылупить</button>
+      </div>
+
+      <!-- Второй слот инкубатора -->
+      <div id="incubator-slot-2-wrap" style="border-top:1px solid var(--border); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div id="egg-icon-2" style="font-size:32px;">🥚</div>
+          <div>
+            <h4 id="egg-title-2" style="font-size:12px;">Слот 2 (Доп.)</h4>
+            <p id="egg-timer-2" style="font-size:10px; color:var(--muted);">Купите в Магазине</p>
+          </div>
+        </div>
+        <button class="chip active" id="egg-action-btn-2" style="background:var(--accent-star); color:#000; display:none;" onclick="handleEggAction(2)">🐣 Вылупить</button>
+        <button class="chip" id="egg-select-btn-2" style="background:var(--accent-blue); color:#fff; display:none;" onclick="openEggSelectModal(2)">Поставить</button>
       </div>
     </div>
 
@@ -227,20 +241,20 @@
 
     <div class="card">
       <h3 style="font-size:14px; color:var(--accent-epic); margin-bottom:4px;">🗺 Экспедиция в Руины</h3>
-      <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">3 этажа подземелья без лечения за сундук сокровищ</p>
-      <button class="btn-main btn-purple" onclick="startDungeonExpedition()">🧗 Начать поход на Этаж 1</button>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Этаж: <b id="dungeon-floor-label">1</b> (Без лечения)</p>
+      <button class="btn-main btn-purple" onclick="startDungeonExpedition()">🧗 Начать поход на этаж</button>
     </div>
   </div>
 
-  <!-- 5. МАГАЗИН -->
+  <!-- 5. МАГАЗИН (С доп. слотом за звезды) -->
   <div id="tab-shop" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат (Telegram Stars)</h3>
       <div class="shop-grid">
+        <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот для яиц</p><button class="btn-main btn-gold" onclick="buyStarsItem('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
         <div class="shop-card featured"><div class="shop-icon">🟡</div><h4>Легендарное Яйцо</h4><p>3500+ CP</p><button class="btn-main btn-gold" onclick="buyStarsItem('Легендарное Яйцо', 150, 'egg_legend')">150 ⭐</button></div>
         <div class="shop-card featured"><div class="shop-icon">👑</div><h4>VIP (30 дней)</h4><p>Реген x2, +25% 🪙</p><button class="btn-main btn-gold" onclick="buyStarsItem('VIP Статус', 250, 'vip_30')">250 ⭐</button></div>
         <div class="shop-card featured"><div class="shop-icon">💰</div><h4>Кошель 1 000 🪙</h4><p>Быстрый старт</p><button class="btn-main btn-gold" onclick="buyStarsItem('1000 Монет', 50, 'coins_1000')">50 ⭐</button></div>
-        <div class="shop-card featured"><div class="shop-icon">💎</div><h4>Сундук 5 000 🪙</h4><p>Выгода +25%</p><button class="btn-main btn-gold" onclick="buyStarsItem('5000 Монет', 200, 'coins_5000')">200 ⭐</button></div>
       </div>
     </div>
     <h3 style="font-size:14px; margin: 12px 0 8px 0;">🪙 За игровые монеты</h3>
@@ -300,7 +314,7 @@
     <div id="achieve-list"></div>
   </div>
 
-  <!-- 9. АДМИНКА (Строго для @prokudin95) -->
+  <!-- 9. АДМИНКА -->
   <div id="tab-admin" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Реальная Статистика Сервера</h3>
@@ -469,12 +483,14 @@
       lastEnergyTime: Date.now(),
       currentBiome: 'forest',
       isVip: false,
+      hasExtraIncubator: false,
       myPokedex: [{ id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 780, is_shiny: false, evoTo: 26 }],
       dexMode: 'my',
       curGen: 0,
       selectedPoke: null,
       eggInventory: { common: 2, rare: 1, legend: 0 },
-      activeIncubator: null,
+      activeIncubator1: null,
+      activeIncubator2: null,
       eggCracks: 3,
       nurserySlot1: null,
       nurserySlot2: null,
@@ -554,7 +570,10 @@
       alert(`🎉 Пойман: ${state.myPokedex[0].is_shiny ? '✨ ШАЙНИ ' : ''}${state.myPokedex[0].name} (${state.myPokedex[0].cp} CP)! +25 🪙`);
     }
 
-    function openEggSelectModal() {
+    // ИНКУБАТОРЫ С ВЫБОРОМ СЛОТА
+    let selectedIncubatorSlot = 1;
+    function openEggSelectModal(slotNum) {
+      selectedIncubatorSlot = slotNum;
       const listEl = document.getElementById('egg-inventory-list');
       listEl.innerHTML = `
         <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -577,36 +596,66 @@
       const key = type.toLowerCase();
       if ((state.eggInventory[key] || 0) <= 0) { alert('У вас нет яиц этого типа!'); return; }
       state.eggInventory[key]--;
-      state.activeIncubator = { type: type, hatchTime: Date.now() + (durationSec * 1000) };
+      const data = { type: type, hatchTime: Date.now() + (durationSec * 1000) };
+      
+      if (selectedIncubatorSlot === 1) state.activeIncubator1 = data;
+      else state.activeIncubator2 = data;
+
       saveState();
       closeModal('egg-select-modal');
       renderIncubatorUI();
-      alert(`🥚 ${type} Яйцо в инкубаторе!`);
+      alert(`🥚 ${type} Яйцо в инкубаторе (Слот ${selectedIncubatorSlot})!`);
     }
 
     function renderIncubatorUI() {
-      const inc = state.activeIncubator;
-      if (!inc) {
-        document.getElementById('egg-title').innerText = "Инкубатор пуст";
-        document.getElementById('egg-timer').innerText = "Нажмите «Выбрать яйцо»";
-        document.getElementById('egg-action-btn').style.display = 'none';
-        return;
-      }
-      document.getElementById('egg-title').innerText = `${inc.type} Яйцо`;
-      const rem = Math.max(0, Math.floor((inc.hatchTime - Date.now()) / 1000));
-      if (rem <= 0) {
-        document.getElementById('egg-timer').innerText = "Готово к вылуплению!";
-        document.getElementById('egg-action-btn').style.display = 'block';
-        document.getElementById('egg-action-btn').innerText = "🐣 Вылупить";
+      // Слот 1
+      const inc1 = state.activeIncubator1;
+      if (!inc1) {
+        document.getElementById('egg-title-1').innerText = "Слот 1: Пуст";
+        document.getElementById('egg-timer-1').innerText = "Нажмите «Слот 1»";
+        document.getElementById('egg-action-btn-1').style.display = 'none';
       } else {
-        const m = Math.floor(rem / 60);
-        const s = rem % 60;
-        document.getElementById('egg-timer').innerText = `Созревание: ${m}м ${s}с`;
-        document.getElementById('egg-action-btn').style.display = 'none';
+        document.getElementById('egg-title-1').innerText = `Слот 1: ${inc1.type} Яйцо`;
+        const rem = Math.max(0, Math.floor((inc1.hatchTime - Date.now()) / 1000));
+        if (rem <= 0) {
+          document.getElementById('egg-timer-1').innerText = "Готово!";
+          document.getElementById('egg-action-btn-1').style.display = 'block';
+        } else {
+          document.getElementById('egg-timer-1').innerText = `Созревание: ${Math.floor(rem/60)}м ${rem%60}с`;
+          document.getElementById('egg-action-btn-1').style.display = 'none';
+        }
+      }
+
+      // Слот 2 (Доп.)
+      const slot2Wrap = document.getElementById('incubator-slot-2-wrap');
+      if (!state.hasExtraIncubator) {
+        slot2Wrap.style.display = 'none';
+      } else {
+        slot2Wrap.style.display = 'flex';
+        const inc2 = state.activeIncubator2;
+        if (!inc2) {
+          document.getElementById('egg-title-2').innerText = "Слот 2: Пуст";
+          document.getElementById('egg-timer-2').innerText = "Свободен";
+          document.getElementById('egg-action-btn-2').style.display = 'none';
+          document.getElementById('egg-select-btn-2').style.display = 'block';
+        } else {
+          document.getElementById('egg-select-btn-2').style.display = 'none';
+          document.getElementById('egg-title-2').innerText = `Слот 2: ${inc2.type} Яйцо`;
+          const rem = Math.max(0, Math.floor((inc2.hatchTime - Date.now()) / 1000));
+          if (rem <= 0) {
+            document.getElementById('egg-timer-2').innerText = "Готово!";
+            document.getElementById('egg-action-btn-2').style.display = 'block';
+          } else {
+            document.getElementById('egg-timer-2').innerText = `Созревание: ${Math.floor(rem/60)}м ${rem%60}с`;
+            document.getElementById('egg-action-btn-2').style.display = 'none';
+          }
+        }
       }
     }
 
-    function handleEggAction() {
+    let activeCrackingSlot = 1;
+    function handleEggAction(slotNum) {
+      activeCrackingSlot = slotNum;
       state.eggCracks = 3;
       document.getElementById('egg-clicks-left').innerText = `Осталось тапов: ${state.eggCracks}`;
       openModal('egg-modal');
@@ -620,8 +669,11 @@
       if (state.eggCracks <= 0) {
         triggerHaptic('heavy');
         closeModal('egg-modal');
-        const incType = state.activeIncubator?.type || 'Rare';
-        state.activeIncubator = null;
+        const incType = (activeCrackingSlot === 1 ? state.activeIncubator1?.type : state.activeIncubator2?.type) || 'Rare';
+        
+        if (activeCrackingSlot === 1) state.activeIncubator1 = null;
+        else state.activeIncubator2 = null;
+
         const pool = POKEDEX_DATABASE.filter(p => incType === 'Legendary' ? p.rarity === 'Legendary' : (incType === 'Rare' ? p.rarity === 'Epic' : p.rarity === 'Uncommon'));
         const hatched = pool[Math.floor(Math.random() * pool.length)] || POKEDEX_DATABASE[0];
         state.myPokedex.unshift({ ...hatched, cp: hatched.cp + 150, is_shiny: Math.random() < 0.1 });
@@ -804,32 +856,48 @@
           </div>
           <button class="chip active" style="background:var(--primary); color:#000;">Выбрать</button>
         `;
-        item.onclick = () => selectFighterAndStart(p);
+        item.onclick = () => selectFighterAndSendToAPI(p);
         listEl.appendChild(item);
       });
 
       let timeLeft = 5;
-      document.getElementById('picker-timer').innerText = `Автовыбор антикласса через: ${timeLeft}с`;
+      document.getElementById('picker-timer').innerText = `Автовыбор через: ${timeLeft}с`;
       openModal('picker-modal');
 
       clearInterval(pickerTimerInterval);
       pickerTimerInterval = setInterval(() => {
         timeLeft--;
-        document.getElementById('picker-timer').innerText = `Автовыбор антикласса через: ${timeLeft}с`;
+        document.getElementById('picker-timer').innerText = `Автовыбор через: ${timeLeft}с`;
         if (timeLeft <= 0) {
           clearInterval(pickerTimerInterval);
-          selectFighterAndStart(state.myPokedex[0]);
+          selectFighterAndSendToAPI(state.myPokedex[0]);
         }
       }, 1000);
     }
 
-    function selectFighterAndStart(myPoke) {
+    // ОТПРАВКА БОЯ НА СЕРВЕР ДЛЯ ЧЕСТНОЙ ПРОВЕРКИ
+    async function selectFighterAndSendToAPI(myPoke) {
       clearInterval(pickerTimerInterval);
       closeModal('picker-modal');
-      startAnimatedBattle(myPoke, pendingBattle.enemyName, pendingBattle.enemyId, pendingBattle.enemyCp, pendingBattle.battleType, pendingBattle.metaId);
+
+      const targetInput = document.getElementById('pvp-target-input').value.trim();
+      const res = await api("battle", {
+        my_cp: myPoke.cp,
+        target: targetInput,
+        battle_type: pendingBattle.battleType,
+        enemy_cp: pendingBattle.enemyCp,
+        enemy_name: pendingBattle.enemyName
+      });
+
+      if (!res || res.status !== "ok") {
+        alert("⚠️ Ошибка связи с сервером боя!");
+        return;
+      }
+
+      startAnimatedBattle(myPoke, res.enemy_name, pendingBattle.enemyId, res.enemy_cp, pendingBattle.win, res);
     }
 
-    function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, battleType, metaId) {
+    function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, isWin, serverRes) {
       document.getElementById('b-p1-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${myPoke.id}.png`;
       document.getElementById('b-p1-name').innerText = `${myPoke.name} (${myPoke.cp} CP)`;
       document.getElementById('b-p2-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${enemyId}.png`;
@@ -839,53 +907,27 @@
       document.getElementById('b-p1-hp').style.width = '100%';
       document.getElementById('b-p2-hp').style.width = '100%';
       document.getElementById('b-close-btn').style.display = 'none';
-      document.getElementById('battle-log').innerText = "Раунд 1: Битва началась!";
+      document.getElementById('battle-log').innerText = "Раунд 1: Сравнение боевой мощи (CP)...";
       openModal('battle-modal');
 
-      let round = 1;
-      const battleTimer = setInterval(() => {
-        p2_hp -= 35;
-        document.getElementById('b-p2-hp').style.width = `${Math.max(0, p2_hp)}%`;
-        document.getElementById('battle-log').innerText = `Раунд ${round}: ${myPoke.name} нанес удар! (-35 HP)`;
-        triggerHaptic('light');
+      setTimeout(() => {
+        triggerHaptic('heavy');
+        document.getElementById('b-close-btn').style.display = 'block';
 
-        if (p2_hp <= 0) {
-          clearInterval(battleTimer);
-          triggerHaptic('heavy');
-          document.getElementById('b-close-btn').style.display = 'block';
-
-          if (battleType === 'tourney') {
-            state.tourneyStage++;
-            state.coins += 200;
-            renderTourneyUI();
-            document.getElementById('battle-log').innerText = `🏆 ПОБЕДА В ТУРНИРЕ! +200 🪙`;
-          } else if (battleType === 'elemental_cup') {
-            state.coins += 500; state.candies += 20;
-            document.getElementById('battle-log').innerText = `🔥 ПОБЕДА В КУБКЕ! +500 🪙 и +20 🍬!`;
-          } else if (battleType === 'dungeon') {
-            state.coins += 150; state.candies += 5;
-            state.dungeonFloor = state.dungeonFloor >= 3 ? 1 : state.dungeonFloor + 1;
-            document.getElementById('battle-log').innerText = `🧗 ЭТАЖ ПРОЙДЕН! +150 🪙 и +5 🍬!`;
-          } else if (battleType === 'tower') {
-            const t = state.towers.find(x => x.id === metaId);
-            if (t) { t.champ = state.user.username || "Вы"; t.pName = myPoke.name; t.pid = myPoke.id; t.req = myPoke.cp; }
-            state.coins += 100; trackAchieve(17, 1);
-            document.getElementById('battle-log').innerText = `👑 БАШНЯ ЗАХВАЧЕНА! +100 🪙!`;
-          } else if (battleType === 'gym') {
-            const g = state.gyms.find(x => x.id === metaId);
-            if (g) { g.champ = state.user.username || "Вы"; g.cp = myPoke.cp; }
-            state.coins += 150; state.candies += 3; trackAchieve(19, 1);
-            document.getElementById('battle-log').innerText = `🏆 ВЫ ЛИДЕР СТАДИОНА! +150 🪙 и +3 🍬!`;
-          } else {
-            state.coins += 50; trackAchieve(14, 1);
-            document.getElementById('battle-log').innerText = `🏆 ПОБЕДА НА АРЕНЕ! +50 🪙!`;
-          }
-          saveState();
-          renderTowers();
-          renderGyms();
+        if (isWin) {
+          state.coins += serverRes.reward_coins;
+          state.candies += serverRes.reward_candies;
+          if (pendingBattle.battleType === 'tourney') state.tourneyStage++;
+          if (pendingBattle.battleType === 'dungeon') state.dungeonFloor = serverRes.dungeon_floor;
+          
+          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) >= Соперника (${enemyCp}). Награда: +${serverRes.reward_coins} 🪙`;
+        } else {
+          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) оказался слабее соперника (${enemyCp}).`;
         }
-        round++;
-      }, 900);
+        saveState();
+        renderTourneyUI();
+        document.getElementById('dungeon-floor-label').innerText = state.dungeonFloor;
+      }, 1200);
     }
 
     function closeBattleModal() { closeModal('battle-modal'); }
@@ -893,7 +935,7 @@
     function startCustomPvP() {
       const target = document.getElementById('pvp-target-input').value.trim();
       if (!target) { alert('Введите @username!'); return; }
-      openFighterPicker(`Дуэлянт ${target}`, 6, 2200, 'pvp');
+      openFighterPicker(`Дуэлянт ${target}`, 25, 1200, 'pvp');
     }
 
     function renderTowers() {
@@ -924,7 +966,7 @@
         d.style.alignItems = 'center';
         d.innerHTML = `
           <div><h4 style="font-size:13px;">${g.name}</h4><p style="font-size:11px; color:var(--muted);">👑 ${g.champ} | +${g.rateCoins} 🪙 +${g.rateCandies} 🍬/ч</p></div>
-          <button class="chip active" style="background:var(--accent-epic); color:#fff;" onclick="openFighterPicker('${g.name}', ${g.pid}, ${g.cp}, 'gym', ${g.id})">🥊 3v3 Бой</button>
+          <button class="chip active" style="background:var(--accent-epic); color:#fff;" onclick="openFighterPicker('${g.name}', ${g.pid}, ${g.cp}, 'gym', ${g.id})">🥊 Бой</button>
         `;
         container.appendChild(d);
       });
@@ -932,12 +974,15 @@
 
     function buyStarsItem(title, stars, itemType) {
       triggerHaptic('heavy');
-      if (itemType === 'egg_legend') state.eggInventory.legend = (state.eggInventory.legend || 0) + 1;
+      if (itemType === 'extra_incubator') {
+        state.hasExtraIncubator = true;
+        alert('🥚 Второй слот инкубатора успешно разблокирован!');
+      } else if (itemType === 'egg_legend') state.eggInventory.legend = (state.eggInventory.legend || 0) + 1;
       else if (itemType === 'coins_1000') state.coins += 1000;
       else if (itemType === 'coins_5000') state.coins += 5000;
       else if (itemType === 'vip_30') state.isVip = true;
       saveState();
-      renderDex();
+      renderIncubatorUI();
       alert(`⭐ [УСПЕШНО] Вы приобрели: ${title}!`);
     }
 
@@ -1313,7 +1358,9 @@
           state.candies = p.candies ?? 10;
           state.myPokedex = p.myPokedex || state.myPokedex;
           state.eggInventory = p.eggInventory || state.eggInventory;
-          state.activeIncubator = p.activeIncubator || null;
+          state.activeIncubator1 = p.activeIncubator1 || p.activeIncubator || null;
+          state.activeIncubator2 = p.activeIncubator2 || null;
+          state.hasExtraIncubator = p.hasExtraIncubator || false;
           state.nurserySlot1 = p.nurserySlot1 || null;
           state.nurserySlot2 = p.nurserySlot2 || null;
           state.nurseryEndTime = p.nurseryEndTime || 0;
@@ -1321,6 +1368,7 @@
           state.quizLives = p.quizLives ?? 3;
           state.lastQuizReset = p.lastQuizReset || Date.now();
           state.tourneyStage = p.tourneyStage || 1;
+          state.dungeonFloor = p.dungeonFloor || 1;
           state.achievements = p.achievements || {};
           state.towers = p.towers || state.towers;
           state.gyms = p.gyms || state.gyms;
@@ -1362,6 +1410,7 @@
       renderAchievements();
       renderQuizUI();
       checkWheelAvailability();
+      document.getElementById('dungeon-floor-label').innerText = state.dungeonFloor;
 
       setInterval(() => {
         renderIncubatorUI();
@@ -1369,7 +1418,6 @@
         checkWheelAvailability();
       }, 1000);
 
-      // СТРОГАЯ ПРОВЕРКА АДМИНА: только для тебя (@prokudin95)
       const myUser = (tg?.initDataUnsafe?.user?.username || '').toLowerCase();
       if (myUser === 'prokudin95') {
         document.getElementById('admin-nav').style.display = 'flex';
