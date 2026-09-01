@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 3.0</title>
+  <title>PokéHunter MMO 3.1</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -212,7 +212,7 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ ПО МСК С ТОЧНЫМ ВРЕМЕНЕМ -->
+  <!-- 4. СОБЫТИЯ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -469,10 +469,9 @@
       state.currentBiome = biome;
     }
 
-    // ЛОКАЛЬНАЯ ОХОТА С КОНВЕРТАЦИЕЙ ДУБЛИКАТОВ В КОНФЕТЫ И ЗАЩИТОЙ ОТ ПОВТОРОВ
     function huntPokemonAction() {
       if (state.energy < 20) { alert('⚡️ Недостаточно энергии!'); return; }
-      if (state.pokeballs <= 0) { alert('📭 У вас закончились Покеболы! Купите в магазине.'); return; }
+      if (state.pokeballs <= 0) { alert('📭 У вас закончились Покеболы! Купите их в магазине.'); return; }
       triggerHaptic('medium');
 
       state.energy -= 20;
@@ -496,11 +495,10 @@
       const randomPoke = filteredPool[Math.floor(Math.random() * filteredPool.length)];
       const shiny = Math.random() < 0.05;
 
-      // Автоматическая конвертация дубликатов в конфеты
       const exists = state.myPokedex.some(p => p.id === randomPoke.id && p.is_shiny === shiny);
       if (exists) {
         state.candies += 1;
-        alert(`🔁 Такой покемон уже есть! Дубликат автоматически конвертирован в +1 🍬 конфету.`);
+        alert(`🔁 Такой покемон уже есть! Конвертирован в +1 🍬 конфету.`);
       } else {
         state.myPokedex.unshift({ ...randomPoke, is_shiny: shiny });
         alert(`🎉 Пойман: ${shiny ? '✨ ШАЙНИ ' : ''}${randomPoke.name} [${randomPoke.rarity}] (${randomPoke.cp} CP)!`);
@@ -823,11 +821,9 @@
       clearInterval(pickerTimerInterval);
       closeModal('picker-modal');
 
-      const isWin = myPoke.cp >= int(pendingBattle.enemyCp * 0.85);
+      const isWin = myPoke.cp >= Math.floor(pendingBattle.enemyCp * 0.85);
       startAnimatedBattle(myPoke, pendingBattle.enemyName, pendingBattle.enemyId, pendingBattle.enemyCp, isWin);
     }
-
-    function int(v) { return Math.floor(v); }
 
     function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, isWin) {
       document.getElementById('b-p1-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${myPoke.id}.png`;
@@ -851,7 +847,7 @@
           if (pendingBattle.battleType === 'tourney') state.tourneyStage++;
           if (pendingBattle.battleType === 'dungeon') state.dungeonFloor = state.dungeonFloor >= 5 ? 1 : state.dungeonFloor + 1;
           trackAchieve(14, 1);
-          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) сильнее (${enemyCp}). Награда: +100 🪙`;
+          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) сильнее соперника (${enemyCp}). Награда: +100 🪙`;
         } else {
           document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) ниже соперника (${enemyCp}).`;
         }
@@ -1249,7 +1245,6 @@
       alert(`🎉 Достижение выполнено! +${reward} 🪙!`);
     }
 
-    // ЛОКАЛЬНАЯ АДМИН-ВЫДАЧА (МГНОВЕННО БЕЗ ОШИБОК СЕРВЕРА)
     function localAdminGive(type, val) {
       triggerHaptic('heavy');
       if(type === 'coins') state.coins += val;
@@ -1282,9 +1277,9 @@
       if (state.isVip) document.getElementById('vip-tag').style.display = 'inline-block';
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v10';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v11';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v10');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -1307,6 +1302,7 @@
           state.achievements = p.achievements || {};
           state.towers = p.towers || state.towers;
           state.gyms = p.gyms || state.gyms;
+          state.p2pMarket = p.p2pMarket || state.p2pMarket;
           state.isVip = p.isVip || false;
 
           if (p.energy !== undefined && p.lastEnergyTime) {
@@ -1353,7 +1349,7 @@
         checkWheelAvailability();
       }, 1000);
 
-      // ВСЕГДА ПОКАЗЫВАТЬ АДМИНКУ ВАШЕМУ АККАУНТУ
+      // ГАРАНТИРОВАННОЕ ПОКАЗЫВАНИЕ АДМИН-МЕНЮ
       document.getElementById('admin-nav').style.display = 'flex';
     };
   </script>
