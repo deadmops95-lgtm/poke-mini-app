@@ -212,12 +212,9 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ ПО МОСКОВСКОМУ ВРЕМЕНИ -->
+  <!-- 4. СОБЫТИЯ -->
   <div id="tab-events" class="tab-content">
-    <div class="card" id="daily-event-card">
-      <!-- Активное событие дня по МСК -->
-    </div>
-
+    <div class="card" id="daily-event-card"></div>
     <div class="card">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:6px;">📅 Расписание событий (МСК)</h3>
       <div style="font-size:11px; color:var(--muted); line-height: 1.6;">
@@ -263,18 +260,25 @@
     </div>
   </div>
 
-  <!-- 6. РЫНОК -->
+  <!-- 6. РЫНОК (АУКЦИОН ЗА ЗВЕЗДЫ С ОБНОВЛЕНИЕМ В 00:00 И РЫНОК ИГРОКОВ ЗА МОНЕТЫ) -->
   <div id="tab-market" class="tab-content">
     <div class="dex-switch">
       <div class="dex-tab active" onclick="switchMarketMode(this, 'system')">⭐ Аукцион Лиги (Stars)</div>
-      <div class="dex-tab" onclick="switchMarketMode(this, 'p2p')">🪙 Игроки (Монеты)</div>
+      <div class="dex-tab" onclick="switchMarketMode(this, 'p2p')">🪙 Рынок игроков (Монеты)</div>
     </div>
-    <div id="market-system-view"><div class="card" id="system-market-list"></div></div>
+    
+    <div id="market-system-view">
+      <div class="card" style="text-align:center; padding:8px; margin-bottom:8px; background:rgba(245,158,11,0.1);">
+        <p style="font-size:11px; color:var(--accent-star);" id="market-reset-timer">🔄 Обновление лотов в 00:00 МСК</p>
+      </div>
+      <div class="card" id="system-market-list"></div>
+    </div>
+
     <div id="market-p2p-view" style="display:none;">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <h3 style="font-size:14px;">Лоты игроков</h3>
-          <button class="chip active" style="background:var(--primary); color:#000;" onclick="openSellModal()">+ Продать</button>
+          <h3 style="font-size:14px;">Лоты игроков (за 🪙)</h3>
+          <button class="chip active" style="background:var(--primary); color:#000;" onclick="openSellModal()">+ Выставить</button>
         </div>
         <div id="p2p-market-list"></div>
       </div>
@@ -311,7 +315,7 @@
     <div id="achieve-list"></div>
   </div>
 
-  <!-- 9. АДМИНКА (СТРОГО ДЛЯ @prokudin95) -->
+  <!-- 9. АДМИНКА -->
   <div id="tab-admin" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Реальная Статистика Сервера</h3>
@@ -350,7 +354,7 @@
   <div class="modal" id="egg-modal"><div class="modal-content"><h3 style="font-size:16px; margin-bottom:6px;">🥚 Инкубатор</h3><p style="font-size:11px; color:var(--muted); margin-bottom:12px;">Тапайте по яйцу!</p><div class="egg-pulse" id="egg-tap-icon" onclick="tapCrackEgg()">🥚</div><p id="egg-clicks-left" style="font-size:12px; margin-top:8px; font-weight:bold; color:var(--accent-star);">Осталось тапов: 3</p></div></div>
   <div class="modal" id="poke-modal"><div class="modal-content"><img id="m-poke-img" src="" style="width:110px; height:110px; object-fit:contain; margin: 4px auto 8px auto;"><h3 id="m-poke-name" style="font-size:16px;">Пикачу</h3><p id="m-poke-stats" style="font-size:12px; color:var(--muted); margin-bottom:12px;">⚡️ Электро | 480 CP</p><button class="btn-main btn-purple" id="m-evo-btn" onclick="evolveSelectedPokemon()" style="margin-bottom:8px;">🧬 Эволюция (3 🍬 + 150 🪙)</button><button class="chip" style="width:100%;" onclick="closeModal('poke-modal')">Закрыть</button></div></div>
   <div class="modal" id="nursery-picker-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:6px;">🧬 Выберите покемона</h3><div style="max-height:220px; overflow-y:auto; margin-bottom:10px;" id="nursery-list-select"></div><button class="chip" style="width:100%;" onclick="closeModal('nursery-picker-modal')">Отмена</button></div></div>
-  <div class="modal" id="sell-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:8px;">📦 Продать</h3><div style="max-height:180px; overflow-y:auto; margin-bottom:10px;" id="sell-picker-list"></div><input type="number" id="sell-price-input" class="search-input" placeholder="Цена в 🪙" value="150"><button class="btn-main" onclick="confirmSellListing()">Выставить</button><button class="chip" style="width:100%; margin-top:6px;" onclick="closeModal('sell-modal')">Отмена</button></div></div>
+  <div class="modal" id="sell-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:8px;">📦 Выставить на рынок (за 🪙)</h3><div style="max-height:180px; overflow-y:auto; margin-bottom:10px;" id="sell-picker-list"></div><input type="number" id="sell-price-input" class="search-input" placeholder="Цена в 🪙" value="300"><button class="btn-main" onclick="confirmSellListing()">Выставить лот</button><button class="chip" style="width:100%; margin-top:6px;" onclick="closeModal('sell-modal')">Отмена</button></div></div>
 
   <!-- Навигация -->
   <nav class="nav">
@@ -469,9 +473,7 @@
         { id: 4, name: "⚡️ Электро-Стадион", elem: "⚡️ Электро", champ: "Лидер Волкнер", pid: 26, cp: 2400, rateCoins: 50, rateCandies: 1 },
         { id: 5, name: "🐲 Драконий Стадион", elem: "🐲 Дракон", champ: "Чемпион Лэнс", pid: 149, cp: 3200, rateCoins: 80, rateCandies: 2 }
       ],
-      p2pMarket: [
-        { lot_id: 1, seller: "@ash_ketchum", p_id: 6, p_name: "Чаризард", cp: 2950, price: 600, shiny: true }
-      ]
+      p2pMarket: []
     };
 
     async function api(endpoint, payload = {}) {
@@ -523,7 +525,6 @@
       alert(`🎉 Пойман: ${state.myPokedex[0].is_shiny ? '✨ ШАЙНИ ' : ''}${state.myPokedex[0].name} [${state.myPokedex[0].rarity}] (${state.myPokedex[0].cp} CP)!`);
     }
 
-    // РАСПИСАНИЕ СОБЫТИЙ ПО МСК
     function renderDailyEvent() {
       const card = document.getElementById('daily-event-card');
       const nowUtc = new Date();
@@ -954,18 +955,37 @@
       el.classList.add('active');
       document.getElementById('market-system-view').style.display = mode === 'system' ? 'block' : 'none';
       document.getElementById('market-p2p-view').style.display = mode === 'p2p' ? 'block' : 'none';
+      if(mode === 'p2p') loadP2PMarket();
     }
 
-    const SYSTEM_STARS_LOTS = [
-      { id: 384, name: "Шайни Райкваза", cp: 4500, stars: 250, shiny: true },
-      { id: 150, name: "Мьюту", cp: 4300, stars: 200, shiny: false },
-      { id: 6, name: "Шайни Чаризард", cp: 3100, stars: 150, shiny: true }
-    ];
+    // АУКЦИОН ЛИГИ ЗА ЗВЕЗДЫ С АВТОМАТИЧЕСКИМ ОБНОВЛЕНИЕМ В 00:00 МСК
+    function getDeterministicDailyLots() {
+      const nowUtc = new Date();
+      const mskTime = new Date(nowUtc.getTime() + (3 * 3600 * 1000));
+      const daySeed = mskTime.getUTCFullYear() * 10000 + (mskTime.getUTCMonth() + 1) * 100 + mskTime.getUTCDate();
+      
+      const seedRandom = (seed) => {
+        let x = Math.sin(seed++) * 10000;
+        return x - Math.floor(x);
+      };
+
+      const lots = [];
+      const legendaryPool = [384, 150, 493, 249, 382, 383, 643];
+      for(let i=0; i<3; i++) {
+        const randIdx = Math.floor(seedRandom(daySeed + i) * legendaryPool.length);
+        const pid = legendaryPool[randIdx];
+        const poke = POKEDEX_DATABASE.find(p => p.id === pid) || { name: "Легендарный", cp: 4500 };
+        lots.push({ id: pid, name: "Шайни " + poke.name, cp: poke.cp + 200, stars: 150 + (i * 50), shiny: true });
+      }
+      return lots;
+    }
 
     function renderSystemMarket() {
       const container = document.getElementById('system-market-list');
       container.innerHTML = '';
-      SYSTEM_STARS_LOTS.forEach(lot => {
+      const lots = getDeterministicDailyLots();
+      
+      lots.forEach(lot => {
         const d = document.createElement('div');
         d.className = 'card';
         d.style.display = 'flex';
@@ -975,7 +995,7 @@
         d.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px;">
             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${lot.id}.png" style="width:40px; height:40px;">
-            <div><h4 style="font-size:12px;">${lot.shiny ? '✨ ' : ''}${lot.name} (${lot.cp} CP)</h4><p style="font-size:10px; color:var(--accent-star);">Лот Лиги</p></div>
+            <div><h4 style="font-size:12px;">✨ ${lot.name} (${lot.cp} CP)</h4><p style="font-size:10px; color:var(--accent-star);">Официальный Лот Лиги</p></div>
           </div>
           <button class="chip active" style="background:var(--accent-star); color:#000;" onclick="buyStarsItem('${lot.name}', ${lot.stars}, 'system_poke_${lot.id}')">${lot.stars} ⭐</button>
         `;
@@ -983,10 +1003,18 @@
       });
     }
 
-    function renderP2PMarket() {
+    // РЫНОК ИГРОКОВ ЧЕРЕЗ БАЗУ ДАННЫХ
+    async function loadP2PMarket() {
+      const res = await api("market", { action: "get" });
       const container = document.getElementById('p2p-market-list');
       container.innerHTML = '';
-      state.p2pMarket.forEach(lot => {
+      
+      if (!res || !res.lots || res.lots.length === 0) {
+        container.innerHTML = '<p style="font-size:11px; color:var(--muted); text-align:center;">Рынок пуст. Выставьте своего первого покемона!</p>';
+        return;
+      }
+
+      res.lots.forEach(lot => {
         const d = document.createElement('div');
         d.className = 'card';
         d.style.display = 'flex';
@@ -1003,23 +1031,27 @@
       });
     }
 
-    function buyP2PLot(lotId, price) {
+    async function buyP2PLot(lotId, price) {
       if (state.coins < price) { alert('❌ Недостаточно монет!'); return; }
-      const idx = state.p2pMarket.findIndex(l => l.lot_id === lotId);
-      if (idx === -1) return;
-      const lot = state.p2pMarket[idx];
-      state.coins -= price;
-      state.myPokedex.unshift({ id: lot.p_id, name: lot.p_name, cp: lot.cp, is_shiny: lot.shiny, type: "⚪️ Обычный", gen: 1, rarity: "Epic" });
-      state.p2pMarket.splice(idx, 1);
-      saveState();
-      renderP2PMarket();
-      renderDex();
-      alert(`🎉 Вы купили ${lot.p_name}!`);
+      const res = await api("market", { action: "buy", lot_id: lotId });
+      if (res && res.status === "ok") {
+        state.coins -= price;
+        saveState();
+        loadP2PMarket();
+        alert('🎉 Покупка успешно совершена!');
+      } else {
+        alert(res?.message || 'Ошибка покупки!');
+      }
     }
 
     function openSellModal() {
       const listEl = document.getElementById('sell-picker-list');
       listEl.innerHTML = '';
+      if (state.myPokedex.length === 0) {
+        listEl.innerHTML = '<p style="font-size:11px; color:var(--muted);">У вас нет покемонов для продажи!</p>';
+        openModal('sell-modal');
+        return;
+      }
       state.myPokedex.forEach((p, idx) => {
         const item = document.createElement('div');
         item.className = 'card';
@@ -1034,17 +1066,22 @@
       openModal('sell-modal');
     }
 
-    function confirmSellListing() {
+    async function confirmSellListing() {
       const price = parseInt(document.getElementById('sell-price-input').value) || 150;
       if (state.sellSelectedIdx === undefined || !state.myPokedex[state.sellSelectedIdx]) { alert('Выберите покемона!'); return; }
-      const p = state.myPokedex.splice(state.sellSelectedIdx, 1)[0];
-      state.p2pMarket.unshift({ lot_id: Date.now(), seller: `@${state.user.username || 'me'}`, p_id: p.id, p_name: p.name, cp: p.cp, price: price, shiny: p.is_shiny });
-      trackAchieve(26, 1);
-      saveState();
-      renderP2PMarket();
-      renderDex();
-      closeModal('sell-modal');
-      alert(`✅ ${p.name} выставлен на рынок!`);
+      const p = state.myPokedex[state.sellSelectedIdx];
+      
+      const res = await api("market", { action: "sell", inv_id: p.inv_id || 1, price: price });
+      if (res && res.status === "ok") {
+        state.myPokedex.splice(state.sellSelectedIdx, 1);
+        saveState();
+        loadP2PMarket();
+        renderDex();
+        closeModal('sell-modal');
+        alert(`✅ ${p.name} выставлен на рынок игроков за ${price} 🪙!`);
+      } else {
+        alert(res?.message || 'Ошибка выставления лота!');
+      }
     }
 
     function checkWheelAvailability() {
@@ -1280,6 +1317,7 @@
       el.classList.add('active');
       if (id === 'tab-admin') loadRealAdminStats();
       if (id === 'tab-events') renderDailyEvent();
+      if (id === 'tab-market') { renderSystemMarket(); loadP2PMarket(); }
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -1319,7 +1357,6 @@
           state.achievements = p.achievements || {};
           state.towers = p.towers || state.towers;
           state.gyms = p.gyms || state.gyms;
-          state.p2pMarket = p.p2pMarket || state.p2pMarket;
           state.isVip = p.isVip || false;
 
           if (p.energy !== undefined && p.lastEnergyTime) {
@@ -1353,7 +1390,7 @@
       renderGyms();
       renderTourneyUI();
       renderSystemMarket();
-      renderP2PMarket();
+      loadP2PMarket();
       renderAchievements();
       renderQuizUI();
       checkWheelAvailability();
@@ -1366,7 +1403,6 @@
         checkWheelAvailability();
       }, 1000);
 
-      // СТРОГАЯ ПРОВЕРКА АДМИНА ДЛЯ @prokudin95
       const myUser = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
       if (myUser === 'prokudin95') {
         document.getElementById('admin-nav').style.display = 'flex';
