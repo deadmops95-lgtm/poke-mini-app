@@ -5,7 +5,6 @@ import os
 import random
 import sqlite3
 import time
-from datetime import datetime, timezone, timedelta
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
@@ -83,7 +82,8 @@ def init_db():
             last_energy_calc REAL DEFAULT 0,
             dungeon_floor INTEGER DEFAULT 1,
             tourney_stage INTEGER DEFAULT 1,
-            extra_incubator INTEGER DEFAULT 0
+            extra_incubator INTEGER DEFAULT 0,
+            eggs_legend INTEGER DEFAULT 0
         );
     """)
     cur.execute("""
@@ -184,6 +184,8 @@ async def api_admin_action_handler(request):
             cur.execute("UPDATE users SET coins = coins + ? WHERE user_id = ?", (value, target_uid))
         elif action_type == "candies":
             cur.execute("UPDATE users SET candies = candies + ? WHERE user_id = ?", (value, target_uid))
+        elif action_type == "egg":
+            cur.execute("UPDATE users SET eggs_legend = eggs_legend + 1 WHERE user_id = ?", (target_uid,))
         elif action_type == "pokemon":
             cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, 'Легендарный Шайни', 3, 'Legendary', 1, 4800)", (target_uid, poke_id))
         
@@ -204,9 +206,8 @@ async def api_hunt_handler(request):
         
         if u["energy"] < 20:
             return web.json_response({"status": "error", "message": "Недостаточно энергии!"})
-        
         if u["pokeballs"] <= 0:
-            return web.json_response({"status": "error", "message": "📭 У вас закончились Покеболы! Купите их в магазине."})
+            return web.json_response({"status": "error", "message": "📭 У вас закончились Покеболы!"})
 
         conn = get_db()
         cur = conn.cursor()
@@ -247,7 +248,7 @@ async def api_hunt_handler(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# ИСПРАВЛЕННЫЙ ВЫБОР САМОГО СИЛЬНОГО ПОКЕМОНА ПРОТИВНИКА НА АРЕНЕ
+# ГАРАНТИРОВАННЫЙ ВЫБОР САМОГО СИЛЬНОГО ПОКЕМОНА ПРОТИВНИКА НА АРЕНЕ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -270,14 +271,14 @@ async def api_battle_handler(request):
             row = cur.fetchone()
             if row:
                 target_uid = row[0]
-                # Берем САМОГО СИЛЬНОГО покемона из инвентаря игрока по максимальному CP
+                # Самый сильный покемон соперника по максимальному CP
                 cur.execute("SELECT pokemon_name, cp FROM inventory WHERE user_id = ? ORDER BY cp DESC LIMIT 1", (target_uid,))
                 p_row = cur.fetchone()
                 if p_row:
                     enemy_name = f"@{clean_target} ({p_row[0]})"
                     enemy_cp = p_row[1]
                 try:
-                    await bot_instance.send_message(target_uid, f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b> Соперник сражался с вашим сильнейшим покемоном.", parse_mode="HTML")
+                    await bot_instance.send_message(target_uid, f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>", parse_mode="HTML")
                 except Exception:
                     pass
             cur.close()
@@ -322,7 +323,7 @@ async def cmd_start(message: types.Message):
     get_user_data(message.from_user.id, message.from_user.username or "")
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="🎮 Открыть PokéHunter MMO 3.0", web_app=WebAppInfo(url=WEBAPP_URL)))
-    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Поиск сильнейших покемонов на арене настроен.", reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b>", reply_markup=builder.as_markup(), parse_mode="HTML")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
