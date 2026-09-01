@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 15.0</title>
+  <title>PokéHunter MMO 15.1</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -105,7 +105,6 @@
     </div>
   </header>
 
-  <!-- 1. ОХОТА (1 ЛОКАЦИЯ, РЕГЕН 1 ЭНЕРГИЯ = 1 МИН) -->
   <div id="tab-hunt" class="tab-content active">
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:8px;">📍 Главная Поляна Охоты</h3>
@@ -113,7 +112,6 @@
       <button class="btn-main" onclick="huntPokemonAction()">🌿 Искать покемона (-10 ⚡️, -1 🔴)</button>
     </div>
 
-    <!-- ИНКУБАТОР (3 ВИДА ЯИЦ, РЕАЛЬНЫЙ ТАЙМЕР 1 ЧАС) -->
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <h3 style="font-size:14px;">🥚 Инкубатор Яиц (1 час)</h3>
@@ -132,7 +130,6 @@
     </div>
   </div>
 
-  <!-- 2. ПОКЕДЕКС (1 ПОКОЛЕНИЕ, 151 ID, ИДЕАЛЬНО СТАБИЛЬНЫЙ) -->
   <div id="tab-pokedex" class="tab-content">
     <div class="dex-switch">
       <div class="dex-tab active" onclick="switchDexMode(this, 'my')">🎒 Моя коллекция (<span id="my-count">0</span>)</div>
@@ -142,7 +139,6 @@
     <div class="grid" id="pokedex-grid"></div>
   </div>
 
-  <!-- 3. СТАДИОНЫ И АНИМИРОВАННОЕ PVP -->
   <div id="tab-battle" class="tab-content">
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:8px;">⚔️ PvP Дуэль по нику ТГ</h3>
@@ -156,7 +152,6 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ И БАФФЫ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -165,7 +160,6 @@
     </div>
   </div>
 
-  <!-- 5. МАГАЗИН (8 ТОВАРОВ: 4 ДОНАТ, 4 ИГРОВЫЕ) -->
   <div id="tab-shop" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (4 товара за Stars)</h3>
@@ -186,7 +180,6 @@
     </div>
   </div>
 
-  <!-- 6. ЕЖЕДНЕВНАЯ НАГРАДА РАЗ В 24 ЧАСА (500 МОНЕТ, 20 ПОКЕБОЛОВ, 5 КОНФЕТ) -->
   <div id="tab-games" class="tab-content">
     <div class="card" style="text-align:center; background:linear-gradient(135deg, rgba(16,185,129,0.1), var(--card)); border-color:rgba(16,185,129,0.3);">
       <h3 style="font-size:15px; margin-bottom:2px;">🎁 Ежедневная награда (24 часа)</h3>
@@ -195,7 +188,6 @@
     </div>
   </div>
 
-  <!-- 7. АДМИН-ПАНЕЛЬ (ТОЛЬКО ОНЛАЙН И ВСЕГО ЗАРЕГАЛОСЬ + ВЫДАЧА ВСЕГО ПО НИКЕЙМУ) -->
   <div id="tab-admin" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Статистика сервера (Live)</h3>
@@ -227,11 +219,9 @@
     </div>
   </div>
 
-  <!-- МОДАЛКИ -->
   <div class="modal" id="egg-select-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:8px;">🥚 Выберите тип яйца</h3><div id="egg-inventory-list" style="margin-bottom:12px;"></div><button class="chip" style="width:100%;" onclick="closeModal('egg-select-modal')">Закрыть</button></div></div>
   <div class="modal" id="picker-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:4px;">⚔️ Выберите бойца</h3><div style="max-height:220px; overflow-y:auto; margin-bottom:10px;" id="picker-list"></div><button class="chip" style="width:100%;" onclick="closeModal('picker-modal')">Отмена</button></div></div>
   
-  <!-- АНИМИРОВАННЫЙ БОЙ -->
   <div class="modal" id="battle-modal">
     <div class="modal-content">
       <h3 style="font-size:15px; margin-bottom:4px;">⚔️ Анимационная Дуэль</h3>
@@ -247,7 +237,6 @@
 
   <div class="modal" id="egg-modal"><div class="modal-content"><h3 style="font-size:16px; margin-bottom:6px;">🥚 Вылупление!</h3><p style="font-size:11px; color:var(--muted); margin-bottom:12px;">Яйцо созрело!</p><div class="egg-pulse" onclick="tapCrackEgg()">🥚</div></div></div>
   
-  <!-- ОКНО ПОКЕМОНА И ЭВОЛЮЦИЯ -->
   <div class="modal" id="poke-modal">
     <div class="modal-content">
       <img id="m-poke-img" src="" style="width:110px; height:110px; object-fit:contain; margin: 4px auto 8px auto;">
@@ -273,7 +262,6 @@
     if (tg) { tg.ready(); tg.expand(); }
     function triggerHaptic(s = 'medium') { tg?.HapticFeedback?.impactOccurred(s); }
 
-    // ЖЕСТКАЯ, СТАБИЛЬНАЯ БАЗА 1 ПОКОЛЕНИЯ (151 ID) БЕЗ СДВИГОВ И ОШИБОК
     const POKEDEX_DATABASE = [];
     const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
     
@@ -302,7 +290,7 @@
       coins: 500, candies: 10, energy: 100, pokeballs: 15,
       myPokedex: [{ id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, is_shiny: false, evoTo: 26 }],
       dexMode: 'my', selectedPoke: null,
-      eggInventory: { common: 3, rare: 2, legend: 1 }, activeIncubator1: null, lastDaily: 0, lastEnergyUpdate: Date.now(),
+      eggInventory: { common: 3, rare: 2, legend: 1 }, activeIncubator1: null, lastDaily: 0, lastEnergyTime: Date.now(),
       gyms: [
         { id: 1, name: "🔥 Огненный Стадион", elem: "🔥 Огонь", champ: "Лидер Блейз", pName: "Чаризард", pid: 6, cp: 2950 },
         { id: 2, name: "💧 Водный Стадион", elem: "💧 Вода", champ: "Лидер Мисти", pName: "Бластойз", pid: 9, cp: 2850 },
@@ -313,13 +301,13 @@
       stats: { caught: 1, shiny: 0 }
     };
 
-    // РЕГЕНЕРАЦИЯ ЭНЕРГИИ (1 ЕД = 1 МИНУТА)
+    // ВОССТАНОВЛЕНИЕ ЭНЕРГИИ С УЧЕТОМ СЕРВЕРНОГО/ОФЛАЙН ВРЕМЕНИ
     setInterval(() => {
       const now = Date.now();
-      const diffMinutes = Math.floor((now - state.lastEnergyUpdate) / 60000);
-      if (diffMinutes > 0 && state.energy < 100) {
-        state.energy = Math.min(100, state.energy + diffMinutes);
-        state.lastEnergyUpdate = now;
+      const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
+      if (diffMins > 0 && state.energy < 100) {
+        state.energy = Math.min(100, state.energy + diffMins);
+        state.lastEnergyTime = now;
         saveState();
       }
     }, 15000);
@@ -332,11 +320,17 @@
           state.coins = data.coins;
           state.candies = data.candies;
           state.pokeballs = data.pokeballs;
-          state.energy = data.energy;
+          state.stats_caught = data.stats_caught;
+          state.stats_shiny = data.stats_shiny;
           state.myPokedex = JSON.parse(data.pokedex || '[]');
-          state.stats.caught = data.stats_caught;
-          state.stats.shiny = data.stats_shiny;
           state.lastDaily = data.last_daily || 0;
+          
+          let srvEnergy = data.energy ?? 100;
+          let srvTime = data.last_energy_time || Date.now();
+          const offlineMins = Math.floor((Date.now() - srvTime) / 60000);
+          state.energy = Math.min(100, srvEnergy + offlineMins);
+          state.lastEnergyTime = Date.now();
+
           if (state.myPokedex.length === 0) {
             state.myPokedex = [{ id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, is_shiny: false, evoTo: 26 }];
           }
@@ -355,7 +349,8 @@
         body: JSON.stringify({
           user_id: userId, username: username, coins: state.coins, candies: state.candies,
           pokeballs: state.pokeballs, energy: state.energy, pokedex: JSON.stringify(state.myPokedex),
-          stats_caught: state.stats.caught, stats_shiny: state.stats.shiny, last_daily: state.lastDaily
+          stats_caught: state.stats.caught, stats_shiny: state.stats.shiny, last_daily: state.lastDaily,
+          last_energy_time: state.lastEnergyTime
         })
       }).catch(err => console.log(err));
     }
@@ -369,11 +364,10 @@
       } catch(e) {}
     }
 
-    // ОХОТА (-10 ЭНЕРГИИ, -1 ПОКЕБОЛ, ПОИМКА / ПОБЕГ / КОМАНДА Р)
     function huntPokemonAction() {
       if (state.energy < 10) { alert('⚡️ Недостаточно энергии (-10)!'); return; }
       if (state.pokeballs <= 0) { alert('📭 Нет покеболов!'); return; }
-      state.energy -= 10; state.lastEnergyUpdate = Date.now();
+      state.energy -= 10; state.lastEnergyTime = Date.now();
       state.pokeballs--; 
 
       const roll = Math.random();
@@ -387,7 +381,7 @@
         saveState(); return;
       }
 
-      state.coins += 25; // Награда монетами при успехе
+      state.coins += 25;
       const randomPoke = POKEDEX_DATABASE[Math.floor(Math.random() * POKEDEX_DATABASE.length)];
       const shiny = Math.random() < 0.05;
       const exists = state.myPokedex.some(p => p.id === randomPoke.id && p.is_shiny === shiny);
@@ -411,11 +405,12 @@
       }
     }
 
-    // ЕЖЕДНЕВНАЯ НАГРАДА РАЗ В 24 ЧАСА (500 МОНЕТ, 20 ПОКЕБОЛОВ, 5 КОНФЕТ)
+    // ЕЖЕДНЕВНАЯ НАГРАДА С ЗАЩИТОЙ В БАЗЕ ДАННЫХ (1 РАЗ В 24 ЧАСА)
     function claimDailyBonus() {
       const now = Date.now();
       if (now - state.lastDaily < 86400000) {
-        alert('⏳ Награда доступна только раз в 24 часа!');
+        const leftHours = Math.ceil((86400000 - (now - state.lastDaily)) / 3600000);
+        alert(`⏳ Награда будет доступна через ~${leftHours} ч.`);
         return;
       }
       state.lastDaily = now;
@@ -438,7 +433,6 @@
       saveState(); alert('✅ Покупка успешно совершена!');
     }
 
-    // ИНКУБАТОР (3 ВИДА ЯИЦ, ЧАСОВОЙ ТАЙМЕР)
     function openEggSelectModal() {
       document.getElementById('egg-inventory-list').innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -461,7 +455,7 @@
       const key = type === 'Легендарное' ? 'legend' : (type === 'Редкое' ? 'rare' : 'common');
       if (state.eggInventory[key] <= 0) { alert('❌ Нет яиц этого типа!'); return; }
       state.eggInventory[key]--;
-      const hatchTime = Date.now() + 3600000; // 1 час
+      const hatchTime = Date.now() + 3600000;
       state.activeIncubator1 = { type: type, hatchTime: hatchTime };
       closeModal('egg-select-modal'); saveState(); renderIncubatorUI();
       alert(`🥚 ${type} яйцо заложено в инкубатор! Вылупится через 1 час.`);
@@ -510,7 +504,6 @@
       openModal('picker-modal');
     }
 
-    // АНИМИРОВАННЫЙ БОЙ
     function executeAnimatedBattle(pokeId) {
       closeModal('picker-modal');
       const myPoke = state.myPokedex.find(x => x.id === pokeId);
@@ -564,7 +557,6 @@
 
     function closeBattleModal() { closeModal('battle-modal'); }
 
-    // PVP ПО НИКУ С АВТО-ЗАЩИТОЙ И ПУШЕМ
     function startCustomPvP() {
       const defenderUser = document.getElementById('pvp-target-input').value.trim();
       if (!defenderUser) { alert('Введите ник соперника (@username)!'); return; }
@@ -611,7 +603,6 @@
       card.innerHTML = `<h3 style="font-size:14px; color:var(--accent-star);">⚡ Событие Лиги (МСК)</h3><p style="font-size:11px; color:var(--muted); margin-top:4px;">${events[day]}</p>`;
     }
 
-    // АДМИН-ВЫДАЧА
     async function adminGiveItem(itemType, amount) {
       const targetUser = document.getElementById('admin-target-username').value.trim();
       if (!targetUser) { alert('⚠️ Введите ник игрока (@username)!'); return; }
@@ -688,7 +679,6 @@
       openModal('poke-modal');
     }
 
-    // ЭВОЛЮЦИЯ (ТРЕБУЕТ 3 КОНФЕТЫ И 150 МОНЕТ)
     function evolveSelectedPokemon() {
       const p = state.selectedPoke;
       if (!p || !p.evoTo) return;
