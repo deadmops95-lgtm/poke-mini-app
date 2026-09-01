@@ -98,6 +98,18 @@ def init_db():
             cp INTEGER DEFAULT 100
         );
     """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS p2p_market (
+            lot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seller_id INTEGER,
+            seller_name TEXT,
+            p_id INTEGER,
+            p_name TEXT,
+            cp INTEGER,
+            price INTEGER,
+            shiny INTEGER
+        );
+    """)
     conn.commit()
     cur.close()
     conn.close()
@@ -176,7 +188,7 @@ async def api_admin_action_handler(request):
         if not row:
             cur.close()
             conn.close()
-            return web.json_response({"status": "error", "message": f"Игрок @{target_username} не найден в базе бэкенда!"})
+            return web.json_response({"status": "error", "message": f"Игрок @{target_username} не найден!"})
         
         target_uid = row[0]
 
@@ -193,6 +205,82 @@ async def api_admin_action_handler(request):
         cur.close()
         conn.close()
         return web.json_response({"status": "ok"})
+    except Exception as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=500)
+
+async def api_market_handler(request):
+    try:
+        data = await request.json()
+        action = data.get("action", "get")
+        uid = int(data.get("user_id", 0))
+        username = data.get("username", "")
+
+        conn = get_db()
+        cur = conn.cursor()
+
+        if action == "get":
+            cur.execute("SELECT lot_id, seller_name, p_id, p_name, cp, price, shiny FROM p2p_market")
+            rows = cur.fetchall()
+            lots = [{"lot_id": r[0], "seller": f"@{r[1]}", "p_id": r[2], "p_name": r[3], "cp": r[4], "price": r[5], "shiny": bool(r[6])} for r in rows]
+            cur.close()
+            conn.close()
+            return web.json_response({"status": "ok", "lots": lots})
+
+        elif action == "sell":
+            inv_id = int(data.get("inv_id", 0))
+            price = int(data.get("price", 150))
+
+            cur.execute("SELECT pokemon_id, pokemon_name, cp, is_shiny FROM inventory WHERE id = ? AND user_id = ?", (inv_id, uid))
+            poke = cur.fetchone()
+            if not poke:
+                cur.close()
+                conn.close()
+                return web.json_response({"status": "error", "message": "Покемон не найден в инвентаре!"})
+
+            cur.execute("DELETE FROM inventory WHERE id = ?", (inv_id,))
+            cur.execute("INSERT INTO p2p_market (seller_id, seller_name, p_id, p_name, cp, price, shiny) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (uid, username, poke[0], poke[1], poke[2], price, poke[3]))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return web.json_response({"status": "ok"})
+
+        elif action == "buy":
+            lot_id = int(data.get("lot_id", 0))
+            cur.execute("SELECT seller_id, p_id, p_name, cp, price, shiny FROM p2p_market WHERE lot_id = ?", (lot_id,))
+            lot = cur.fetchone()
+            if not lot:
+                cur.close()
+                conn.close()
+                return web.json_response({"status": "error", "message": "Лот уже куплен или удален!"})
+
+            seller_id, p_id, p_name, cp, price, shiny = lot
+
+            cur.execute("SELECT coins FROM users WHERE user_id = ?", (uid,))
+            buyer_coins = cur.fetchone()[0]
+            if buyer_coins < price:
+                cur.close()
+                conn.close()
+                return web.json_response({"status": "error", "message": "Недостаточно монет!"})
+
+            # Снимаем монеты с покупателя, даем продавцу
+            cur.execute("UPDATE users SET coins = coins - ? WHERE user_id = ?", (price, uid))
+            cur.execute("UPDATE users SET coins = coins + ? WHERE user_id = ?", (price, seller_id))
+            
+            # Передаем покемона покупателю
+            cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, ?, 1, 'Epic', ?, ?)",
+                        (uid, p_id, p_name, shiny, cp))
+            
+            # Удаляем лот
+            cur.execute("DELETE FROM p2p_market WHERE lot_id = ?", (lot_id,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return web.json_response({"status": "ok"})
+
+        cur.close()
+        conn.close()
+        return web.json_response({"status": "error", "message": "Unknown action"})
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
@@ -248,7 +336,6 @@ async def api_hunt_handler(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# ГАРАНТИРОВАННЫЙ ВЫБОР САМОГО СИЛЬНОГО ПОКЕМОНА ПРОТИВНИКА НА АРЕНЕ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -271,7 +358,6 @@ async def api_battle_handler(request):
             row = cur.fetchone()
             if row:
                 target_uid = row[0]
-                # Самый сильный покемон соперника по максимальному CP
                 cur.execute("SELECT pokemon_name, cp FROM inventory WHERE user_id = ? ORDER BY cp DESC LIMIT 1", (target_uid,))
                 p_row = cur.fetchone()
                 if p_row:
@@ -335,6 +421,7 @@ async def main():
     app.router.add_options("/{tail:.*}", api_options_handler)
     app.router.add_post("/api/admin_stats", api_admin_stats_handler)
     app.router.add_post("/api/admin_action", api_admin_action_handler)
+    app.router.add_post("/api/market", api_market_handler)
     app.router.add_post("/api/hunt", api_hunt_handler)
     app.router.add_post("/api/battle", api_battle_handler)
 
