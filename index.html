@@ -212,16 +212,29 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ (РОВНО ОДНО ПО МОСКОВСКОМУ ВРЕМЕНИ ДНЯ) -->
+  <!-- 4. СОБЫТИЯ ПО МОСКОВСКОМУ ВРЕМЕНИ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card">
-      <!-- Динамически заполнится по МСК -->
+      <!-- Активное событие дня по МСК -->
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:6px;">📅 Расписание событий (МСК)</h3>
+      <div style="font-size:11px; color:var(--muted); line-height: 1.6;">
+        • <b>Пн:</b> 🏆 День Гранд-Лиги (Сетка турнира)<br>
+        • <b>Вт:</b> 🔥 Стихийный Кубок Огня (х2 награды)<br>
+        • <b>Ср:</b> 🗺 Экспедиция в Руины (3 этажа)<br>
+        • <b>Чт:</b> ☠️ Рейд на Мирового Босса (Теневой Мьюту)<br>
+        • <b>Пт:</b> 🏟 Битва за Стадионы (3v3 бои)<br>
+        • <b>Сб:</b> 🏰 Штурм Башен Чемпионов<br>
+        • <b>Вс:</b> 🌟 День Открытых Дверей Лиги
+      </div>
     </div>
   </div>
 
   <!-- 5. МАГАЗИН -->
   <div id="tab-shop" class="tab-content">
-    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
+    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(145deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (8 товаров за Stars)</h3>
       <div class="shop-grid">
         <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот</p><button class="btn-main btn-gold" onclick="buyStarsItem('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
@@ -298,7 +311,7 @@
     <div id="achieve-list"></div>
   </div>
 
-  <!-- 9. АДМИНКА -->
+  <!-- 9. АДМИНКА (СТРОГО ДЛЯ @prokudin95) -->
   <div id="tab-admin" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4);">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">📊 Реальная Статистика Сервера</h3>
@@ -311,7 +324,7 @@
     </div>
 
     <div class="card">
-      <h3 style="font-size:14px; margin-bottom:6px;">👑 Выдача предметов игроку</h3>
+      <h3 style="font-size:14px; margin-bottom:6px;">👑 Выдача ресурсов игроку</h3>
       <div style="margin-bottom:8px;">
         <label style="font-size:10px; color:var(--muted);">Ник игрока (@username):</label>
         <input type="text" id="admin-search-input" class="search-input" placeholder="@username" value="prokudin95">
@@ -319,6 +332,9 @@
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:8px;">
         <button class="btn-main" onclick="adminExecuteAction('coins', 5000)">+5 000 🪙 Монет</button>
         <button class="btn-main btn-purple" onclick="adminExecuteAction('candies', 25)">+25 🍬 Конфет</button>
+      </div>
+      <div style="display:flex; gap:6px; margin-bottom:8px;">
+        <button class="btn-main btn-blue" style="flex:1;" onclick="adminExecuteAction('egg', 1)">🥚 Легендарное Яйцо</button>
       </div>
       <div style="display:flex; gap:6px; margin-bottom:8px;">
         <input type="number" id="admin-poke-id" class="search-input" value="384" placeholder="ID (1-649)" style="margin-bottom:0;">
@@ -481,7 +497,7 @@
 
     async function huntPokemonAction() {
       if (state.energy < 20) { alert('⚡️ Недостаточно энергии!'); return; }
-      if (state.pokeballs <= 0) { alert('📭 У вас закончились Покеболы! Купите их в магазине.'); return; }
+      if (state.pokeballs <= 0) { alert('📭 У вас закончились Покеболы!'); return; }
       triggerHaptic('medium');
 
       const srv = await api("hunt", { biome: state.currentBiome });
@@ -507,29 +523,28 @@
       alert(`🎉 Пойман: ${state.myPokedex[0].is_shiny ? '✨ ШАЙНИ ' : ''}${state.myPokedex[0].name} [${state.myPokedex[0].rarity}] (${state.myPokedex[0].cp} CP)!`);
     }
 
-    // СОБЫТИЯ ПО МОСКОВСКОМУ ВРЕМЕНИ (РОВНО ОДНО НА КАЖДЫЙ ДЕНЬ НЕДЕЛИ)
+    // РАСПИСАНИЕ СОБЫТИЙ ПО МСК
     function renderDailyEvent() {
       const card = document.getElementById('daily-event-card');
-      // Получаем день недели по МСК (0 - Пн, 1 - Вт, ..., 6 - Вс)
       const nowUtc = new Date();
       const mskTime = new Date(nowUtc.getTime() + (3 * 3600 * 1000));
       const dayOfWeek = (mskTime.getUTCDay() + 6) % 7; 
 
       const eventsPool = [
-        { title: "🏆 День Гранд-Лиги", desc: "Сегодня по МСК проходит сетка Гранд-Лиги за Легендарное Яйцо!", btnText: "⚔️ Участвовать в Лиге", action: startTournamentFight },
+        { title: "🏆 День Гранд-Лиги", desc: "Сегодня по МСК проходит сетка турнира за Легендарное Яйцо!", btnText: "⚔️ Участвовать в Лиге", action: startTournamentFight },
         { title: "🔥 Стихийный Кубок Огня", desc: "Сегодня день стихии Огня! Награды х2.", btnText: "🔥 Сразиться с Мастером", action: startElementalCup },
         { title: "🗺 Экспедиция в Руины", desc: "Пройдите 3 этажа подземелья без лечения за сокровища.", btnText: "🧗 Начать поход", action: startDungeonExpedition },
         { title: "☠️ Рейд на Мирового Босса", desc: "Общий босс сервера уязвим! Наносите урон.", btnText: "⚔️ Атаковать Босса", action: attackWorldBoss },
         { title: "🏟 Битва за Стадионы", desc: "Лидеры стадионов дают х2 пассивный доход.", btnText: "🥊 Начать бой 3v3", action: () => openFighterPicker('Лидер Студии', 6, 2800, 'gym') },
         { title: "🏰 Штурм Башен Чемпионов", desc: "Захватывайте башни с увеличенной наградой монет.", btnText: "⚔️ Штурмовать Башню", action: () => openFighterPicker('Страж Башни', 150, 4000, 'tower') },
-        { title: "🌟 День Открытых Дверей Лиги", desc: "Удмененный шанс поимки редких покемонов во всех биомах!", btnText: "🌿 Отправиться на охоту", action: () => switchTab(document.querySelector('.nav-btn'), 'tab-hunt') }
+        { title: "🌟 День Открытых Дверей Лиги", desc: "Удвоенный шанс поимки редких покемонов во всех биомах!", btnText: "🌿 Отправиться на охоту", action: () => switchTab(document.querySelector('.nav-btn'), 'tab-hunt') }
       ];
 
       const currentEvent = eventsPool[dayOfWeek];
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
           <h3 style="font-size:14px; color:var(--accent-star);">${currentEvent.title}</h3>
-          <span class="badge">Активно по МСК</span>
+          <span class="badge">Активно сегодня (МСК)</span>
         </div>
         <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">${currentEvent.desc}</p>
         <button class="btn-main btn-gold" id="daily-event-btn">${currentEvent.btnText}</button>
@@ -729,7 +744,7 @@
       alert('🎉 Получено 🔵 Редкое Яйцо!');
     }
 
-    function startвениTournamentFight() {
+    function startTournamentFight() {
       if (state.tourneyStage >= 4) {
         state.eggInventory.legend = (state.eggInventory.legend || 0) + 1;
         state.coins += 1500;
@@ -743,7 +758,6 @@
       const opp = opps[state.tourneyStage - 1];
       openFighterPicker(opp.name, opp.pid, opp.cp, 'tourney');
     }
-    const startTournamentFight = startвениTournamentFight;
 
     function startElementalCup() {
       const hasFire = state.myPokedex.some(p => p.type.includes("Огонь"));
@@ -753,6 +767,21 @@
 
     function startDungeonExpedition() {
       openFighterPicker(`Страж Подземелья (Этаж ${state.dungeonFloor})`, 94, 1100 + (state.dungeonFloor * 300), 'dungeon');
+    }
+
+    function attackWorldBoss() {
+      if (state.energy < 15) { alert('⚡️ Нужно 15 энергии!'); return; }
+      triggerHaptic('heavy');
+      state.energy -= 15;
+      const dmg = Math.floor(Math.random() * 2500) + 1000;
+      state.worldBossHp = Math.max(0, state.worldBossHp - dmg);
+      state.coins += 40;
+      saveState();
+
+      const pct = Math.floor((state.worldBossHp / 500000) * 100);
+      document.getElementById('boss-hp-text').innerText = `${state.worldBossHp} / 500 000`;
+      document.getElementById('boss-hp-fill').style.width = `${pct}%`;
+      alert(`💥 Нанесено ${dmg} урона! Получено +40 🪙!`);
     }
 
     let pickerTimerInterval = null;
@@ -841,9 +870,9 @@
           if (pendingBattle.battleType === 'tourney') state.tourneyStage++;
           if (pendingBattle.battleType === 'dungeon') state.dungeonFloor = serverRes.dungeon_floor;
           trackAchieve(14, 1);
-          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) достаточен против сильного соперника (${enemyCp}). Награда: +${serverRes.reward_coins} 🪙`;
+          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) победил топ-бойца соперника (${enemyCp}). Награда: +${serverRes.reward_coins} 🪙`;
         } else {
-          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) оказался ниже топа противника (${enemyCp}).`;
+          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) ниже сильнейшего покемона противника (${enemyCp}).`;
         }
         saveState();
         renderTourneyUI();
@@ -1222,15 +1251,6 @@
       }
     }
 
-    function inspectPlayer() {
-      const query = document.getElementById('admin-search-input').value.trim();
-      if (!query) { alert('Введите username!'); return; }
-      triggerHaptic('light');
-      document.getElementById('adm-p-name').innerText = `Тренер: ${query}`;
-      document.getElementById('adm-p-stats').innerText = `🪙 ${state.coins} | 🍬 ${state.candies} | ⚡️ ${state.energy}/100`;
-      alert(`🔍 Профиль ${query} загружен!`);
-    }
-
     async function adminExecuteAction(actionType, value) {
       const targetUser = document.getElementById('admin-search-input').value.trim();
       if (!targetUser) { alert('Введите username игрока!'); return; }
@@ -1346,7 +1366,8 @@
         checkWheelAvailability();
       }, 1000);
 
-      const myUser = (tg?.initDataUnsafe?.user?.username || '').toLowerCase();
+      // СТРОГАЯ ПРОВЕРКА АДМИНА ДЛЯ @prokudin95
+      const myUser = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
       if (myUser === 'prokudin95') {
         document.getElementById('admin-nav').style.display = 'flex';
       }
