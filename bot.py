@@ -229,13 +229,12 @@ async def api_market_handler(request):
         elif action == "sell":
             inv_id = int(data.get("inv_id", 0))
             price = int(data.get("price", 150))
-
             cur.execute("SELECT pokemon_id, pokemon_name, cp, is_shiny FROM inventory WHERE id = ? AND user_id = ?", (inv_id, uid))
             poke = cur.fetchone()
             if not poke:
                 cur.close()
                 conn.close()
-                return web.json_response({"status": "error", "message": "Покемон не найден в инвентаре!"})
+                return web.json_response({"status": "error", "message": "Покемон не найден!"})
 
             cur.execute("DELETE FROM inventory WHERE id = ?", (inv_id,))
             cur.execute("INSERT INTO p2p_market (seller_id, seller_name, p_id, p_name, cp, price, shiny) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -252,10 +251,9 @@ async def api_market_handler(request):
             if not lot:
                 cur.close()
                 conn.close()
-                return web.json_response({"status": "error", "message": "Лот уже куплен или удален!"})
+                return web.json_response({"status": "error", "message": "Лот уже продан!"})
 
             seller_id, p_id, p_name, cp, price, shiny = lot
-
             cur.execute("SELECT coins FROM users WHERE user_id = ?", (uid,))
             buyer_coins = cur.fetchone()[0]
             if buyer_coins < price:
@@ -263,15 +261,10 @@ async def api_market_handler(request):
                 conn.close()
                 return web.json_response({"status": "error", "message": "Недостаточно монет!"})
 
-            # Снимаем монеты с покупателя, даем продавцу
             cur.execute("UPDATE users SET coins = coins - ? WHERE user_id = ?", (price, uid))
             cur.execute("UPDATE users SET coins = coins + ? WHERE user_id = ?", (price, seller_id))
-            
-            # Передаем покемона покупателю
             cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, ?, 1, 'Epic', ?, ?)",
                         (uid, p_id, p_name, shiny, cp))
-            
-            # Удаляем лот
             cur.execute("DELETE FROM p2p_market WHERE lot_id = ?", (lot_id,))
             conn.commit()
             cur.close()
@@ -336,6 +329,7 @@ async def api_hunt_handler(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
+# СТРОГИЙ ПОИСК ТОП-ПОКЕМОНА ВРАГА И ПЕРЕДАЧА ID ДЛЯ КАРТИНКИ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -348,6 +342,7 @@ async def api_battle_handler(request):
         battle_type = data.get("battle_type", "pvp")
         enemy_cp = int(data.get("enemy_cp", 1000))
         enemy_name = data.get("enemy_name", "Соперник")
+        enemy_id = int(data.get("enemy_id", 6)) # по умолчанию Чаризард или переданный ID
 
         bot_instance = request.app['bot']
         if battle_type == "pvp" and target_query:
@@ -358,11 +353,13 @@ async def api_battle_handler(request):
             row = cur.fetchone()
             if row:
                 target_uid = row[0]
-                cur.execute("SELECT pokemon_name, cp FROM inventory WHERE user_id = ? ORDER BY cp DESC LIMIT 1", (target_uid,))
+                # Достаем САМОГО СИЛЬНОГО покемона (по максимальному CP) из базы соперника
+                cur.execute("SELECT pokemon_id, pokemon_name, cp FROM inventory WHERE user_id = ? ORDER BY cp DESC LIMIT 1", (target_uid,))
                 p_row = cur.fetchone()
                 if p_row:
-                    enemy_name = f"@{clean_target} ({p_row[0]})"
-                    enemy_cp = p_row[1]
+                    enemy_id = p_row[0]
+                    enemy_name = f"@{clean_target} ({p_row[1]})"
+                    enemy_cp = p_row[2]
                 try:
                     await bot_instance.send_message(target_uid, f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>", parse_mode="HTML")
                 except Exception:
@@ -370,6 +367,7 @@ async def api_battle_handler(request):
             cur.close()
             conn.close()
 
+        # ЧЕСТНЫЙ БОЙ: Сравнение CP
         is_win = my_cp >= int(enemy_cp * 0.85)
         reward_coins = 50
         reward_candies = 0
@@ -396,7 +394,7 @@ async def api_battle_handler(request):
         conn.close()
 
         return web.json_response({
-            "status": "ok", "win": is_win, "enemy_name": enemy_name, "enemy_cp": enemy_cp,
+            "status": "ok", "win": is_win, "enemy_name": enemy_name, "enemy_cp": enemy_cp, "enemy_id": enemy_id,
             "reward_coins": reward_coins if is_win else 0, "reward_candies": reward_candies if is_win else 0, "dungeon_floor": dungeon_floor
         })
     except Exception as e:
