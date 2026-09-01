@@ -8,7 +8,7 @@ import time
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardButton, WebAppInfo, PreCheckoutQuery
+from aiogram.types import InlineKeyboardButton, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 BOT_TOKEN = "8838508680:AAHguMr07zwQ7hbSUKjyaNDB7bXd1DTh8b0"
@@ -18,32 +18,50 @@ PORT = int(os.environ.get("PORT", 8080))
 MAX_ENERGY = 100
 ENERGY_RECOVERY_SECONDS = 120
 
-# 6 ЛОГИЧНЫХ БИОМОВ ПОКЕМОНОВ
+# ПОЛНАЯ БАЗА С ЧЕТКИМ ДЕЛЕНИЕМ НА РЕДКОСТИ И БИОМЫ
 BIOME_POKEMON_DB = {
-    "forest": [
-        (1, "Бульбазавр", 1, "Common", 420), (2, "Ивизавр", 1, "Uncommon", 950), (3, "Венузавр", 1, "Epic", 2800),
-        (25, "Пикачу", 1, "Rare", 750), (133, "Иви", 1, "Rare", 650), (152, "Чикорита", 2, "Common", 410)
-    ],
-    "lake": [
-        (7, "Сквиртл", 1, "Common", 430), (8, "Вартортл", 1, "Uncommon", 940), (9, "Бластойз", 1, "Epic", 2850),
-        (134, "Вапореон", 1, "Epic", 2600), (158, "Тотодайл", 2, "Common", 430), (249, "Лугия", 2, "Legendary", 4350)
-    ],
-    "volcano": [
-        (4, "Чармандер", 1, "Common", 460), (5, "Чармелеон", 1, "Uncommon", 980), (6, "Чаризард", 1, "Epic", 2950),
-        (155, "Синдаквил", 2, "Common", 450), (248, "Тиранитар", 2, "Epic", 3300), (643, "Реширам", 5, "Legendary", 4450)
-    ],
-    "power": [
-        (25, "Пикачу", 1, "Rare", 750), (26, "Райчу", 1, "Epic", 2400), (145, "Запдос", 1, "Legendary", 4200),
-        (403, "Шинкс", 4, "Common", 430), (405, "Люксрэй", 4, "Rare", 2200)
-    ],
-    "cave": [
-        (74, "Геодуд", 1, "Common", 400), (95, "Оникс", 1, "Uncommon", 1100), (448, "Лукарио", 4, "Epic", 2900),
-        (383, "Граудон", 3, "Legendary", 4600), (530, "Экскадрил", 5, "Rare", 2300)
-    ],
-    "ruins": [
-        (94, "Генгар", 1, "Epic", 2700), (150, "Мьюту", 1, "Legendary", 4300), (384, "Райкваза", 3, "Legendary", 4500),
-        (493, "Аркеус", 4, "Legendary", 5000), (571, "Зороарк", 5, "Epic", 2850)
-    ]
+    "forest": {
+        "Common": [(1, "Бульбазавр", 1, 420), (16, "Пиджи", 1, 380), (152, "Чикорита", 2, 410)],
+        "Uncommon": [(2, "Ивизавр", 1, 950), (153, "Бейлиф", 2, 930)],
+        "Rare": [(25, "Пикачу", 1, 750), (133, "Иви", 1, 650)],
+        "Epic": [(3, "Венузавр", 1, 2800)],
+        "Legendary": [(144, "Артикуно", 1, 4200)]
+    },
+    "lake": {
+        "Common": [(7, "Сквиртл", 1, 430), (158, "Тотодайл", 2, 430)],
+        "Uncommon": [(8, "Вартортл", 1, 940), (159, "Кроконав", 2, 940)],
+        "Rare": [(131, "Лапрас", 1, 2100)],
+        "Epic": [(9, "Бластойз", 1, 2850), (134, "Вапореон", 1, 2600)],
+        "Legendary": [(249, "Лугия", 2, 4350), (382, "Кайогр", 3, 4600)]
+    },
+    "volcano": {
+        "Common": [(4, "Чармандер", 1, 460), (155, "Синдаквил", 2, 450)],
+        "Uncommon": [(5, "Чармелеон", 1, 980), (156, "Квилава", 2, 960)],
+        "Rare": [(59, "Арканайн", 1, 2150)],
+        "Epic": [(6, "Чаризард", 1, 2950), (248, "Тиранитар", 2, 3300)],
+        "Legendary": [(146, "Молтрес", 1, 4300), (643, "Реширам", 5, 4450)]
+    },
+    "power": {
+        "Common": [(403, "Шинкс", 4, 430)],
+        "Uncommon": [(26, "Райчу", 1, 1100)],
+        "Rare": [(25, "Пикачу", 1, 750), (405, "Люксрэй", 4, 2200)],
+        "Epic": [(125, "Электризавр", 1, 2700)],
+        "Legendary": [(145, "Запдос", 1, 4200)]
+    },
+    "cave": {
+        "Common": [(74, "Геодуд", 1, 400)],
+        "Uncommon": [(95, "Оникс", 1, 1100), (530, "Экскадрил", 5, 1200)],
+        "Rare": [(111, "Рейхорн", 1, 1400)],
+        "Epic": [(448, "Лукарио", 4, 2900)],
+        "Legendary": [(383, "Граудон", 3, 4600)]
+    },
+    "ruins": {
+        "Common": [(19, "Раттата", 1, 350)],
+        "Uncommon": [(571, "Зороарк", 5, 1300)],
+        "Rare": [(359, "Абсол", 3, 2100)],
+        "Epic": [(94, "Генгар", 1, 2700), (149, "Драгонайт", 1, 3200)],
+        "Legendary": [(150, "Мьюту", 1, 4300), (384, "Райкваза", 3, 4500), (493, "Аркеус", 4, 5000)]
+    }
 }
 
 def get_db():
@@ -92,7 +110,7 @@ def get_user_data(user_id: int, username: str = ""):
     
     if not u:
         cur.execute("INSERT INTO users (user_id, username, coins, candies, energy, last_energy_calc) VALUES (?, ?, 500, 10, 100, ?)", (user_id, username, now))
-        cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, 25, 'Пикачу', 1, 'Rare', 0, 780)", (user_id,))
+        cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, 25, 'Пикачу', 1, 'Rare', 0, 750)", (user_id,))
         conn.commit()
         cur.close()
         conn.close()
@@ -100,18 +118,6 @@ def get_user_data(user_id: int, username: str = ""):
 
     col_names = [desc[0] for desc in cur.description]
     user_dict = dict(zip(col_names, u))
-
-    last_calc = user_dict.get("last_energy_calc", now)
-    current_energy = user_dict.get("energy", 100)
-    if current_energy < MAX_ENERGY:
-        recovered = int((now - last_calc) / ENERGY_RECOVERY_SECONDS)
-        if recovered > 0:
-            new_energy = min(MAX_ENERGY, current_energy + recovered)
-            cur.execute("UPDATE users SET energy = ?, last_energy_calc = ? WHERE user_id = ?", (new_energy, now, user_id))
-            conn.commit()
-            user_dict["energy"] = new_energy
-            user_dict["last_energy_calc"] = now
-
     cur.close()
     conn.close()
     return user_dict
@@ -148,6 +154,48 @@ async def api_admin_stats_handler(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
+# РАБОТАЮЩИЙ АДМИНСКИЙ ИНСПЕКТОР И ВЫДАЧА ПРЕДМЕТОВ В БАЗУ
+async def api_admin_action_handler(request):
+    try:
+        data = await request.json()
+        target_username = data.get("target_username", "").lstrip("@").lower()
+        action_type = data.get("action_type", "")
+        value = data.get("value", 0)
+        poke_id = data.get("poke_id", 384)
+
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT user_id FROM users WHERE LOWER(username) = ?", (target_username,))
+        row = cur.fetchone()
+        if not row:
+            cur.close()
+            conn.close()
+            return web.json_response({"status": "error", "message": "Игрок не найден в базе!"})
+        
+        target_uid = row[0]
+
+        if action_type == "coins":
+            cur.execute("UPDATE users SET coins = coins + ? WHERE user_id = ?", (value, target_uid))
+        elif action_type == "candies":
+            cur.execute("UPDATE users SET candies = candies + ? WHERE user_id = ?", (value, target_uid))
+        elif action_type == "pokemon":
+            cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, 'Легендарный Шайни', 3, 'Legendary', 1, 4800)", (target_uid, poke_id))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # Отправляем уведомление игроку в Telegram
+        bot_instance = request.app['bot']
+        try:
+            await bot_instance.send_message(target_uid, f"👑 <b>Администратор выдал вам подарок!</b> Проверьте баланс.", parse_mode="HTML")
+        except Exception:
+            pass
+
+        return web.json_response({"status": "ok"})
+    except Exception as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=500)
+
 async def api_hunt_handler(request):
     try:
         data = await request.json()
@@ -160,12 +208,22 @@ async def api_hunt_handler(request):
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("UPDATE users SET energy = energy - 20, coins = coins + 25, last_energy_calc = ? WHERE user_id = ?", (time.time(), uid))
+        cur.execute("UPDATE users SET energy = energy - 20, coins = coins + 25 WHERE user_id = ?", (uid,))
 
-        pool = BIOME_POKEMON_DB.get(biome, BIOME_POKEMON_DB["forest"])
-        pid, name, gen, rarity, base_cp = random.choice(pool)
+        # СТРОГОЕ РАСПРЕДЕЛЕНИЕ ШАНСОВ РЕДКОСТИ
+        roll = random.random()
+        if roll < 0.60: rarity = "Common"
+        elif roll < 0.80: rarity = "Uncommon"
+        elif roll < 0.92: rarity = "Rare"
+        elif roll < 0.98: rarity = "Epic"
+        else: rarity = "Legendary"
+
+        biome_data = BIOME_POKEMON_DB.get(biome, BIOME_POKEMON_DB["forest"])
+        pool = biome_data.get(rarity) or biome_data["Common"]
+        pid, name, gen, base_cp = random.choice(pool)
+
         shiny = 1 if random.random() < 0.05 else 0
-        cp = base_cp + random.randint(-50, 150)
+        cp = base_cp + random.randint(-30, 80)
         if shiny: cp = int(cp * 1.15)
 
         cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, ?, ?, ?, ?, ?)", (uid, pid, name, gen, rarity, shiny, cp))
@@ -178,12 +236,11 @@ async def api_hunt_handler(request):
             "status": "ok",
             "energy": u["energy"] - 20,
             "coins": u["coins"] + 25,
-            "pokemon": {"inv_id": inv_id, "id": pid, "name": name, "gen": gen, "type": "🌿 Стихия", "cp": cp, "is_shiny": bool(shiny)}
+            "pokemon": {"inv_id": inv_id, "id": pid, "name": name, "gen": gen, "rarity": rarity, "cp": cp, "is_shiny": bool(shiny)}
         })
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# СБАЛАНСИРОВАННЫЙ И ЧЕСТНЫЙ ДВИЖОК БОЕВ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -191,7 +248,6 @@ async def api_battle_handler(request):
         my_cp = int(data.get("my_cp", 500))
         target_query = data.get("target", "")
         battle_type = data.get("battle_type", "pvp")
-        
         enemy_cp = int(data.get("enemy_cp", 1000))
         enemy_name = data.get("enemy_name", "Соперник")
 
@@ -216,9 +272,7 @@ async def api_battle_handler(request):
             cur.close()
             conn.close()
 
-        # Честный баланс: победа, если CP вашего покемона хотя бы на 85% от силы противника или выше
         is_win = my_cp >= int(enemy_cp * 0.85)
-
         reward_coins = 50
         reward_candies = 0
         dungeon_floor = 1
@@ -244,13 +298,8 @@ async def api_battle_handler(request):
         conn.close()
 
         return web.json_response({
-            "status": "ok",
-            "win": is_win,
-            "enemy_name": enemy_name,
-            "enemy_cp": enemy_cp,
-            "reward_coins": reward_coins if is_win else 0,
-            "reward_candies": reward_candies if is_win else 0,
-            "dungeon_floor": dungeon_floor
+            "status": "ok", "win": is_win, "enemy_name": enemy_name, "enemy_cp": enemy_cp,
+            "reward_coins": reward_coins if is_win else 0, "reward_candies": reward_candies if is_win else 0, "dungeon_floor": dungeon_floor
         })
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
@@ -262,7 +311,7 @@ async def cmd_start(message: types.Message):
     get_user_data(message.from_user.id, message.from_user.username or "")
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="🎮 Открыть PokéHunter MMO 3.0", web_app=WebAppInfo(url=WEBAPP_URL)))
-    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Локации, магазин и бои обновлены.", reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Баланс редкостей и админка обновлены.", reply_markup=builder.as_markup(), parse_mode="HTML")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -273,6 +322,7 @@ async def main():
     app['bot'] = bot
     app.router.add_options("/{tail:.*}", api_options_handler)
     app.router.add_post("/api/admin_stats", api_admin_stats_handler)
+    app.router.add_post("/api/admin_action", api_admin_action_handler)
     app.router.add_post("/api/hunt", api_hunt_handler)
     app.router.add_post("/api/battle", api_battle_handler)
 
