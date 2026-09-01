@@ -18,6 +18,9 @@ PORT = int(os.environ.get("PORT", 8080))
 MAX_ENERGY = 100
 ENERGY_RECOVERY_SECONDS = 120
 
+# ВАШ TELEGRAM ID ДЛЯ СТРОГОГО ДОСТУПА В АДМИНКУ (замените на свой, если нужно, или оставьте по нику)
+ADMIN_TELEGRAM_ID = 123456789  # Автоматически подхватится бэкендом
+
 BIOME_POKEMON_DB = {
     "forest": {
         "Common": [(1, "Бульбазавр", 1, 420), (16, "Пиджи", 1, 380), (152, "Чикорита", 2, 410)],
@@ -182,13 +185,13 @@ async def api_admin_action_handler(request):
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT user_id FROM users WHERE LOWER(TRIM(username)) = ?", (target_username,))
+        cur.execute("SELECT user_id FROM users WHERE LOWER(TRIM(username)) = ? OR user_id = ?", (target_username, target_username))
         row = cur.fetchone()
         
         if not row:
             cur.close()
             conn.close()
-            return web.json_response({"status": "error", "message": f"Игрок @{target_username} не найден!"})
+            return web.json_response({"status": "error", "message": f"Игрок не найден!"})
         
         target_uid = row[0]
 
@@ -309,6 +312,26 @@ async def api_hunt_handler(request):
         cp = base_cp + random.randint(-30, 80)
         if shiny: cp = int(cp * 1.15)
 
+        # Проверка: если такой покемон уже есть у игрока, конвертируем дубликат в +1 конфету (чтобы не копились)
+        cur.execute("SELECT id FROM inventory WHERE user_id = ? AND pokemon_id = ? AND is_shiny = ?", (uid, pid, shiny))
+        existing = cur.fetchone()
+
+        if existing:
+            cur.execute("UPDATE users SET candies = candies + 1 WHERE user_id = ?", (uid,))
+            conn.commit()
+            cur.execute("SELECT pokeballs, energy, candies FROM users WHERE user_id = ?", (uid,))
+            upd = cur.fetchone()
+            cur.close()
+            conn.close()
+            return web.json_response({
+                "status": "ok",
+                "energy": upd[1],
+                "pokeballs": upd[0],
+                "candies": upd[2],
+                "duplicate": True,
+                "pokemon": {"id": pid, "name": name, "gen": gen, "rarity": rarity, "cp": cp, "is_shiny": bool(shiny)}
+            })
+
         cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, ?, ?, ?, ?, ?)", (uid, pid, name, gen, rarity, shiny, cp))
         inv_id = cur.lastrowid
         
@@ -323,13 +346,12 @@ async def api_hunt_handler(request):
             "status": "ok",
             "energy": upd[1],
             "pokeballs": upd[0],
-            "coins": u["coins"] + 25,
+            "duplicate": False,
             "pokemon": {"inv_id": inv_id, "id": pid, "name": name, "gen": gen, "rarity": rarity, "cp": cp, "is_shiny": bool(shiny)}
         })
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# СТРОГИЙ ПОИСК ТОП-ПОКЕМОНА ВРАГА И ПЕРЕДАЧА ID ДЛЯ КАРТИНКИ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -342,18 +364,17 @@ async def api_battle_handler(request):
         battle_type = data.get("battle_type", "pvp")
         enemy_cp = int(data.get("enemy_cp", 1000))
         enemy_name = data.get("enemy_name", "Соперник")
-        enemy_id = int(data.get("enemy_id", 6)) # по умолчанию Чаризард или переданный ID
+        enemy_id = int(data.get("enemy_id", 6))
 
         bot_instance = request.app['bot']
         if battle_type == "pvp" and target_query:
             clean_target = target_query.lstrip("@").lower().strip()
             conn = get_db()
             cur = conn.cursor()
-            cur.execute("SELECT user_id FROM users WHERE LOWER(TRIM(username)) = ?", (clean_target,))
+            cur.execute("SELECT user_id FROM users WHERE LOWER(TRIM(username)) = ? OR user_id = ?", (clean_target, clean_target))
             row = cur.fetchone()
             if row:
                 target_uid = row[0]
-                # Достаем САМОГО СИЛЬНОГО покемона (по максимальному CP) из базы соперника
                 cur.execute("SELECT pokemon_id, pokemon_name, cp FROM inventory WHERE user_id = ? ORDER BY cp DESC LIMIT 1", (target_uid,))
                 p_row = cur.fetchone()
                 if p_row:
@@ -367,7 +388,6 @@ async def api_battle_handler(request):
             cur.close()
             conn.close()
 
-        # ЧЕСТНЫЙ БОЙ: Сравнение CP
         is_win = my_cp >= int(enemy_cp * 0.85)
         reward_coins = 50
         reward_candies = 0
