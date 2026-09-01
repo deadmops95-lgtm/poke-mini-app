@@ -35,7 +35,8 @@ def init_db():
             pokedex TEXT DEFAULT '[]',
             stats_caught INTEGER DEFAULT 1,
             stats_shiny INTEGER DEFAULT 0,
-            last_daily INTEGER DEFAULT 0
+            last_daily INTEGER DEFAULT 0,
+            last_energy_time INTEGER DEFAULT 0
         )
     """)
     conn.commit()
@@ -54,10 +55,11 @@ class UserSync(BaseModel):
     stats_caught: int
     stats_shiny: int
     last_daily: int
+    last_energy_time: int
 
 class AdminGive(BaseModel):
     target_username: str
-    item_type: str  # poke, coins, candies, pokeballs
+    item_type: str
     poke_id: int = 0
     poke_name: str = ""
     poke_cp: int = 0
@@ -89,7 +91,7 @@ async def get_user(user_id: int):
         "exists": True, "user_id": row[0], "username": row[1],
         "coins": row[2], "candies": row[3], "pokeballs": row[4],
         "energy": row[5], "pokedex": row[6], "stats_caught": row[7],
-        "stats_shiny": row[8], "last_daily": row[9]
+        "stats_shiny": row[8], "last_daily": row[9], "last_energy_time": row[10]
     }
     conn.close()
     return data
@@ -99,13 +101,14 @@ async def save_user(user: UserSync):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO users (user_id, username, coins, candies, pokeballs, energy, pokedex, stats_caught, stats_shiny, last_daily)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (user_id, username, coins, candies, pokeballs, energy, pokedex, stats_caught, stats_shiny, last_daily, last_energy_time)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(user_id) DO UPDATE SET
             username=excluded.username, coins=excluded.coins, candies=excluded.candies,
             pokeballs=excluded.pokeballs, energy=excluded.energy, pokedex=excluded.pokedex,
-            stats_caught=excluded.stats_caught, stats_shiny=excluded.stats_shiny, last_daily=excluded.last_daily
-    """, (user.user_id, user.username, user.coins, user.candies, user.pokeballs, user.energy, user.pokedex, user.stats_caught, user.stats_shiny, user.last_daily))
+            stats_caught=excluded.stats_caught, stats_shiny=excluded.stats_shiny, 
+            last_daily=excluded.last_daily, last_energy_time=excluded.last_energy_time
+    """, (user.user_id, user.username, user.coins, user.candies, user.pokeballs, user.energy, user.pokedex, user.stats_caught, user.stats_shiny, user.last_daily, user.last_energy_time))
     conn.commit()
     conn.close()
     return {"status": "saved"}
@@ -117,10 +120,7 @@ async def get_server_stats():
     cursor.execute("SELECT COUNT(*) FROM users")
     total_users = cursor.fetchone()[0] or 1
     conn.close()
-    return {
-        "online_users": total_users,
-        "total_registered": total_users
-    }
+    return {"online_users": total_users, "total_registered": total_users}
 
 @app.post("/api/admin/give")
 async def admin_give(data: AdminGive):
@@ -149,7 +149,7 @@ async def admin_give(data: AdminGive):
     elif data.item_type == "coins":
         coins += data.amount
         cursor.execute("UPDATE users SET coins = ? WHERE user_id = ?", (coins, user_id))
-        msg_text = f"🎁 Администратор начислил вам монеты: <b>+{data.amount} 🪙</b>!"
+        msg_text = f"🎁 Администратор начислил монеты: <b>+{data.amount} 🪙</b>!"
     elif data.item_type == "candies":
         candies += data.amount
         cursor.execute("UPDATE users SET candies = ? WHERE user_id = ?", (candies, user_id))
