@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 16.0 Stable</title>
+  <title>PokéHunter MMO 16.1 Stable</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -262,7 +262,7 @@
     if (tg) { tg.ready(); tg.expand(); }
     function triggerHaptic(s = 'medium') { tg?.HapticFeedback?.impactOccurred(s); }
 
-    // ЖЕСТКАЯ БАЗА 151 ПОКЕМОНА (ИМЕНА НИКОГДА НЕ СДВИНУТСЯ, ПИКАЧУ СТРОГО ПОД ID 25)
+    // ЖЕСТКАЯ БАЗА 151 ПОКЕМОНА (ИМЕНА И ID СТРОГО СИНХРОНИЗИРОВАНЫ)
     const POKEDEX_DATABASE = [];
     const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
     
@@ -286,7 +286,6 @@
 
     const username = (tg?.initDataUnsafe?.user?.username || "prokudin95").toLowerCase();
 
-    // 100% НАДЕЖНОЕХРАНИЛИЩЕ В LOCALSTORAGE (ИНФОРМАЦИЯ НИКОГДА НЕ ПРОПАДЕТ ПРИ ПЕРЕЗАХОДЕ)
     let state = {
       coins: 500, candies: 10, energy: 100, pokeballs: 15,
       myPokedex: [{ id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, is_shiny: false, evoTo: 26 }],
@@ -303,7 +302,7 @@
     };
 
     function loadUserData() {
-      const saved = localStorage.getItem('poke_mmo_save_v160');
+      const saved = localStorage.getItem('poke_mmo_save_v161');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -319,7 +318,6 @@
         } catch(e) {}
       }
       
-      // Считаем оффлайн энергию
       const now = Date.now();
       const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
       if (diffMins > 0 && state.energy < 100) {
@@ -334,7 +332,7 @@
 
     function saveState() {
       state.lastEnergyTime = Date.now();
-      localStorage.setItem('poke_mmo_save_v160', JSON.stringify(state));
+      localStorage.setItem('poke_mmo_save_v161', JSON.stringify(state));
       updateUI();
     }
 
@@ -482,7 +480,8 @@
       const list = document.getElementById('picker-list');
       list.innerHTML = '';
       state.myPokedex.forEach(p => {
-        list.innerHTML += `<div class="card" style="padding:8px; display:flex; justify-content:space-between; align-items:center;" onclick="executeAnimatedBattle(${p.id})"><span>${p.name} (${p.cp} CP)</span><button class="chip active">Выбрать</button></div>`;
+        const base = POKEDEX_DATABASE.find(item => item.id === p.id) || p;
+        list.innerHTML += `<div class="card" style="padding:8px; display:flex; justify-content:space-between; align-items:center;" onclick="executeAnimatedBattle(${p.id})"><span>${base.name} (${p.cp} CP)</span><button class="chip active">Выбрать</button></div>`;
       });
       openModal('picker-modal');
     }
@@ -490,10 +489,11 @@
     function executeAnimatedBattle(pokeId) {
       closeModal('picker-modal');
       const myPoke = state.myPokedex.find(x => x.id === pokeId);
+      const myBase = POKEDEX_DATABASE.find(item => item.id === myPoke.id) || myPoke;
       const enemy = pendingBattle;
 
-      document.getElementById('b-p1-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${myPoke.id}.png`;
-      document.getElementById('b-p1-name').innerText = `${myPoke.name} (${myPoke.cp} CP)`;
+      document.getElementById('b-p1-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${myBase.id}.png`;
+      document.getElementById('b-p1-name').innerText = `${myBase.name} (${myPoke.cp} CP)`;
       document.getElementById('b-p2-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${enemy.enemyId}.png`;
       document.getElementById('b-p2-name').innerText = `${enemy.enemyName} (${enemy.enemyCp} CP)`;
 
@@ -506,7 +506,7 @@
       setTimeout(() => {
         document.getElementById('fighter-1').classList.add('attack-anim');
         document.getElementById('b-p2-hp').style.width = '40%';
-        document.getElementById('battle-log').innerText = `${myPoke.name} наносит удар!`;
+        document.getElementById('battle-log').innerText = `${myBase.name} наносит удар!`;
         triggerHaptic('medium');
         
         setTimeout(() => {
@@ -526,7 +526,7 @@
               document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Соперник повержен (+100 🪙).`;
               if (enemy.type === 'gym') {
                 const g = state.gyms.find(x => x.id === enemy.gymId);
-                if (g) { g.champ = `Вы (@${username})`; g.pName = myPoke.name; renderGyms(); }
+                if (g) { g.champ = `Вы (@${username})`; g.pName = myBase.name; renderGyms(); }
               }
             } else {
               document.getElementById('b-p1-hp').style.width = '0%';
@@ -602,20 +602,45 @@
       el.classList.add('active'); state.dexMode = mode; renderDex();
     }
 
+    // ЖЕСТКАЯ СВЯЗКА ПОКЕДЕКСА С ID (ИМЕНА НИКОГДА НЕ СДВИНУТСЯ)
     function renderDex() {
       const grid = document.getElementById('pokedex-grid');
       grid.innerHTML = '';
       document.getElementById('my-count').innerText = state.myPokedex.length;
-      let list = state.dexMode === 'my' ? state.myPokedex : POKEDEX_DATABASE.map(p => ({
-        ...p, locked: !state.myPokedex.some(m => m.id === p.id)
-      }));
-      list.forEach(p => {
-        const item = document.createElement('div');
-        item.className = `poke-item ${p.is_shiny ? 'shiny' : ''} ${p.locked ? 'locked' : ''}`;
-        item.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" loading="lazy"><h5>${p.name}</h5>`;
-        if (!p.locked) item.onclick = () => openPokeModal(p);
-        grid.appendChild(item);
-      });
+
+      if (state.dexMode === 'my') {
+        if (state.myPokedex.length === 0) {
+          grid.innerHTML = '<p style="grid-column: span 3; text-align:center; color:var(--muted); padding:20px;">Коллекция пуста</p>';
+          return;
+        }
+        state.myPokedex.forEach(p => {
+          const baseData = POKEDEX_DATABASE.find(item => item.id === p.id) || p;
+          const item = document.createElement('div');
+          item.className = `poke-item ${p.is_shiny ? 'shiny' : ''}`;
+          item.innerHTML = `
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${baseData.id}.png" loading="lazy">
+            <h5>${p.is_shiny ? '✨ ' : ''}${baseData.name}</h5>
+            <div style="font-size:9px; color:var(--muted);">${p.cp || baseData.cp} CP</div>
+          `;
+          item.onclick = () => openPokeModal(p);
+          grid.appendChild(item);
+        });
+      } else {
+        POKEDEX_DATABASE.forEach(baseData => {
+          const owned = state.myPokedex.find(m => m.id === baseData.id);
+          const item = document.createElement('div');
+          item.className = `poke-item ${owned?.is_shiny ? 'shiny' : ''} ${!owned ? 'locked' : ''}`;
+          item.innerHTML = `
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${baseData.id}.png" loading="lazy">
+            <h5>${!owned ? '🔒 #' + baseData.id : baseData.name}</h5>
+            <div style="font-size:9px; color:var(--muted);">${owned ? owned.cp + ' CP' : '???'}</div>
+          `;
+          if (owned) {
+            item.onclick = () => openPokeModal(owned);
+          }
+          grid.appendChild(item);
+        });
+      }
     }
 
     function searchDex(q) {
@@ -627,21 +652,29 @@
 
     function openPokeModal(p) {
       state.selectedPoke = p;
-      document.getElementById('m-poke-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
-      document.getElementById('m-poke-name').innerText = p.name;
+      const base = POKEDEX_DATABASE.find(item => item.id === p.id) || p;
+      document.getElementById('m-poke-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${base.id}.png`;
+      document.getElementById('m-poke-name').innerText = base.name;
       document.getElementById('m-poke-stats').innerText = `${p.cp} CP`;
-      document.getElementById('m-evo-btn').style.display = p.evoTo ? 'block' : 'none';
+      document.getElementById('m-evo-btn').style.display = base.evoTo ? 'block' : 'none';
       openModal('poke-modal');
     }
 
     function evolveSelectedPokemon() {
       const p = state.selectedPoke;
-      if (!p || !p.evoTo) return;
+      const base = POKEDEX_DATABASE.find(item => item.id === p.id);
+      if (!base || !base.evoTo) return;
       if (state.candies < 3 || state.coins < 150) { alert('❌ Нужно 3 🍬 конфеты и 150 🪙 монет!'); return; }
       state.candies -= 3; state.coins -= 150;
-      const nextPoke = POKEDEX_DATABASE.find(x => x.id === p.evoTo);
-      p.id = nextPoke.id; p.name = nextPoke.name; p.cp += 350; p.evoTo = nextPoke.evoTo;
-      saveState(); renderDex(); closeModal('poke-modal'); alert(`✨ Успешная эволюция! Новый покемон: ${p.name}`);
+      
+      const nextPoke = POKEDEX_DATABASE.find(x => x.id === base.evoTo);
+      p.id = nextPoke.id;
+      p.cp += 350;
+      
+      saveState(); 
+      renderDex(); 
+      closeModal('poke-modal'); 
+      alert(`✨ Успешная эволюция! Новый покемон: ${nextPoke.name}`);
     }
 
     function switchTab(el, id) {
