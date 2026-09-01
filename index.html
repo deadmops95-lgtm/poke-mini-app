@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 3.2</title>
+  <title>PokéHunter MMO 3.3</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -212,7 +212,7 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ -->
+  <!-- 4. СОБЫТИЯ ПО МСК -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -495,10 +495,11 @@
       const randomPoke = filteredPool[Math.floor(Math.random() * filteredPool.length)];
       const shiny = Math.random() < 0.05;
 
+      // СТРОГОЕ РАСЩЕПЛЕНИЕ ПОВТОРОК В КОНФЕТЫ
       const exists = state.myPokedex.some(p => p.id === randomPoke.id && p.is_shiny === shiny);
       if (exists) {
         state.candies += 1;
-        alert(`🔁 Такой покемон уже есть! Конвертирован в +1 🍬 конфету.`);
+        alert(`🔁 Такой покемон уже есть в коллекции! Автоматически расщеплен в +1 🍬 конфету.`);
       } else {
         state.myPokedex.unshift({ ...randomPoke, is_shiny: shiny });
         alert(`🎉 Пойман: ${shiny ? '✨ ШАЙНИ ' : ''}${randomPoke.name} [${randomPoke.rarity}] (${randomPoke.cp} CP)!`);
@@ -534,7 +535,7 @@
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
           <h3 style="font-size:14px; color:var(--accent-star);">${currentEvent.title}</h3>
-          <span class="badge">Активно</span>
+          <span class="badge">Активно (МСК)</span>
         </div>
         <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">${currentEvent.desc}</p>
         <button class="btn-main btn-gold" id="daily-event-btn">${currentEvent.btnText}</button>
@@ -1277,9 +1278,9 @@
       if (state.isVip) document.getElementById('vip-tag').style.display = 'inline-block';
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v12';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v13';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v11');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v12');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -1350,10 +1351,7 @@
       }, 1000);
 
       // ГАРАНТИРОВАННОЕ ПОКАЗЫВАНИЕ АДМИН-МЕНЮ ДЛЯ ПРОКУДИНА И ТОТСАВА (@totcav)
-      const uname = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
-      if (uname === 'prokudin95' || uname === 'totcav' || true) {
-        document.getElementById('admin-nav').style.display = 'flex';
-      }
+      document.getElementById('admin-nav').style.display = 'flex';
     };
   </script>
 </body>
