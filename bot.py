@@ -60,7 +60,7 @@ class AdminPokeGive(BaseModel):
     poke_cp: int
 
 class AttackNotify(BaseModel):
-    defender_id: int
+    defender_username: str
     attacker_name: str
     defender_poke: str
     defender_cp: int
@@ -105,16 +105,19 @@ async def save_user(user: UserSync):
     conn.close()
     return {"status": "saved"}
 
+# Статистика: только онлайн и сколько всего зарегистрировалось
 @app.get("/api/admin/stats")
 async def get_server_stats():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*), SUM(coins), SUM(stats_caught) FROM users")
-    row = cursor.fetchone()
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0] or 1
     conn.close()
-    return {"online_users": row[0] or 1, "total_coins": row[1] or 500, "total_caught": row[2] or 1}
+    return {
+        "online_users": total_users,
+        "total_registered": total_users
+    }
 
-# Админ-выдача покемона по никнейму игрока
 @app.post("/api/admin/give-poke")
 async def admin_give_poke(data: AdminPokeGive):
     clean_target = data.target_username.replace("@", "").strip().lower()
@@ -125,20 +128,23 @@ async def admin_give_poke(data: AdminPokeGive):
     
     if not row:
         conn.close()
-        raise HTTPException(status_code=404, detail="Игрок с таким ником не найден в базе!")
+        raise HTTPException(status_code=404, detail="Игрок не найден в базе данных!")
     
     user_id, pokedex_json = row[0], row[1]
-    pokedex = json.loads(pokedex_json or "[]")
+    try:
+        pokedex = json.loads(pokedex_json or "[]")
+    except:
+        pokedex = []
     
     new_poke = {"id": data.poke_id, "name": data.poke_name, "cp": data.poke_cp, "is_shiny": False}
-    pokedex.unshift(new_poke) if hasattr(pokedex, 'unshift') else pokedex.insert(0, new_poke)
+    pokedex.insert(0, new_poke)
     
     cursor.execute("UPDATE users SET pokedex = ? WHERE user_id = ?", (json.dumps(pokedex), user_id))
     conn.commit()
     conn.close()
     
     try:
-        await bot.send_message(chat_id=user_id, text=f"🎁 Администратор выдал вам покемона: <b>{data.poke_name}</b> ({data.poke_cp} CP)!", parse_mode="HTML")
+        await bot.send_message(chat_id=user_id, text=f"🎁 Админ выдал вам покемона: <b>{data.poke_name}</b> ({data.poke_cp} CP)!", parse_mode="HTML")
     except:
         pass
         
@@ -146,9 +152,20 @@ async def admin_give_poke(data: AdminPokeGive):
 
 @app.post("/api/attack")
 async def notify_attack(data: AttackNotify):
+    clean_target = data.defender_username.replace("@", "").strip().lower()
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM users WHERE LOWER(username) = ?", (clean_target,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if not row:
+        raise HTTPException(status_code=404, detail="Защитник не найден!")
+        
+    defender_id = row[0]
     try:
-        text = f"⚔️ <b>На вас напали!</b>\n\n👤 Нападающий: <b>{data.attacker_name}</b>\n🛡 Защитник: <b>{data.defender_poke}</b> ({data.defender_cp} CP)"
-        await bot.send_message(chat_id=data.defender_id, text=text, parse_mode="HTML")
+        text = f"⚔️ <b>На вас напали на Арене!</b>\n\n👤 Нападающий: <b>{data.attacker_name}</b>\n🛡 Авто-защита выбрала: <b>{data.defender_poke}</b> ({data.defender_cp} CP)\n\nЗайдите в игру дать отпор!"
+        await bot.send_message(chat_id=defender_id, text=text, parse_mode="HTML")
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
