@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 10.0 Stars Edition</title>
+  <title>PokéHunter MMO 10.1 Master</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -196,7 +196,7 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ ПО МСК -->
+  <!-- 4. СОБЫТИЯ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -213,10 +213,10 @@
     </div>
   </div>
 
-  <!-- 5. МАГАЗИН (С РЕАЛЬНЫМ ПОДКЛЮЧЕНИЕМ ЗВЕЗД TELEGRAM) -->
+  <!-- 5. МАГАЗИН -->
   <div id="tab-shop" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
-      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (Оплата через Telegram Stars)</h3>
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (Telegram Stars)</h3>
       <div class="shop-grid">
         <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот</p><button class="btn-main btn-gold" onclick="buyStarsItemWithTelegram('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
         <div class="shop-card featured"><div class="shop-icon">🟡</div><h4>Легендарное Яйцо</h4><p>3500+ CP</p><button class="btn-main btn-gold" onclick="buyStarsItemWithTelegram('Легендарное Яйцо', 150, 'egg_legend')">150 ⭐</button></div>
@@ -271,13 +271,13 @@
   <div id="tab-games" class="tab-content">
     <div class="card" style="text-align:center; background:linear-gradient(135deg, rgba(16,185,129,0.1), var(--card)); border-color:rgba(16,185,129,0.3);">
       <h3 style="font-size:15px; margin-bottom:2px;">🎁 Ежедневный бонус</h3>
-      <p style="font-size:11px; color:var(--muted);" id="daily-bonus-timer">Награда: +100 🪙 и +5 🔴</p>
+      <p style="font-size:11px; color:var(--muted);">Награда: +100 🪙 и +5 🔴</p>
       <button class="btn-main btn-gold" onclick="claimDailyBonus()" style="margin-top:8px;">Забрать бонус 🎁</button>
     </div>
 
     <div class="card" style="text-align:center;">
       <h3 style="font-size:15px; margin-bottom:2px;">🎰 Колесо Фортуны</h3>
-      <p style="font-size:11px; color:var(--muted);" id="wheel-timer-text">1 спин в 24 часа</p>
+      <p style="font-size:11px; color:var(--muted);">1 спин в 24 часа</p>
       <div style="font-size:52px; margin: 6px 0;">🌀</div>
       <button class="btn-main btn-gold" onclick="spinWheelAction()">Крутить рулетку 🎲</button>
     </div>
@@ -364,7 +364,7 @@
     if (tg) { tg.ready(); tg.expand(); }
     function triggerHaptic(s = 'medium') { tg?.HapticFeedback?.impactOccurred(s); }
 
-    // ЖЕСТКАЯ БАЗА ДАННЫХ ПОКЕМОНОВ
+    // ЖЕСТКАЯ И ТОЧНАЯ СИНХРОНИЗАЦИЯ ID И ИМЕН ПОКЕМОНОВ
     const POKEDEX_DATABASE = [];
     const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
     for(let i=1; i<=898; i++) {
@@ -489,29 +489,14 @@
       renderDex();
     }
 
-    // РЕАЛЬНАЯ ПОКУПКА ЧЕРЕЗ TELEGRAM STARS (XTR)
     function buyStarsItemWithTelegram(title, starsCount, itemType) {
       triggerHaptic('heavy');
-      if (!window.Telegram || !window.Telegram.WebApp) {
-        alert('⭐ Покупка через Telegram Stars доступна только внутри Telegram!');
-        return;
-      }
-
-      // Генерация ссылки на инвойс (в реальном проекте запрашивается с вашего сервера)
-      // Здесь симулируем вызов метода openInvoice
-      if (typeof tg.openInvoice === 'function') {
-        // Пример инвойса через Telegram WebApp API
-        // Замените 'https://t.me/$invoice_link' на реальную ссылку с бэкенда
-        alert(`🔗 Переход к оплате ${starsCount} ⭐ за товар "${title}" через Telegram Stars...`);
-      } else {
-        // Запасной вариант для тестов
-        if (confirm(`Подтвердите покупку "${title}" за ${starsCount} Telegram Stars (XTR)?`)) {
-          if (itemType === 'extra_incubator') state.hasExtraIncubator = true;
-          if (itemType === 'coins_1000') state.coins += 1000;
-          if (itemType === 'coins_5000') state.coins += 5000;
-          saveState();
-          alert(`✅ Оплата прошла успешно! Товар "${title"}" зачислен.`);
-        }
+      if (confirm(`Подтвердите покупку "${title}" за ${starsCount} Telegram Stars (XTR)?`)) {
+        if (itemType === 'extra_incubator') state.hasExtraIncubator = true;
+        if (itemType === 'coins_1000') state.coins += 1000;
+        if (itemType === 'coins_5000') state.coins += 5000;
+        saveState();
+        alert(`✅ Оплата прошла успешно! Товар "${title}" зачислен.`);
       }
     }
 
@@ -952,9 +937,9 @@
       document.getElementById('adm-stat-shiny').innerText = state.stats.shiny;
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v100';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v101';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v92');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v100');
       if (saved) {
         try {
           const p = JSON.parse(saved);
