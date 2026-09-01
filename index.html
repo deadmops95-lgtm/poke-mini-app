@@ -21,7 +21,7 @@
       --radius: 14px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 75px; overflow-x: hidden; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 78px; overflow-x: hidden; }
 
     /* Шапка */
     .header { position: sticky; top: 0; z-index: 50; background: rgba(9, 12, 21, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 10px 14px; }
@@ -45,8 +45,9 @@
     .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
     .btn-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; }
     .btn-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
 
-    /* Покедекс */
+    /* Фильтры и кнопки */
     .dex-switch { display: flex; gap: 8px; margin-bottom: 10px; }
     .dex-tab { flex: 1; text-align: center; padding: 8px; background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
     .dex-tab.active { background: var(--primary); color: #000; border-color: var(--primary); }
@@ -64,13 +65,19 @@
     .poke-item img { width: 62px; height: 62px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
     .poke-item h5 { font-size: 11px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* Магазин */
+    /* Магазин и Рынок */
     .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .shop-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
     .shop-card.featured { border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(145deg, rgba(245, 158, 11, 0.08), var(--card)); }
     .shop-icon { font-size: 32px; margin-bottom: 4px; }
     .shop-card h4 { font-size: 13px; margin-bottom: 2px; }
     .shop-card p { font-size: 10px; color: var(--muted); margin-bottom: 10px; min-height: 24px; }
+
+    /* Питомник */
+    .nursery-slots { display: flex; justify-content: space-around; align-items: center; margin: 12px 0; }
+    .nursery-slot { width: 100px; height: 100px; border: 2px dashed var(--border); border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--card-inner); }
+    .nursery-slot.filled { border-style: solid; border-color: var(--primary); }
+    .nursery-slot img { width: 55px; height: 55px; object-fit: contain; }
 
     /* Боевая Арена */
     .arena-box { background: radial-gradient(circle at center, #172036 0%, #090c15 100%); border: 1px solid var(--border); border-radius: 16px; padding: 16px; text-align: center; }
@@ -95,10 +102,10 @@
     @keyframes pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     /* Навигация */
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: rgba(9, 12, 21, 0.96); backdrop-filter: blur(14px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 40; padding: 0 4px; }
-    .nav-btn { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: var(--muted); cursor: pointer; gap: 2px; flex: 1; }
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: rgba(9, 12, 21, 0.96); backdrop-filter: blur(14px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 40; padding: 0 2px; }
+    .nav-btn { display: flex; flex-direction: column; align-items: center; font-size: 8.5px; color: var(--muted); cursor: pointer; gap: 2px; flex: 1; }
     .nav-btn.active { color: var(--primary); font-weight: 700; }
-    .nav-btn span:first-child { font-size: 17px; }
+    .nav-btn span:first-child { font-size: 16px; }
   </style>
 </head>
 <body>
@@ -121,10 +128,10 @@
     </div>
   </header>
 
-  <!-- 1. ВКЛАДКА: ОХОТА -->
+  <!-- 1. ВКЛАДКА: ОХОТА (ИНКУБАТОР + ПИТОМНИК 2.0) -->
   <div id="tab-hunt" class="tab-content active">
     <div class="card">
-      <h3 style="font-size:14px; margin-bottom:8px;">📍 Выберите Биом для охоты</h3>
+      <h3 style="font-size:14px; margin-bottom:8px;">📍 Биом для поиска</h3>
       <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:12px;" id="biome-selector">
         <button class="chip active" onclick="selectBiome(this, 'forest')">🌲 Густой Лес</button>
         <button class="chip" onclick="selectBiome(this, 'lake')">🌊 Озеро Валора</button>
@@ -134,23 +141,42 @@
       <button class="btn-main" onclick="huntPokemonAction()">🌿 Искать покемона (-20 ⚡️)</button>
     </div>
 
-    <!-- Инкубатор -->
-    <div class="card" style="display:flex; align-items:center; justify-content:space-between;">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div id="egg-icon" style="font-size:36px;">🥚</div>
-        <div>
-          <h4 id="egg-title" style="font-size:13px;">Редкое Яйцо</h4>
-          <p id="egg-timer" style="font-size:11px; color:var(--muted);">Готово к вылуплению!</p>
-        </div>
+    <!-- Инкубатор (Выбор яиц) -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h3 style="font-size:14px;">🥚 Инкубатор Яиц</h3>
+        <button class="chip" style="background:var(--accent-blue); color:#fff;" onclick="openEggSelectModal()">Выбрать яйцо</button>
       </div>
-      <button class="chip active" style="background:var(--accent-star); color:#000;" onclick="openEggModal()">🐣 Вылупить</button>
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div id="egg-icon" style="font-size:36px;">🥚</div>
+          <div>
+            <h4 id="egg-title" style="font-size:13px;">Редкое Яйцо</h4>
+            <p id="egg-timer" style="font-size:11px; color:var(--muted);">Готово к вылуплению!</p>
+          </div>
+        </div>
+        <button class="chip active" id="egg-action-btn" style="background:var(--accent-star); color:#000;" onclick="handleEggAction()">🐣 Вылупить</button>
+      </div>
     </div>
 
-    <!-- Питомник -->
+    <!-- Питомник 2.0 (1 Час) -->
     <div class="card">
-      <h3 style="font-size:14px; margin-bottom:4px;">🧬 Питомник (Скрещивание)</h3>
-      <p style="font-size:11px; color:var(--muted); margin-bottom:10px;" id="nursery-status">Выберите пару покемонов для выведения яйца</p>
-      <button class="btn-main btn-purple" id="nursery-btn" onclick="openNurseryModal()">❤️ Посадить пару в питомник</button>
+      <h3 style="font-size:14px; margin-bottom:4px;">🧬 Питомник 2.0 (Разведение за 1ч)</h3>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Выберите двух совместимых покемонов для получения яйца</p>
+      
+      <div class="nursery-slots">
+        <div class="nursery-slot" id="nursery-s1" onclick="openNurseryPicker(1)">
+          <span style="font-size:24px;">➕</span>
+          <span style="font-size:10px; color:var(--muted); margin-top:2px;">Слот 1</span>
+        </div>
+        <span style="font-size:20px; font-weight:bold; color:var(--accent-star);">❤️</span>
+        <div class="nursery-slot" id="nursery-s2" onclick="openNurseryPicker(2)">
+          <span style="font-size:24px;">➕</span>
+          <span style="font-size:10px; color:var(--muted); margin-top:2px;">Слот 2</span>
+        </div>
+      </div>
+      <p id="nursery-status-text" style="font-size:11px; text-align:center; color:var(--accent-star); margin-bottom:8px;">Выберите обоих покемонов</p>
+      <button class="btn-main btn-purple" id="nursery-start-btn" onclick="startBreedingProcess()">❤️ Начать скрещивание (1 час)</button>
     </div>
   </div>
 
@@ -190,9 +216,47 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. ВКЛАДКА: 🏪 МАГАЗИН (ДОНАТ STARS + МОНЕТЫ) -->
+  <!-- 4. ВКЛАДКА: 🏆 ТУРНИРЫ И МИРОВЫЕ СОБЫТИЯ -->
+  <div id="tab-events" class="tab-content">
+    <!-- Мировой Босс -->
+    <div class="card" style="border-color: rgba(239, 68, 68, 0.4); background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), var(--card));">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="font-size:15px; color:var(--accent-danger);">☠️ Мировой Рейд: Теневой Мьюту</h3>
+          <p style="font-size:11px; color:var(--muted);">Общий босс для всех игроков сервера</p>
+        </div>
+        <span style="font-size:26px;">☠️</span>
+      </div>
+      <div style="margin: 10px 0;">
+        <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px;">
+          <span>HP Босса:</span>
+          <span id="boss-hp-text">421 500 / 500 000</span>
+        </div>
+        <div class="hp-bar-bg" style="width:100%; height:8px;"><div class="hp-bar-fill" id="boss-hp-fill" style="background:var(--accent-danger); width:84%;"></div></div>
+      </div>
+      <button class="btn-main btn-danger" onclick="attackWorldBoss()">⚔️ Нанести урон боссу (-15 ⚡️)</button>
+    </div>
+
+    <!-- Гранд-Лига Недели -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <h3 style="font-size:14px; color:var(--accent-star);">🏆 Гранд-Лига Недели</h3>
+        <span class="chip active" style="background:var(--accent-star); color:#000;">Финал в ВС</span>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">🥇 1 место: 🟡 Легендарное Яйцо + 1 500 🪙 + Титул «Чемпион Сервера»</p>
+      <button class="btn-main btn-gold" onclick="registerTournament()">📝 Зарегистрировать команду</button>
+    </div>
+
+    <!-- Стихийный Кубок -->
+    <div class="card">
+      <h3 style="font-size:14px; color:#f97316; margin-bottom:4px;">🔥 Стихийный Кубок: Огонь</h3>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Допускаются только покемоны стихии 🔥 Огонь. Награда: 500 🪙 + 20 🍬</p>
+      <button class="btn-main" style="background:linear-gradient(135deg, #f97316, #c2410c);" onclick="alert('🔥 Вы вошли в турнир Стихийного Кубка!')">Вступить в бой</button>
+    </div>
+  </div>
+
+  <!-- 5. ВКЛАДКА: 🏪 МАГАЗИН (ДОНАТ STARS + МОНЕТЫ) -->
   <div id="tab-shop" class="tab-content">
-    <!-- Звёзды Telegram -->
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(18, 24, 38, 0.95));">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <div>
@@ -209,45 +273,27 @@
           <p>Гарантия 3500+ CP</p>
           <button class="btn-main btn-gold" onclick="buyStarsItem('Легендарное Яйцо', 150, 'egg_legend')">150 ⭐</button>
         </div>
-
         <div class="shop-card featured">
           <div class="shop-icon">👑</div>
           <h4>VIP-Pass (30 дней)</h4>
           <p>Реген x2, +25% 🪙</p>
           <button class="btn-main btn-gold" onclick="buyStarsItem('VIP Статус', 250, 'vip_30')">250 ⭐</button>
         </div>
-
         <div class="shop-card featured">
           <div class="shop-icon">💰</div>
           <h4>Кошель (1 000 🪙)</h4>
           <p>Быстрый старт</p>
           <button class="btn-main btn-gold" onclick="buyStarsItem('1000 Монет', 50, 'coins_1000')">50 ⭐</button>
         </div>
-
         <div class="shop-card featured">
           <div class="shop-icon">💎</div>
           <h4>Сундук (5 000 🪙)</h4>
           <p>Выгода +25%</p>
           <button class="btn-main btn-gold" onclick="buyStarsItem('5000 Монет', 200, 'coins_5000')">200 ⭐</button>
         </div>
-
-        <div class="shop-card featured">
-          <div class="shop-icon">✨</div>
-          <h4>Шайни-Амулет (24ч)</h4>
-          <p>Шанс Шайни 15%</p>
-          <button class="btn-main btn-gold" onclick="buyStarsItem('Шайни Амулет', 75, 'shiny_charm')">75 ⭐</button>
-        </div>
-
-        <div class="shop-card featured">
-          <div class="shop-icon">🟣</div>
-          <h4>Мастербол</h4>
-          <p>100% любая поимка</p>
-          <button class="btn-main btn-gold" onclick="buyStarsItem('Мастербол', 100, 'masterball')">100 ⭐</button>
-        </div>
       </div>
     </div>
 
-    <!-- Товары за игровые монеты -->
     <h3 style="font-size:14px; margin: 12px 0 8px 0;">🪙 Товары за игровые монеты</h3>
     <div class="shop-grid">
       <div class="shop-card">
@@ -256,78 +302,88 @@
         <p>+100 ⚡️ Энергии</p>
         <button class="btn-main" onclick="buyCoinItem('lure', 15)">15 🪙</button>
       </div>
-
       <div class="shop-card">
         <div class="shop-icon">🔘</div>
         <h4>Ультрабол</h4>
         <p>100% шанс поимки</p>
         <button class="btn-main" onclick="buyCoinItem('ultraball', 25)">25 🪙</button>
       </div>
-
       <div class="shop-card">
         <div class="shop-icon">🍬</div>
         <h4>Конфеты x5</h4>
         <p>Для эволюций</p>
         <button class="btn-main" onclick="buyCoinItem('candies', 50)">50 🪙</button>
       </div>
-
       <div class="shop-card">
         <div class="shop-icon">🥚</div>
         <h4>Редкое Яйцо</h4>
-        <p>Инкубатор 5ч</p>
+        <p>Инкубатор 1.5ч</p>
         <button class="btn-main" onclick="buyCoinItem('egg_rare', 100)">100 🪙</button>
-      </div>
-
-      <div class="shop-card">
-        <div class="shop-icon">🧪</div>
-        <h4>Зелье Мощи</h4>
-        <p>+500 CP на 1 час</p>
-        <button class="btn-main" onclick="buyCoinItem('potion', 80)">80 🪙</button>
-      </div>
-
-      <div class="shop-card">
-        <div class="shop-icon">⚡️</div>
-        <h4>Энергетик</h4>
-        <p>+50 ⚡️ Энергии</p>
-        <button class="btn-main" onclick="buyCoinItem('energy_drink', 30)">30 🪙</button>
       </div>
     </div>
   </div>
 
-  <!-- 5. ВКЛАДКА: ИГРЫ И РЫНОК -->
-  <div id="tab-games" class="tab-content">
-    <div class="card" style="text-align:center;">
-      <h3 style="font-size:15px; margin-bottom:4px;">🎰 Колесо Фортуны</h3>
-      <div id="wheel-view" style="font-size:52px; margin: 6px 0;">🌀</div>
-      <button class="btn-main btn-gold" onclick="spinWheelAction()">Крутить рулетку 🎲</button>
+  <!-- 6. ВКЛАДКА: 🏷 ДВУХВАЛЮТНЫЙ РЫНОК -->
+  <div id="tab-market" class="tab-content">
+    <div class="dex-switch">
+      <div class="dex-tab active" onclick="switchMarketMode(this, 'system')">⭐ Аукцион Лиги (Stars)</div>
+      <div class="dex-tab" onclick="switchMarketMode(this, 'p2p')">🪙 Рынок игроков (Монеты)</div>
     </div>
 
+    <!-- Аукцион Лиги (Stars) -->
+    <div id="market-system-view">
+      <div class="card" style="border-color: rgba(245, 158, 11, 0.3);">
+        <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">Эксклюзивные монстры от Лиги за Telegram Stars ⭐</p>
+        <div id="system-market-list"></div>
+      </div>
+    </div>
+
+    <!-- Рынок игроков (Coins) -->
+    <div id="market-p2p-view" style="display:none;">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3 style="font-size:14px;">Лоты игроков</h3>
+          <button class="chip active" style="background:var(--primary); color:#000;" onclick="openSellModal()">+ Продать</button>
+        </div>
+        <div id="p2p-market-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. ВКЛАДКА: 🎰 ИГРЫ (РУЛЕТКА 24Ч + ВИКТОРИНА 3 ЖИЗНИ) -->
+  <div id="tab-games" class="tab-content">
+    <!-- Колесо 24ч -->
+    <div class="card" style="text-align:center;">
+      <h3 style="font-size:15px; margin-bottom:2px;">🎰 Колесо Фортуны</h3>
+      <p style="font-size:11px; color:var(--muted);" id="wheel-timer-text">1 бесплатный спин раз в 24 часа</p>
+      <div id="wheel-view" style="font-size:52px; margin: 6px 0;">🌀</div>
+      <button class="btn-main btn-gold" id="wheel-btn" onclick="spinWheelAction()">Крутить рулетку 🎲</button>
+    </div>
+
+    <!-- Викторина 3 жизни -->
     <div class="card">
-      <h3 style="font-size:14px; margin-bottom:4px;">🧩 Викторина Стихий</h3>
-      <div style="text-align:center; margin: 8px 0;">
-        <img id="quiz-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" style="width:90px; height:90px; object-fit:contain;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <h3 style="font-size:14px;">🧩 Викторина Стихий</h3>
+        <span id="quiz-hearts" style="font-size:14px; letter-spacing:2px;">❤️❤️❤️</span>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:8px;" id="quiz-status-text">3 попытки в 24 часа. +25 🪙 за верный ответ!</p>
+      
+      <div style="text-align:center; margin: 8px 0;" id="quiz-body">
+        <img id="quiz-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" style="width:85px; height:85px; object-fit:contain;">
         <h4 id="quiz-poke-name" style="font-size:14px; margin-top:4px;">Пикачу</h4>
         <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">Какой стихии этот покемон?</p>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;" id="quiz-options"></div>
     </div>
-
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <h3 style="font-size:14px;">🏷 Рынок Игроков</h3>
-        <button class="chip active" style="background:var(--primary); color:#000;" onclick="openSellModal()">+ Продать</button>
-      </div>
-      <div id="market-list"></div>
-    </div>
   </div>
 
-  <!-- 6. ВКЛАДКА: 30 ДОСТИЖЕНИЙ -->
+  <!-- 8. ВКЛАДКА: 30 ДОСТИЖЕНИЙ -->
   <div id="tab-achieve" class="tab-content">
     <h3 style="font-size:15px; margin-bottom:10px;">🏆 Достижения Тренера (30 шт.)</h3>
     <div id="achieve-list"></div>
   </div>
 
-  <!-- 7. ВКЛАДКА: АДМИНКА -->
+  <!-- 9. ВКЛАДКА: АДМИНКА -->
   <div id="tab-admin" class="tab-content">
     <div class="card">
       <h3 style="font-size:15px; color:var(--accent-star); margin-bottom:8px;">👑 Панель Администратора (@prokudin95)</h3>
@@ -347,6 +403,16 @@
         </div>
       </div>
       <button class="btn-main btn-blue" onclick="adminExecute('egg', 0)">🥚 Выдать Легендарное Яйцо</button>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР ЯЙЦА ДЛЯ ИНКУБАТОРА -->
+  <div class="modal" id="egg-select-modal">
+    <div class="modal-content">
+      <h3 style="font-size:15px; margin-bottom:8px;">🥚 Инвентарь Яиц</h3>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:12px;">Выберите яйцо для загрузки в инкубатор:</p>
+      <div id="egg-inventory-list" style="margin-bottom:12px;"></div>
+      <button class="chip" style="width:100%;" onclick="closeModal('egg-select-modal')">Закрыть</button>
     </div>
   </div>
 
@@ -403,13 +469,12 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО: ПИТОМНИК ВЫБОР ПАРЫ -->
-  <div class="modal" id="nursery-modal">
+  <!-- МОДАЛЬНОЕ ОКНО: ВЫБОР ПОКЕМОНА В ПИТОМНИК -->
+  <div class="modal" id="nursery-picker-modal">
     <div class="modal-content">
-      <h3 style="font-size:15px; margin-bottom:6px;">🧬 Выбор пары для Питомника</h3>
-      <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">Выберите двух покемонов (скрещивание на 4 часа)</p>
-      <div style="max-height:200px; overflow-y:auto; margin-bottom:10px;" id="nursery-picker-list"></div>
-      <button class="chip" style="width:100%;" onclick="closeModal('nursery-modal')">Отмена</button>
+      <h3 style="font-size:15px; margin-bottom:6px;">🧬 Выберите покемона</h3>
+      <div style="max-height:220px; overflow-y:auto; margin-bottom:10px;" id="nursery-list-select"></div>
+      <button class="chip" style="width:100%;" onclick="closeModal('nursery-picker-modal')">Отмена</button>
     </div>
   </div>
 
@@ -424,14 +489,16 @@
     </div>
   </div>
 
-  <!-- Нижняя панель навигации (7 Вкладок) -->
+  <!-- Нижняя панель навигации (8 основных разделов) -->
   <nav class="nav">
     <div class="nav-btn active" onclick="switchTab(this, 'tab-hunt')"><span>🌿</span><span>Охота</span></div>
     <div class="nav-btn" onclick="switchTab(this, 'tab-pokedex')"><span>🎒</span><span>Покедекс</span></div>
     <div class="nav-btn" onclick="switchTab(this, 'tab-battle')"><span>⚔️</span><span>Арена</span></div>
+    <div class="nav-btn" onclick="switchTab(this, 'tab-events')"><span>🏆</span><span>События</span></div>
     <div class="nav-btn" onclick="switchTab(this, 'tab-shop')"><span>🏪</span><span>Магазин</span></div>
+    <div class="nav-btn" onclick="switchTab(this, 'tab-market')"><span>🏷</span><span>Рынок</span></div>
     <div class="nav-btn" onclick="switchTab(this, 'tab-games')"><span>🎰</span><span>Игры</span></div>
-    <div class="nav-btn" onclick="switchTab(this, 'tab-achieve')"><span>🏆</span><span>Ачивки</span></div>
+    <div class="nav-btn" onclick="switchTab(this, 'tab-achieve')"><span>🎖</span><span>Ачивки</span></div>
     <div class="nav-btn" id="admin-nav" style="display:none;" onclick="switchTab(this, 'tab-admin')"><span>👑</span><span>Админ</span></div>
   </nav>
 
@@ -442,7 +509,7 @@
 
     function triggerHaptic(s = 'medium') { tg?.HapticFeedback?.impactOccurred(s); }
 
-    // База покемонов 1-5 Поколений
+    // Полная База 1-5 Поколений со связанными эволюциями
     const POKEDEX_DATABASE = [
       // 1 Gen
       { id: 1, name: "Бульбазавр", gen: 1, type: "🌿 Трава", rarity: "Common", cp: 420, evoTo: 2, biome: "forest" },
@@ -454,35 +521,64 @@
       { id: 7, name: "Сквиртл", gen: 1, type: "💧 Вода", rarity: "Common", cp: 430, evoTo: 8, biome: "lake" },
       { id: 8, name: "Вартортл", gen: 1, type: "💧 Вода", rarity: "Uncommon", cp: 940, evoTo: 9, biome: "lake" },
       { id: 9, name: "Бластойз", gen: 1, type: "💧 Вода", rarity: "Epic", cp: 2850, biome: "lake" },
+      { id: 10, name: "Катерпи", gen: 1, type: "🐛 Насекомое", rarity: "Common", cp: 250, evoTo: 11, biome: "forest" },
+      { id: 11, name: "Метапод", gen: 1, type: "🐛 Насекомое", rarity: "Common", cp: 450, evoTo: 12, biome: "forest" },
+      { id: 12, name: "Баттерфри", gen: 1, type: "🐛 Насекомое", rarity: "Rare", cp: 1650, biome: "forest" },
       { id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, evoTo: 26, biome: "forest" },
       { id: 26, name: "Райчу", gen: 1, type: "⚡️ Электро", rarity: "Epic", cp: 2400, biome: "forest" },
       { id: 94, name: "Генгар", gen: 1, type: "👻 Призрак", rarity: "Epic", cp: 2700, biome: "ruins" },
+      { id: 133, name: "Иви", gen: 1, type: "⚪️ Обычный", rarity: "Rare", cp: 650, evoTo: 134, biome: "forest" },
+      { id: 134, name: "Вапореон", gen: 1, type: "💧 Вода", rarity: "Epic", cp: 2600, biome: "lake" },
       { id: 149, name: "Драгонайт", gen: 1, type: "🐲 Дракон", rarity: "Epic", cp: 3200, biome: "ruins" },
       { id: 150, name: "Мьюту", gen: 1, type: "🔮 Психик", rarity: "Legendary", cp: 4300, biome: "ruins" },
       // 2 Gen
       { id: 152, name: "Чикорита", gen: 2, type: "🌿 Трава", rarity: "Common", cp: 410, evoTo: 153, biome: "forest" },
+      { id: 153, name: "Бейлиф", gen: 2, type: "🌿 Трава", rarity: "Uncommon", cp: 930, evoTo: 154, biome: "forest" },
+      { id: 154, name: "Меганиум", gen: 2, type: "🌿 Трава", rarity: "Epic", cp: 2750, biome: "forest" },
       { id: 155, name: "Синдаквил", gen: 2, type: "🔥 Огонь", rarity: "Common", cp: 450, evoTo: 156, biome: "volcano" },
+      { id: 156, name: "Квилава", gen: 2, type: "🔥 Огонь", rarity: "Uncommon", cp: 960, evoTo: 157, biome: "volcano" },
+      { id: 157, name: "Тайфложн", gen: 2, type: "🔥 Огонь", rarity: "Epic", cp: 2900, biome: "volcano" },
       { id: 158, name: "Тотодайл", gen: 2, type: "💧 Вода", rarity: "Common", cp: 430, evoTo: 159, biome: "lake" },
+      { id: 159, name: "Кроконав", gen: 2, type: "💧 Вода", rarity: "Uncommon", cp: 940, evoTo: 160, biome: "lake" },
+      { id: 160, name: "Фералигатр", gen: 2, type: "💧 Вода", rarity: "Epic", cp: 2850, biome: "lake" },
       { id: 212, name: "Скизор", gen: 2, type: "⚙️ Сталь", rarity: "Epic", cp: 2850, biome: "forest" },
       { id: 248, name: "Тиранитар", gen: 2, type: "🪨 Камень", rarity: "Epic", cp: 3300, biome: "volcano" },
       { id: 249, name: "Лугия", gen: 2, type: "🔮 Психик", rarity: "Legendary", cp: 4350, biome: "lake" },
       // 3 Gen
       { id: 252, name: "Трико", gen: 3, type: "🌿 Трава", rarity: "Common", cp: 430, evoTo: 253, biome: "forest" },
+      { id: 253, name: "Гровайл", gen: 3, type: "🌿 Трава", rarity: "Uncommon", cp: 950, evoTo: 254, biome: "forest" },
+      { id: 254, name: "Септиль", gen: 3, type: "🌿 Трава", rarity: "Epic", cp: 2850, biome: "forest" },
       { id: 255, name: "Торчик", gen: 3, type: "🔥 Огонь", rarity: "Common", cp: 460, evoTo: 256, biome: "volcano" },
+      { id: 256, name: "Комбаскен", gen: 3, type: "🔥 Огонь", rarity: "Uncommon", cp: 980, evoTo: 257, biome: "volcano" },
+      { id: 257, name: "Блейзикен", gen: 3, type: "🔥 Огонь", rarity: "Epic", cp: 2950, biome: "volcano" },
       { id: 258, name: "Мадкип", gen: 3, type: "💧 Вода", rarity: "Common", cp: 450, evoTo: 259, biome: "lake" },
+      { id: 259, name: "Марштомп", gen: 3, type: "💧 Вода", rarity: "Uncommon", cp: 960, evoTo: 260, biome: "lake" },
+      { id: 260, name: "Свамперт", gen: 3, type: "💧 Вода", rarity: "Epic", cp: 2900, biome: "lake" },
       { id: 373, name: "Саламенс", gen: 3, type: "🐲 Дракон", rarity: "Epic", cp: 3250, biome: "ruins" },
       { id: 384, name: "Райкваза", gen: 3, type: "🐲 Дракон", rarity: "Legendary", cp: 4500, biome: "ruins" },
       // 4 Gen
       { id: 387, name: "Туртвиг", gen: 4, type: "🌿 Трава", rarity: "Common", cp: 430, evoTo: 388, biome: "forest" },
+      { id: 388, name: "Гротл", gen: 4, type: "🌿 Трава", rarity: "Uncommon", cp: 950, evoTo: 389, biome: "forest" },
+      { id: 389, name: "Тортерра", gen: 4, type: "🌿 Трава", rarity: "Epic", cp: 2850, biome: "forest" },
       { id: 390, name: "Чимчар", gen: 4, type: "🔥 Огонь", rarity: "Common", cp: 460, evoTo: 391, biome: "volcano" },
+      { id: 391, name: "Монферно", gen: 4, type: "🔥 Огонь", rarity: "Uncommon", cp: 980, evoTo: 392, biome: "volcano" },
+      { id: 392, name: "Инфернейп", gen: 4, type: "🔥 Огонь", rarity: "Epic", cp: 2950, biome: "volcano" },
       { id: 393, name: "Пиплап", gen: 4, type: "💧 Вода", rarity: "Common", cp: 440, evoTo: 394, biome: "lake" },
+      { id: 394, name: "Принплап", gen: 4, type: "💧 Вода", rarity: "Uncommon", cp: 950, evoTo: 395, biome: "lake" },
+      { id: 395, name: "Эмполеон", gen: 4, type: "💧 Вода", rarity: "Epic", cp: 2900, biome: "lake" },
       { id: 448, name: "Лукарио", gen: 4, type: "🥋 Боевой", rarity: "Epic", cp: 2900, biome: "ruins" },
       { id: 483, name: "Диалга", gen: 4, type: "🐲 Дракон", rarity: "Legendary", cp: 4400, biome: "ruins" },
       { id: 493, name: "Аркеус", gen: 4, type: "⚪️ Обычный", rarity: "Legendary", cp: 5000, biome: "ruins" },
       // 5 Gen
       { id: 495, name: "Снайви", gen: 5, type: "🌿 Трава", rarity: "Common", cp: 430, evoTo: 496, biome: "forest" },
+      { id: 496, name: "Сервайн", gen: 5, type: "🌿 Трава", rarity: "Uncommon", cp: 940, evoTo: 497, biome: "forest" },
+      { id: 497, name: "Серпериор", gen: 5, type: "🌿 Трава", rarity: "Epic", cp: 2850, biome: "forest" },
       { id: 498, name: "Тепиг", gen: 5, type: "🔥 Огонь", rarity: "Common", cp: 450, evoTo: 499, biome: "volcano" },
+      { id: 499, name: "Пигнайт", gen: 5, type: "🔥 Огонь", rarity: "Uncommon", cp: 960, evoTo: 500, biome: "volcano" },
+      { id: 500, name: "Эмбоар", gen: 5, type: "🔥 Огонь", rarity: "Epic", cp: 2900, biome: "volcano" },
       { id: 501, name: "Ошавотт", gen: 5, type: "💧 Вода", rarity: "Common", cp: 440, evoTo: 502, biome: "lake" },
+      { id: 502, name: "Дьювотт", gen: 5, type: "💧 Вода", rarity: "Uncommon", cp: 950, evoTo: 503, biome: "lake" },
+      { id: 503, name: "Самуротт", gen: 5, type: "💧 Вода", rarity: "Epic", cp: 2900, biome: "lake" },
       { id: 571, name: "Зороарк", gen: 5, type: "🌑 Темный", rarity: "Epic", cp: 2850, biome: "ruins" },
       { id: 643, name: "Реширам", gen: 5, type: "🐲 Дракон", rarity: "Legendary", cp: 4450, biome: "volcano" }
     ];
@@ -540,9 +636,26 @@
       dexMode: 'my',
       curGen: 0,
       selectedPoke: null,
+      
+      // Инкубатор и яйца
+      eggInventory: { common: 2, rare: 1, legend: 0 },
+      activeIncubator: { type: 'Rare', hatchTime: Date.now() - 1000 }, // Готово для демо
       eggCracks: 3,
+
+      // Питомник 2.0 (1 час = 3600 сек)
+      nurserySlot1: null,
+      nurserySlot2: null,
+      nurseryEndTime: 0,
+
+      // Таймеры игр
+      lastWheelSpin: 0,
+      quizLives: 3,
+      lastQuizReset: Date.now(),
+
+      // Мировой босс
+      worldBossHp: 421500,
+
       achievements: {},
-      nursery: { p1: null, p2: null, endTime: 0 },
       towers: [
         { id: 1, name: "🥉 Башня Канто", req: 500, pName: "Геодуд", pid: 74, champ: "Страж Лиги", rate: 15 },
         { id: 2, name: "🥈 Башня Джото", req: 1200, pName: "Скизор", pid: 212, champ: "Страж Лиги", rate: 25 },
@@ -559,15 +672,14 @@
         { id: 4, name: "⚡️ Электро-Стадион", elem: "⚡️ Электро", champ: "Лидер Волкнер", pid: 26, cp: 3000, rateCoins: 50, rateCandies: 1 },
         { id: 5, name: "🐲 Драконий Стадион", elem: "🐲 Дракон", champ: "Чемпион Лэнс", pid: 149, cp: 3800, rateCoins: 80, rateCandies: 2 }
       ],
-      market: [
-        { lot_id: 1, seller: "@red_trainer", p_id: 150, p_name: "Мьюту", cp: 4300, price: 1200, shiny: false },
-        { lot_id: 2, seller: "@ash_ketchum", p_id: 6, p_name: "Чаризард", cp: 2950, price: 600, shiny: true }
+      p2pMarket: [
+        { lot_id: 1, seller: "@ash_ketchum", p_id: 6, p_name: "Чаризард", cp: 2950, price: 600, shiny: true }
       ]
     };
 
     // Загрузка и сохранение
     function loadSavedState() {
-      const saved = localStorage.getItem('poke_mmo_state_v5');
+      const saved = localStorage.getItem('poke_mmo_state_v6');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -575,10 +687,17 @@
           state.candies = p.candies ?? 10;
           state.myPokedex = p.myPokedex || state.myPokedex;
           state.achievements = p.achievements || {};
+          state.eggInventory = p.eggInventory || state.eggInventory;
+          state.activeIncubator = p.activeIncubator || state.activeIncubator;
+          state.nurserySlot1 = p.nurserySlot1 || null;
+          state.nurserySlot2 = p.nurserySlot2 || null;
+          state.nurseryEndTime = p.nurseryEndTime || 0;
+          state.lastWheelSpin = p.lastWheelSpin || 0;
+          state.quizLives = p.quizLives ?? 3;
+          state.lastQuizReset = p.lastQuizReset || Date.now();
           state.towers = p.towers || state.towers;
           state.gyms = p.gyms || state.gyms;
-          state.market = p.market || state.market;
-          state.nursery = p.nursery || state.nursery;
+          state.p2pMarket = p.p2pMarket || state.p2pMarket;
           state.isVip = p.isVip || false;
 
           // Расчет энергии
@@ -590,9 +709,11 @@
             const rem = elapsed % regenSpeed;
             state.energy = Math.min(100, p.energy + rec);
             state.lastEnergyTime = now - (rem * 1000);
-          } else {
-            state.energy = 100;
-            state.lastEnergyTime = Date.now();
+          }
+          // Сброс жизней викторины через 24ч
+          if (Date.now() - state.lastQuizReset >= 86400000) {
+            state.quizLives = 3;
+            state.lastQuizReset = Date.now();
           }
         } catch(e) {}
       }
@@ -600,18 +721,25 @@
     }
 
     function saveState() {
-      localStorage.setItem('poke_mmo_state_v5', JSON.stringify({
+      localStorage.setItem('poke_mmo_state_v6', JSON.stringify({
         coins: state.coins,
         candies: state.candies,
         energy: state.energy,
         lastEnergyTime: state.lastEnergyTime,
         isVip: state.isVip,
         myPokedex: state.myPokedex,
+        eggInventory: state.eggInventory,
+        activeIncubator: state.activeIncubator,
+        nurserySlot1: state.nurserySlot1,
+        nurserySlot2: state.nurserySlot2,
+        nurseryEndTime: state.nurseryEndTime,
+        lastWheelSpin: state.lastWheelSpin,
+        quizLives: state.quizLives,
+        lastQuizReset: state.lastQuizReset,
         achievements: state.achievements,
         towers: state.towers,
         gyms: state.gyms,
-        market: state.market,
-        nursery: state.nursery
+        p2pMarket: state.p2pMarket
       }));
       updateUI();
     }
@@ -633,6 +761,12 @@
       state.energy -= 20;
       state.lastEnergyTime = Date.now();
 
+      // Шанс найти яйцо при охоте (15%)
+      if (Math.random() < 0.15) {
+        state.eggInventory.common = (state.eggInventory.common || 0) + 1;
+        alert('🎁 В траве найдено: 🟢 Обычное Яйцо! Оно добавлено в Инкубатор.');
+      }
+
       const pool = POKEDEX_DATABASE.filter(p => p.biome === state.currentBiome || p.rarity === 'Common');
       const randomPoke = pool[Math.floor(Math.random() * pool.length)];
       const shiny = Math.random() < 0.05;
@@ -650,7 +784,405 @@
       alert(`🎉 Пойман в биоме [${state.currentBiome}]:\n${shiny ? '✨ ШАЙНИ ' : ''}${caught.name} (${caught.cp} CP)! +25 🪙`);
     }
 
-    // 2. ПОКЕДЕКС
+    // 2. ИНКУБАТОР (ВЫБОР И ВЫЛУПЛЕНИЕ)
+    function openEggSelectModal() {
+      const listEl = document.getElementById('egg-inventory-list');
+      listEl.innerHTML = `
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div><b>🟢 Обычное Яйцо</b> (30 мин)<br><span style="font-size:10px; color:var(--muted);">В наличии: ${state.eggInventory.common || 0} шт.</span></div>
+          <button class="chip active" onclick="placeEggInIncubator('Common', 1800)">Поставить</button>
+        </div>
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div><b>🔵 Редкое Яйцо</b> (1.5 часа)<br><span style="font-size:10px; color:var(--muted);">В наличии: ${state.eggInventory.rare || 0} шт.</span></div>
+          <button class="chip active" onclick="placeEggInIncubator('Rare', 5400)">Поставить</button>
+        </div>
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div><b>🟡 Легендарное Яйцо</b> (3 часа)<br><span style="font-size:10px; color:var(--muted);">В наличии: ${state.eggInventory.legend || 0} шт.</span></div>
+          <button class="chip active" style="background:var(--accent-star); color:#000;" onclick="placeEggInIncubator('Legendary', 10800)">Поставить</button>
+        </div>
+      `;
+      openModal('egg-select-modal');
+    }
+
+    function placeEggInIncubator(type, durationSec) {
+      const key = type.toLowerCase();
+      if ((state.eggInventory[key] || 0) <= 0) {
+        alert('У вас нет яиц этого типа! Купите в магазине или найдите на охоте.');
+        return;
+      }
+      state.eggInventory[key]--;
+      state.activeIncubator = {
+        type: type,
+        hatchTime: Date.now() + (durationSec * 1000)
+      };
+      saveState();
+      closeModal('egg-select-modal');
+      renderIncubatorUI();
+      alert(`🥚 ${type} Яйцо помещено в инкубатор!`);
+    }
+
+    function renderIncubatorUI() {
+      const inc = state.activeIncubator;
+      if (!inc) {
+        document.getElementById('egg-title').innerText = "Инкубатор пуст";
+        document.getElementById('egg-timer').innerText = "Нажмите «Выбрать яйцо»";
+        document.getElementById('egg-action-btn').style.display = 'none';
+        return;
+      }
+      document.getElementById('egg-title').innerText = `${inc.type} Яйцо`;
+      const rem = Math.max(0, Math.floor((inc.hatchTime - Date.now()) / 1000));
+      if (rem <= 0) {
+        document.getElementById('egg-timer').innerText = "Готово к вылуплению!";
+        document.getElementById('egg-action-btn').style.display = 'block';
+        document.getElementById('egg-action-btn').innerText = "🐣 Вылупить";
+      } else {
+        const m = Math.floor(rem / 60);
+        const s = rem % 60;
+        document.getElementById('egg-timer').innerText = `Созревание: ${m}м ${s}с`;
+        document.getElementById('egg-action-btn').style.display = 'none';
+      }
+    }
+
+    function handleEggAction() {
+      state.eggCracks = 3;
+      document.getElementById('egg-clicks-left').innerText = `Осталось тапов: ${state.eggCracks}`;
+      openModal('egg-modal');
+    }
+
+    function tapCrackEgg() {
+      state.eggCracks--;
+      triggerHaptic('medium');
+      document.getElementById('egg-clicks-left').innerText = `Осталось тапов: ${state.eggCracks}`;
+
+      if (state.eggCracks <= 0) {
+        triggerHaptic('heavy');
+        closeModal('egg-modal');
+
+        const incType = state.activeIncubator?.type || 'Rare';
+        state.activeIncubator = null;
+
+        const pool = POKEDEX_DATABASE.filter(p => incType === 'Legendary' ? p.rarity === 'Legendary' : (incType === 'Rare' ? p.rarity === 'Epic' : p.rarity === 'Uncommon'));
+        const hatched = pool[Math.floor(Math.random() * pool.length)] || POKEDEX_DATABASE[0];
+        
+        state.myPokedex.unshift({ ...hatched, cp: hatched.cp + 150, is_shiny: Math.random() < 0.1 });
+        trackAchieve(20, 1);
+        saveState();
+        renderDex();
+        renderIncubatorUI();
+        alert(`🐣 ЯЙЦО РАСКОЛОЛОСЬ!\nВылупился: ${hatched.name} (${hatched.cp + 150} CP)!`);
+      }
+    }
+
+    // 3. ПИТОМНИК 2.0 (1 ЧАС)
+    let currentNurserySlot = 1;
+    function openNurseryPicker(slotNum) {
+      currentNurserySlot = slotNum;
+      const listEl = document.getElementById('nursery-list-select');
+      listEl.innerHTML = '';
+      state.myPokedex.forEach(p => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        d.style.display = 'flex';
+        d.style.justifyContent = 'space-between';
+        d.style.alignItems = 'center';
+        d.style.padding = '8px';
+        d.style.marginBottom = '6px';
+        d.innerHTML = `<span>${p.name} (${p.cp} CP)</span> <button class="chip active">Выбрать</button>`;
+        d.onclick = () => selectNurseryFighter(p);
+        listEl.appendChild(d);
+      });
+      openModal('nursery-picker-modal');
+    }
+
+    function selectNurseryFighter(p) {
+      if (currentNurserySlot === 1) state.nurserySlot1 = p;
+      else state.nurserySlot2 = p;
+      closeModal('nursery-picker-modal');
+      renderNurseryUI();
+    }
+
+    function renderNurseryUI() {
+      const s1 = document.getElementById('nursery-s1');
+      const s2 = document.getElementById('nursery-s2');
+
+      if (state.nurserySlot1) {
+        s1.classList.add('filled');
+        s1.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${state.nurserySlot1.id}.png"><span style="font-size:10px;">${state.nurserySlot1.name}</span>`;
+      } else {
+        s1.classList.remove('filled');
+        s1.innerHTML = `<span style="font-size:24px;">➕</span><span style="font-size:10px; color:var(--muted);">Слот 1</span>`;
+      }
+
+      if (state.nurserySlot2) {
+        s2.classList.add('filled');
+        s2.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${state.nurserySlot2.id}.png"><span style="font-size:10px;">${state.nurserySlot2.name}</span>`;
+      } else {
+        s2.classList.remove('filled');
+        s2.innerHTML = `<span style="font-size:24px;">➕</span><span style="font-size:10px; color:var(--muted);">Слот 2</span>`;
+      }
+
+      const now = Date.now();
+      if (state.nurseryEndTime > 0) {
+        const rem = Math.max(0, Math.floor((state.nurseryEndTime - now) / 1000));
+        if (rem <= 0) {
+          document.getElementById('nursery-status-text').innerText = "🎉 Скрещивание завершено! Яйцо готово!";
+          document.getElementById('nursery-start-btn').innerText = "🎁 Забрать полученное яйцо";
+          document.getElementById('nursery-start-btn').onclick = claimNurseryEgg;
+        } else {
+          const m = Math.floor(rem / 60);
+          const s = rem % 60;
+          document.getElementById('nursery-status-text').innerText = `Скрещивание... Осталось: ${m}м ${s}с`;
+          document.getElementById('nursery-start-btn').innerText = "⏳ В процессе скрещивания...";
+        }
+      }
+    }
+
+    function startBreedingProcess() {
+      if (!state.nurserySlot1 || !state.nurserySlot2) {
+        alert('Выберите двух покемонов в оба слота!');
+        return;
+      }
+      triggerHaptic('heavy');
+      state.nurseryEndTime = Date.now() + 3600000; // 1 час
+      saveState();
+      renderNurseryUI();
+      alert('❤️ Пара помещена в питомник! Яйцо будет готово ровно через 1 час.');
+    }
+
+    function claimNurseryEgg() {
+      triggerHaptic('heavy');
+      state.eggInventory.rare = (state.eggInventory.rare || 0) + 1;
+      state.nurserySlot1 = null;
+      state.nurserySlot2 = null;
+      state.nurseryEndTime = 0;
+      saveState();
+      renderNurseryUI();
+      alert('🎉 Получено 🔵 Редкое Яйцо! Оно перемещено в ваш Инвентарь Яиц.');
+    }
+
+    // 4. КОЛЕСО ФОРТУНЫ (1 РАЗ В 24Ч)
+    function checkWheelAvailability() {
+      const now = Date.now();
+      const elapsed = now - (state.lastWheelSpin || 0);
+      const btn = document.getElementById('wheel-btn');
+      const timerText = document.getElementById('wheel-timer-text');
+
+      if (elapsed < 86400000) {
+        const remSec = Math.floor((86400000 - elapsed) / 1000);
+        const h = Math.floor(remSec / 3600);
+        const m = Math.floor((remSec % 3600) / 60);
+        timerText.innerText = `Следующий бесплатный спин через: ${h}ч ${m}м`;
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+      } else {
+        timerText.innerText = "1 бесплатный спин доступен прямо сейчас!";
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
+    }
+
+    function spinWheelAction() {
+      const now = Date.now();
+      if (now - (state.lastWheelSpin || 0) < 86400000) {
+        alert('Вы уже крутили рулетку сегодня! Приходите завтра.');
+        return;
+      }
+      triggerHaptic('heavy');
+      state.lastWheelSpin = now;
+      state.coins += 75;
+      trackAchieve(25, 1);
+      saveState();
+      checkWheelAvailability();
+      alert('🎰 РУЛЕТКА: Вы выиграли +75 🪙 монет!');
+    }
+
+    // 5. ВИКТОРИНА (3 ЖИЗНИ В 24Ч)
+    let currentQuizPoke = null;
+    function renderQuizUI() {
+      const hearts = "❤️".repeat(state.quizLives) + "🖤".repeat(3 - state.quizLives);
+      document.getElementById('quiz-hearts').innerText = hearts;
+
+      if (state.quizLives <= 0) {
+        document.getElementById('quiz-status-text').innerText = "Жизни закончились! Сброс через 24 часа.";
+        document.getElementById('quiz-options').innerHTML = '<p style="grid-column:span 2; font-size:11px; color:var(--muted);">Попробуйте снова завтра!</p>';
+        return;
+      }
+
+      currentQuizPoke = POKEDEX_DATABASE[Math.floor(Math.random() * POKEDEX_DATABASE.length)];
+      document.getElementById('quiz-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentQuizPoke.id}.png`;
+      document.getElementById('quiz-poke-name').innerText = currentQuizPoke.name;
+
+      const allTypes = ["🌿 Трава", "🔥 Огонь", "💧 Вода", "⚡️ Электро", "🔮 Психик", "🐲 Дракон", "🪨 Камень", "👻 Призрак"];
+      const wrongs = allTypes.filter(t => t !== currentQuizPoke.type).sort(() => 0.5 - Math.random()).slice(0, 3);
+      const opts = [...wrongs, currentQuizPoke.type].sort(() => 0.5 - Math.random());
+
+      const optContainer = document.getElementById('quiz-options');
+      optContainer.innerHTML = '';
+      opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'chip';
+        btn.innerText = opt;
+        btn.onclick = () => answerQuiz(opt === currentQuizPoke.type);
+        optContainer.appendChild(btn);
+      });
+    }
+
+    function answerQuiz(isCorrect) {
+      if (isCorrect) {
+        triggerHaptic('medium');
+        state.coins += 25;
+        trackAchieve(24, 1);
+        saveState();
+        alert('🎉 Правильно! Стихия совпала. Получено +25 🪙 монет!');
+      } else {
+        triggerHaptic('heavy');
+        state.quizLives--;
+        saveState();
+        alert(`❌ Ошибка! Сгорела 1 жизнь. Осталось жизней: ${state.quizLives}`);
+      }
+      renderQuizUI();
+    }
+
+    // 6. ДВУХВАЛЮТНЫЙ РЫНОК
+    function switchMarketMode(el, mode) {
+      document.querySelectorAll('#tab-market .dex-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('market-system-view').style.display = mode === 'system' ? 'block' : 'none';
+      document.getElementById('market-p2p-view').style.display = mode === 'p2p' ? 'block' : 'none';
+    }
+
+    const SYSTEM_STARS_LOTS = [
+      { id: 384, name: "Шайни Райкваза", cp: 4500, stars: 250, shiny: true },
+      { id: 150, name: "Мьюту", cp: 4300, stars: 200, shiny: false },
+      { id: 6, name: "Шайни Чаризард", cp: 3100, stars: 150, shiny: true },
+      { id: 25, name: "Шайни Пикачу", cp: 1400, stars: 75, shiny: true }
+    ];
+
+    function renderSystemMarket() {
+      const container = document.getElementById('system-market-list');
+      container.innerHTML = '';
+      SYSTEM_STARS_LOTS.forEach(lot => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        d.style.display = 'flex';
+        d.style.justifyContent = 'space-between';
+        d.style.alignItems = 'center';
+        d.style.marginBottom = '6px';
+        d.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${lot.id}.png" style="width:40px; height:40px;">
+            <div>
+              <h4 style="font-size:12px;">${lot.shiny ? '✨ ' : ''}${lot.name} (${lot.cp} CP)</h4>
+              <p style="font-size:10px; color:var(--accent-star);">Официальный лот Лиги</p>
+            </div>
+          </div>
+          <button class="chip active" style="background:var(--accent-star); color:#000;" onclick="buyStarsItem('${lot.name}', ${lot.stars}, 'system_poke_${lot.id}')">${lot.stars} ⭐</button>
+        `;
+        container.appendChild(d);
+      });
+    }
+
+    function renderP2PMarket() {
+      const container = document.getElementById('p2p-market-list');
+      container.innerHTML = '';
+      state.p2pMarket.forEach(lot => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        d.style.display = 'flex';
+        d.style.justifyContent = 'space-between';
+        d.style.alignItems = 'center';
+        d.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${lot.p_id}.png" style="width:40px; height:40px;">
+            <div>
+              <h4 style="font-size:12px;">${lot.shiny ? '✨ ' : ''}${lot.p_name} (${lot.cp} CP)</h4>
+              <p style="font-size:10px; color:var(--muted);">${lot.seller}</p>
+            </div>
+          </div>
+          <button class="chip active" style="background:var(--primary); color:#000;" onclick="buyP2PLot(${lot.lot_id}, ${lot.price})">Купить (${lot.price} 🪙)</button>
+        `;
+        container.appendChild(d);
+      });
+    }
+
+    function buyP2PLot(lotId, price) {
+      if (state.coins < price) { alert('❌ Недостаточно монет!'); return; }
+      const idx = state.p2pMarket.findIndex(l => l.lot_id === lotId);
+      if (idx === -1) return;
+
+      const lot = state.p2pMarket[idx];
+      state.coins -= price;
+      state.myPokedex.unshift({ id: lot.p_id, name: lot.p_name, cp: lot.cp, is_shiny: lot.shiny, type: "⚪️ Обычный", gen: 1 });
+      state.p2pMarket.splice(idx, 1);
+
+      saveState();
+      renderP2PMarket();
+      renderDex();
+      alert(`🎉 Вы купили ${lot.p_name} за ${price} 🪙!`);
+    }
+
+    function openSellModal() {
+      const listEl = document.getElementById('sell-picker-list');
+      listEl.innerHTML = '';
+      state.myPokedex.forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.className = 'card';
+        item.style.padding = '8px';
+        item.style.marginBottom = '6px';
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.innerHTML = `<span>${p.name} (${p.cp} CP)</span> <button class="chip active">Выбрать</button>`;
+        item.onclick = () => { state.sellSelectedIdx = idx; alert(`Выбран: ${p.name}`); };
+        listEl.appendChild(item);
+      });
+      openModal('sell-modal');
+    }
+
+    function confirmSellListing() {
+      const price = parseInt(document.getElementById('sell-price-input').value) || 150;
+      if (state.sellSelectedIdx === undefined || !state.myPokedex[state.sellSelectedIdx]) {
+        alert('Выберите покемона из списка!');
+        return;
+      }
+      const p = state.myPokedex.splice(state.sellSelectedIdx, 1)[0];
+      state.p2pMarket.unshift({
+        lot_id: Date.now(),
+        seller: `@${state.user.username || 'me'}`,
+        p_id: p.id,
+        p_name: p.name,
+        cp: p.cp,
+        price: price,
+        shiny: p.is_shiny
+      });
+      trackAchieve(26, 1);
+      saveState();
+      renderP2PMarket();
+      renderDex();
+      closeModal('sell-modal');
+      alert(`✅ ${p.name} выставлен на рынок игроков за ${price} 🪙!`);
+    }
+
+    // 7. МИРОВОЙ БОСС И ТУРНИРЫ
+    function attackWorldBoss() {
+      if (state.energy < 15) { alert('⚡️ Нужно 15 энергии для атаки!'); return; }
+      triggerHaptic('heavy');
+      state.energy -= 15;
+      const dmg = Math.floor(Math.random() * 2500) + 1000;
+      state.worldBossHp = Math.max(0, state.worldBossHp - dmg);
+      state.coins += 40;
+      saveState();
+
+      const pct = Math.floor((state.worldBossHp / 500000) * 100);
+      document.getElementById('boss-hp-text').innerText = `${state.worldBossHp} / 500 000`;
+      document.getElementById('boss-hp-fill').style.width = `${pct}%`;
+      alert(`💥 Вы нанесли ${dmg} урона Теневому Мьюту! Получено +40 🪙!`);
+    }
+
+    function registerTournament() {
+      alert('🏆 Ваша команда успешно зарегистрирована в Гранд-Лиге! Итоги будут подведены в воскресенье.');
+    }
+
+    // 8. ПОКЕДЕКС И ЭВОЛЮЦИЯ
     function switchDexMode(el, mode) {
       document.querySelectorAll('.dex-tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
@@ -663,16 +1195,10 @@
       grid.innerHTML = '';
       document.getElementById('my-count').innerText = state.myPokedex.length;
 
-      let list = [];
-      if (state.dexMode === 'my') {
-        list = state.myPokedex;
-      } else {
-        const caughtIds = new Set(state.myPokedex.map(p => p.id));
-        list = POKEDEX_DATABASE.map(p => ({
-          ...p,
-          locked: !caughtIds.has(p.id)
-        }));
-      }
+      let list = state.dexMode === 'my' ? state.myPokedex : POKEDEX_DATABASE.map(p => ({
+        ...p,
+        locked: !state.myPokedex.some(m => m.id === p.id)
+      }));
 
       const filtered = list.filter(p => state.curGen === 0 || p.gen === state.curGen);
 
@@ -698,14 +1224,11 @@
 
     function searchDex(q) {
       const query = q.toLowerCase().trim();
-      const items = document.querySelectorAll('.poke-item');
-      items.forEach(it => {
-        const text = it.innerText.toLowerCase();
-        it.style.display = text.includes(query) ? 'block' : 'none';
+      document.querySelectorAll('.poke-item').forEach(it => {
+        it.style.display = it.innerText.toLowerCase().includes(query) ? 'block' : 'none';
       });
     }
 
-    // 3. ЭВОЛЮЦИЯ
     function openPokeModal(p) {
       state.selectedPoke = p;
       document.getElementById('m-poke-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`;
@@ -749,70 +1272,12 @@
       alert(`✨ ЭВОЛЮЦИЯ! Ваш покемон развился в ${nextPoke.name} (${p.cp} CP)!`);
     }
 
-    // 4. МАГАЗИН: ДОНАТ STARS И МОНЕТЫ
-    function buyStarsItem(title, stars, itemType) {
-      triggerHaptic('heavy');
-      if (tg?.openInvoice) {
-        tg.openInvoice(`https://t.me/$poke_stars_${stars}`, (status) => {
-          if (status === 'paid') executeStarsReward(itemType, title);
-        });
-      } else {
-        executeStarsReward(itemType, title);
-      }
-    }
-
-    function executeStarsReward(itemType, title) {
-      if (itemType === 'egg_legend') {
-        const legendList = POKEDEX_DATABASE.filter(p => p.rarity === 'Legendary');
-        const poke = legendList[Math.floor(Math.random() * legendList.length)];
-        state.myPokedex.unshift({ ...poke, cp: poke.cp + 200, is_shiny: true });
-        trackAchieve(22, 1);
-      } else if (itemType === 'coins_1000') {
-        state.coins += 1000;
-      } else if (itemType === 'coins_5000') {
-        state.coins += 5000;
-      } else if (itemType === 'vip_30') {
-        state.isVip = true;
-      } else if (itemType === 'shiny_charm') {
-        alert('✨ Шайни-Амулет активирован на 24 часа!');
-      } else if (itemType === 'masterball') {
-        state.myPokedex.unshift({ id: 150, name: "Мьюту", gen: 1, type: "🔮 Психик", rarity: "Legendary", cp: 4800, is_shiny: true });
-      }
-
-      saveState();
-      renderDex();
-      alert(`⭐ [УСПЕШНО] Вы приобрели: ${title}!`);
-    }
-
-    function buyCoinItem(type, cost) {
-      if (state.coins < cost) {
-        alert(`❌ Недостаточно монет! Нужно ${cost} 🪙 (у вас ${state.coins} 🪙)`);
-        return;
-      }
-      triggerHaptic('medium');
-      state.coins -= cost;
-
-      if (type === 'lure') state.energy = 100;
-      if (type === 'energy_drink') state.energy = Math.min(100, state.energy + 50);
-      if (type === 'candies') state.candies += 5;
-      if (type === 'ultraball') alert('🔘 1 Ультрабол добавлен в инвентарь!');
-      if (type === 'potion') alert('🧪 Зелье Мощи активировано (+500 CP на 1 час)!');
-      if (type === 'egg_rare') alert('🥚 Редкое Яйцо помещено в ваш Инкубатор!');
-
-      saveState();
-      alert('✅ Успешная покупка!');
-    }
-
-    // 5. ВЫБОР СВОЕГО БОЙЦА
+    // 9. БОЕВАЯ СИСТЕМА
     let pickerTimerInterval = null;
     let pendingBattle = null;
 
     function openFighterPicker(enemyName, enemyId, enemyCp, battleType, metaId = 0) {
-      if (state.myPokedex.length === 0) {
-        alert('У вас нет покемонов для боя!');
-        return;
-      }
-
+      if (state.myPokedex.length === 0) { alert('У вас нет покемонов для боя!'); return; }
       pendingBattle = { enemyName, enemyId, enemyCp, battleType, metaId };
       const listEl = document.getElementById('picker-list');
       listEl.innerHTML = '';
@@ -825,14 +1290,10 @@
         item.style.justifyContent = 'space-between';
         item.style.padding = '8px 12px';
         item.style.marginBottom = '6px';
-        item.style.cursor = 'pointer';
         item.innerHTML = `
           <div style="display:flex; align-items:center; gap:8px;">
             <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png" style="width:40px; height:40px;">
-            <div>
-              <h5 style="font-size:12px;">${p.name}</h5>
-              <span style="font-size:10px; color:var(--muted);">${p.type} | ${p.cp} CP</span>
-            </div>
+            <div><h5>${p.name}</h5><span style="font-size:10px; color:var(--muted);">${p.type} | ${p.cp} CP</span></div>
           </div>
           <button class="chip active" style="background:var(--primary); color:#000;">Выбрать</button>
         `;
@@ -861,7 +1322,6 @@
       startAnimatedBattle(myPoke, pendingBattle.enemyName, pendingBattle.enemyId, pendingBattle.enemyCp, pendingBattle.battleType, pendingBattle.metaId);
     }
 
-    // 6. БОЕВАЯ АРЕНА
     function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, battleType, metaId) {
       document.getElementById('b-p1-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${myPoke.id}.png`;
       document.getElementById('b-p1-name').innerText = `${myPoke.name} (${myPoke.cp} CP)`;
@@ -891,28 +1351,18 @@
 
           if (battleType === 'tower') {
             const t = state.towers.find(x => x.id === metaId);
-            if (t) {
-              t.champ = state.user.username || "Вы";
-              t.pName = myPoke.name;
-              t.pid = myPoke.id;
-              t.req = myPoke.cp;
-            }
+            if (t) { t.champ = state.user.username || "Вы"; t.pName = myPoke.name; t.pid = myPoke.id; t.req = myPoke.cp; }
             state.coins += 100;
             trackAchieve(17, 1);
             document.getElementById('battle-log').innerText = `👑 ВЫ ЗАХВАТИЛИ БАШНЮ! +100 🪙 монет!`;
           } else if (battleType === 'gym') {
             const g = state.gyms.find(x => x.id === metaId);
-            if (g) {
-              g.champ = state.user.username || "Вы";
-              g.cp = myPoke.cp;
-            }
-            state.coins += 150;
-            state.candies += 3;
+            if (g) { g.champ = state.user.username || "Вы"; g.cp = myPoke.cp; }
+            state.coins += 150; state.candies += 3;
             trackAchieve(19, 1);
             document.getElementById('battle-log').innerText = `🏆 ВЫ СТАЛИ ЛИДЕРОМ СТАДИОНА! +150 🪙 и +3 🍬!`;
           } else {
-            state.coins += 50;
-            trackAchieve(14, 1);
+            state.coins += 50; trackAchieve(14, 1);
             document.getElementById('battle-log').innerText = `🏆 ПОБЕДА НА АРЕНЕ! Получено +50 🪙 монет!`;
           }
           saveState();
@@ -931,63 +1381,6 @@
       openFighterPicker(`Дуэлянт ${target}`, 6, 2200, 'pvp');
     }
 
-    // 7. ИНКУБАТОР
-    function openEggModal() {
-      state.eggCracks = 3;
-      document.getElementById('egg-clicks-left').innerText = `Осталось тапов: ${state.eggCracks}`;
-      openModal('egg-modal');
-    }
-
-    function tapCrackEgg() {
-      state.eggCracks--;
-      triggerHaptic('medium');
-      document.getElementById('egg-clicks-left').innerText = `Осталось тапов: ${state.eggCracks}`;
-
-      if (state.eggCracks <= 0) {
-        triggerHaptic('heavy');
-        closeModal('egg-modal');
-        
-        const epicList = POKEDEX_DATABASE.filter(p => p.rarity === 'Epic' || p.rarity === 'Legendary');
-        const hatched = epicList[Math.floor(Math.random() * epicList.length)];
-        state.myPokedex.unshift({ ...hatched, cp: hatched.cp + 120 });
-        trackAchieve(20, 1);
-        saveState();
-        renderDex();
-        alert(`🐣 ЯЙЦО РАСКОЛОЛОСЬ!\nВылупился: ${hatched.name} (${hatched.cp + 120} CP)!`);
-      }
-    }
-
-    // 8. ПИТОМНИК
-    function openNurseryModal() {
-      if (state.myPokedex.length < 2) {
-        alert('Вам нужно минимум 2 покемона в коллекции!');
-        return;
-      }
-      const listEl = document.getElementById('nursery-picker-list');
-      listEl.innerHTML = '';
-      state.myPokedex.forEach(p => {
-        const item = document.createElement('div');
-        item.className = 'card';
-        item.style.padding = '8px';
-        item.style.marginBottom = '6px';
-        item.style.display = 'flex';
-        item.style.justifyContent = 'space-between';
-        item.style.alignItems = 'center';
-        item.innerHTML = `<span>${p.name} (${p.cp} CP)</span> <button class="chip active">Выбрать</button>`;
-        item.onclick = () => confirmNurseryPair(p);
-        listEl.appendChild(item);
-      });
-      openModal('nursery-modal');
-    }
-
-    function confirmNurseryPair(poke) {
-      closeModal('nursery-modal');
-      triggerHaptic('heavy');
-      document.getElementById('nursery-status').innerText = `Пара в питомнике: ${poke.name}. Яйцо созреет через 4 часа.`;
-      alert(`❤️ ${poke.name} отправлен в питомник! Возвращайтесь за яйцом.`);
-    }
-
-    // 9. БАШНИ И СТАДИОНЫ
     function renderTowers() {
       const container = document.getElementById('towers-list');
       container.innerHTML = '';
@@ -1028,124 +1421,50 @@
       });
     }
 
-    // 10. ВИКТОРИНА С КАРТИНКАМИ
-    let currentQuizPoke = null;
-    function loadQuiz() {
-      currentQuizPoke = POKEDEX_DATABASE[Math.floor(Math.random() * POKEDEX_DATABASE.length)];
-      document.getElementById('quiz-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentQuizPoke.id}.png`;
-      document.getElementById('quiz-poke-name').innerText = currentQuizPoke.name;
-
-      const allTypes = ["🌿 Трава", "🔥 Огонь", "💧 Вода", "⚡️ Электро", "🔮 Психик", "🐲 Дракон", "🪨 Камень", "👻 Призрак"];
-      const wrongs = allTypes.filter(t => t !== currentQuizPoke.type).sort(() => 0.5 - Math.random()).slice(0, 3);
-      const opts = [...wrongs, currentQuizPoke.type].sort(() => 0.5 - Math.random());
-
-      const optContainer = document.getElementById('quiz-options');
-      optContainer.innerHTML = '';
-      opts.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = 'chip';
-        btn.innerText = opt;
-        btn.onclick = () => answerQuiz(opt === currentQuizPoke.type);
-        optContainer.appendChild(btn);
-      });
-    }
-
-    function answerQuiz(isCorrect) {
-      if (isCorrect) {
-        triggerHaptic('medium');
-        state.coins += 20;
-        trackAchieve(24, 1);
-        saveState();
-        alert('🎉 Правильно! Стихия совпала. Получено +20 🪙 монет!');
-        loadQuiz();
+    // 10. МАГАЗИН И STARS
+    function buyStarsItem(title, stars, itemType) {
+      triggerHaptic('heavy');
+      if (tg?.openInvoice) {
+        tg.openInvoice(`https://t.me/$poke_stars_${stars}`, (status) => {
+          if (status === 'paid') executeStarsReward(itemType, title);
+        });
       } else {
-        triggerHaptic('heavy');
-        alert('❌ Неверно! Попробуйте еще раз.');
+        executeStarsReward(itemType, title);
       }
     }
 
-    // 11. РЫНОК
-    function renderMarket() {
-      const container = document.getElementById('market-list');
-      container.innerHTML = '';
-      state.market.forEach(lot => {
-        const d = document.createElement('div');
-        d.className = 'card';
-        d.style.display = 'flex';
-        d.style.justifyContent = 'space-between';
-        d.style.alignItems = 'center';
-        d.innerHTML = `
-          <div style="display:flex; align-items:center; gap:8px;">
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${lot.p_id}.png" style="width:40px; height:40px;">
-            <div>
-              <h4 style="font-size:12px;">${lot.shiny ? '✨ ' : ''}${lot.p_name} (${lot.cp} CP)</h4>
-              <p style="font-size:10px; color:var(--muted);">${lot.seller}</p>
-            </div>
-          </div>
-          <button class="chip active" style="background:var(--accent-star); color:#000;" onclick="buyMarketLot(${lot.lot_id}, ${lot.price})">Купить (${lot.price} 🪙)</button>
-        `;
-        container.appendChild(d);
-      });
-    }
-
-    function buyMarketLot(lotId, price) {
-      if (state.coins < price) { alert('❌ Недостаточно монет!'); return; }
-      const idx = state.market.findIndex(l => l.lot_id === lotId);
-      if (idx === -1) return;
-
-      const lot = state.market[idx];
-      state.coins -= price;
-      state.myPokedex.unshift({ id: lot.p_id, name: lot.p_name, cp: lot.cp, is_shiny: lot.shiny, type: "⚪️ Обычный", gen: 1 });
-      state.market.splice(idx, 1);
-
-      saveState();
-      renderMarket();
-      renderDex();
-      alert(`🎉 Вы купили ${lot.p_name} за ${price} 🪙!`);
-    }
-
-    function openSellModal() {
-      const listEl = document.getElementById('sell-picker-list');
-      listEl.innerHTML = '';
-      state.myPokedex.forEach((p, idx) => {
-        const item = document.createElement('div');
-        item.className = 'card';
-        item.style.padding = '8px';
-        item.style.marginBottom = '6px';
-        item.style.display = 'flex';
-        item.style.justifyContent = 'space-between';
-        item.innerHTML = `<span>${p.name} (${p.cp} CP)</span> <button class="chip active">Выбрать</button>`;
-        item.onclick = () => { state.sellSelectedIdx = idx; alert(`Выбран: ${p.name}`); };
-        listEl.appendChild(item);
-      });
-      openModal('sell-modal');
-    }
-
-    function confirmSellListing() {
-      const price = parseInt(document.getElementById('sell-price-input').value) || 150;
-      if (state.sellSelectedIdx === undefined || !state.myPokedex[state.sellSelectedIdx]) {
-        alert('Выберите покемона из списка!');
-        return;
+    function executeStarsReward(itemType, title) {
+      if (itemType === 'egg_legend') {
+        state.eggInventory.legend = (state.eggInventory.legend || 0) + 1;
+        trackAchieve(22, 1);
+      } else if (itemType === 'coins_1000') {
+        state.coins += 1000;
+      } else if (itemType === 'coins_5000') {
+        state.coins += 5000;
+      } else if (itemType === 'vip_30') {
+        state.isVip = true;
+      } else if (itemType.startsWith('system_poke_')) {
+        const pid = parseInt(itemType.replace('system_poke_', ''));
+        const p = POKEDEX_DATABASE.find(x => x.id === pid) || { id: pid, name: title, cp: 4000, rarity: 'Legendary' };
+        state.myPokedex.unshift({ ...p, cp: p.cp + 300, is_shiny: true });
       }
-      const p = state.myPokedex.splice(state.sellSelectedIdx, 1)[0];
-      state.market.unshift({
-        lot_id: Date.now(),
-        seller: `@${state.user.username || 'me'}`,
-        p_id: p.id,
-        p_name: p.name,
-        cp: p.cp,
-        price: price,
-        shiny: p.is_shiny
-      });
-      trackAchieve(26, 1);
       saveState();
-      renderMarket();
       renderDex();
-      closeModal('sell-modal');
-      alert(`✅ ${p.name} выставлен на рынок за ${price} 🪙!`);
+      alert(`⭐ [УСПЕШНО] Вы приобрели: ${title}!`);
     }
 
-    // 12. ВСЕ 30 ДОСТИЖЕНИЙ
+    function buyCoinItem(type, cost) {
+      if (state.coins < cost) { alert(`❌ Нужно ${cost} 🪙!`); return; }
+      triggerHaptic('medium');
+      state.coins -= cost;
+      if (type === 'lure') state.energy = 100;
+      if (type === 'candies') state.candies += 5;
+      if (type === 'egg_rare') state.eggInventory.rare = (state.eggInventory.rare || 0) + 1;
+      saveState();
+      alert('✅ Успешная покупка!');
+    }
+
+    // 11. ВСЕ 30 ДОСТИЖЕНИЙ
     function trackAchieve(id, amount) {
       state.achievements[id] = (state.achievements[id] || 0) + amount;
       saveState();
@@ -1183,20 +1502,13 @@
       alert(`🎉 Достижение завершено! Начислено +${reward} 🪙 монет!`);
     }
 
-    // 13. АДМИН ПАНЕЛЬ
+    // 12. АДМИН ПАНЕЛЬ
     function adminExecute(type, val) {
       const targetUser = document.getElementById('admin-target-user').value.trim() || state.user.username;
       triggerHaptic('heavy');
-
       if (type === 'coins') state.coins += val;
       if (type === 'candies') state.candies += val;
-      if (type === 'egg') {
-        const legendList = POKEDEX_DATABASE.filter(p => p.rarity === 'Legendary');
-        const poke = legendList[Math.floor(Math.random() * legendList.length)];
-        state.myPokedex.unshift({ ...poke, cp: poke.cp + 200, is_shiny: true });
-        renderDex();
-        alert(`🥚 Легендарное Яйцо выдано игроку ${targetUser}! Вылупился: ${poke.name}!`);
-      }
+      if (type === 'egg') state.eggInventory.legend = (state.eggInventory.legend || 0) + 1;
       saveState();
       alert(`👑 [АДМИН] Успешно начислено игроку ${targetUser}!`);
     }
@@ -1205,19 +1517,10 @@
       const targetUser = document.getElementById('admin-target-user').value.trim() || state.user.username;
       const pid = parseInt(document.getElementById('admin-poke-id').value) || 384;
       const poke = POKEDEX_DATABASE.find(x => x.id === pid) || { id: pid, name: `Покемон #${pid}`, gen: 3, type: "🐲 Дракон", rarity: "Legendary", cp: 4500 };
-
       state.myPokedex.unshift({ ...poke, cp: 4500, is_shiny: true });
       saveState();
       renderDex();
       alert(`👑 [АДМИН] Шайни ${poke.name} (4500 CP) выдан игроку ${targetUser}!`);
-    }
-
-    function spinWheelAction() {
-      triggerHaptic('heavy');
-      state.coins += 50;
-      trackAchieve(25, 1);
-      saveState();
-      alert('🎰 РУЛЕТКА: Вы выиграли +50 🪙 монет!');
     }
 
     // Навигация
@@ -1243,12 +1546,22 @@
     window.onload = () => {
       loadSavedState();
       renderDex();
+      renderIncubatorUI();
+      renderNurseryUI();
       renderTowers();
       renderGyms();
+      renderSystemMarket();
+      renderP2PMarket();
       renderAchievements();
-      renderMarket();
-      loadQuiz();
-      
+      renderQuizUI();
+      checkWheelAvailability();
+
+      setInterval(() => {
+        renderIncubatorUI();
+        renderNurseryUI();
+        checkWheelAvailability();
+      }, 1000);
+
       const myUser = (tg?.initDataUnsafe?.user?.username || '').toLowerCase();
       if (myUser === 'prokudin95' || true) {
         document.getElementById('admin-nav').style.display = 'flex';
