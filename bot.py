@@ -40,7 +40,9 @@ def init_db():
             coins INTEGER DEFAULT 500,
             candies INTEGER DEFAULT 10,
             energy INTEGER DEFAULT 100,
-            last_energy_calc REAL DEFAULT 0
+            last_energy_calc REAL DEFAULT 0,
+            dungeon_floor INTEGER DEFAULT 1,
+            tourney_stage INTEGER DEFAULT 1
         );
     """)
     cur.execute("""
@@ -120,15 +122,7 @@ async def api_admin_stats_handler(request):
         total_shiny = cur.fetchone()[0]
         cur.close()
         conn.close()
-        return web.json_response({
-            "status": "ok",
-            "stats": {
-                "users": total_users,
-                "caught": total_pokemon,
-                "coins": total_coins,
-                "shiny": total_shiny
-            }
-        })
+        return web.json_response({"status": "ok", "stats": {"users": total_users, "caught": total_pokemon, "coins": total_coins, "shiny": total_shiny}})
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
@@ -162,10 +156,91 @@ async def api_hunt_handler(request):
             "status": "ok",
             "energy": u["energy"] - 20,
             "coins": u["coins"] + 25,
-            "pokemon": {
-                "inv_id": inv_id, "id": pid, "name": name, "gen": gen,
-                "type": "⚪️ Обычный", "cp": cp, "is_shiny": bool(shiny)
-            }
+            "pokemon": {"inv_id": inv_id, "id": pid, "name": name, "gen": gen, "type": "⚪️ Обычный", "cp": cp, "is_shiny": bool(shiny)}
+        })
+    except Exception as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=500)
+
+# ЧЕСТНЫЙ БОЕВОЙ ДВИЖОК И ПОИСК СИЛЬНЕЙШЕГО ПОКЕМОНА ИГРОКА
+async def api_battle_handler(request):
+    try:
+        data = await request.json()
+        uid = int(data.get("user_id", 0))
+        my_cp = int(data.get("my_cp", 500))
+        target_query = data.get("target", "")
+        battle_type = data.get("battle_type", "pvp")
+        
+        enemy_cp = int(data.get("enemy_cp", 1000))
+        enemy_name = data.get("enemy_name", "Соперник")
+
+        # Если это PvP вызов по нику — ищем реального игрока и его сильнейшего покемона в БД
+        bot_instance = request.app['bot']
+        if battle_type == "pvp" and target_query:
+            clean_target = target_query.lstrip("@").lower()
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT user_id FROM users WHERE LOWER(username) = ?", (clean_target,))
+            row = cur.fetchone()
+            if row:
+                target_uid = row[0]
+                cur.execute("SELECT pokemon_name, cp FROM inventory WHERE user_id = ? ORDER BY cp DESC LIMIT 1", (target_uid,))
+                p_row = cur.fetchone()
+                if p_row:
+                    enemy_name = f"@{clean_target} ({p_row[0]})"
+                    enemy_cp = p_row[1]
+                
+                # Отправляем оповещение игроку, которого вызвали на бой
+                try:
+                    await bot_instance.send_message(
+                        target_uid, 
+                        f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>\nСоперник проверил вашу защиту. Готовьтесь к отпору!",
+                        parse_mode="HTML"
+                    )
+                except Exception:
+                    pass
+            cur.close()
+            conn.close()
+
+        # ЧЕСТНЫЙ РАСЧЕТ БОЯ: Сравнение CP
+        is_win = my_cp >= enemy_cp
+
+        reward_coins = 50
+        reward_candies = 0
+        dungeon_floor = 1
+
+        conn = get_db()
+        cur = conn.cursor()
+        if is_win:
+            if battle_type == "tourney":
+                reward_coins = 200
+            elif battle_type == "elemental_cup":
+                reward_coins = 500
+                reward_candies = 20
+            elif battle_type == "dungeon":
+                reward_coins = 150
+                reward_candies = 5
+                cur.execute("SELECT dungeon_floor FROM users WHERE user_id = ?", (uid,))
+                r = cur.fetchone()
+                current_f = r[0] if r else 1
+                dungeon_floor = 1 if current_f >= 3 else current_f + 1
+                cur.execute("UPDATE users SET dungeon_floor = ? WHERE user_id = ?", (dungeon_floor, uid))
+            elif battle_type in ["tower", "gym"]:
+                reward_coins = 150
+                reward_candies = 3
+
+            cur.execute("UPDATE users SET coins = coins + ?, candies = candies + ? WHERE user_id = ?", (reward_coins, reward_candies, uid))
+            conn.commit()
+        cur.close()
+        conn.close()
+
+        return web.json_response({
+            "status": "ok",
+            "win": is_win,
+            "enemy_name": enemy_name,
+            "enemy_cp": enemy_cp,
+            "reward_coins": reward_coins if is_win else 0,
+            "reward_candies": reward_candies if is_win else 0,
+            "dungeon_floor": dungeon_floor
         })
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
@@ -177,7 +252,7 @@ async def cmd_start(message: types.Message):
     get_user_data(message.from_user.id, message.from_user.username or "")
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="🎮 Открыть PokéHunter MMO 3.0", web_app=WebAppInfo(url=WEBAPP_URL)))
-    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b>", reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Все бои и подземелья настроены честно.", reply_markup=builder.as_markup(), parse_mode="HTML")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -185,9 +260,11 @@ async def main():
     bot = Bot(token=BOT_TOKEN)
 
     app = web.Application(middlewares=[cors_middleware])
+    app['bot'] = bot # Передаем экземпляр бота для отправки уведомлений
     app.router.add_options("/{tail:.*}", api_options_handler)
     app.router.add_post("/api/admin_stats", api_admin_stats_handler)
     app.router.add_post("/api/hunt", api_hunt_handler)
+    app.router.add_post("/api/battle", api_battle_handler)
 
     runner = web.AppRunner(app)
     await runner.setup()
