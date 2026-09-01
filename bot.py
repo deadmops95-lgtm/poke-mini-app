@@ -2,6 +2,7 @@ import asyncio
 import os
 import logging
 import sqlite3
+import json
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
@@ -20,7 +21,6 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 app = FastAPI()
 
-# Инициализация базы данных SQLite
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -42,7 +42,6 @@ def init_db():
 
 init_db()
 
-# Pydantic модели для API
 class UserSync(BaseModel):
     user_id: int
     username: str
@@ -54,11 +53,11 @@ class UserSync(BaseModel):
     stats_caught: int
     stats_shiny: int
 
-class AdminAction(BaseModel):
-    admin_username: str
-    target_user: str
-    action_type: str  # coins, candies, balls
-    amount: int
+class AdminPokeGive(BaseModel):
+    target_username: str
+    poke_id: int
+    poke_name: str
+    poke_cp: int
 
 class AttackNotify(BaseModel):
     defender_id: int
@@ -73,34 +72,23 @@ async def serve_game():
             return f.read()
     return "<h1>Игра загружается...</h1>"
 
-# Получение данных игрока с сервера
 @app.get("/api/user/{user_id}")
 async def get_user(user_id: int):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
-    
     if not row:
         conn.close()
         return {"exists": False}
-    
     data = {
-        "exists": True,
-        "user_id": row[0],
-        "username": row[1],
-        "coins": row[2],
-        "candies": row[3],
-        "pokeballs": row[4],
-        "energy": row[5],
-        "pokedex": row[6],
-        "stats_caught": row[7],
-        "stats_shiny": row[8]
+        "exists": True, "user_id": row[0], "username": row[1],
+        "coins": row[2], "candies": row[3], "pokeballs": row[4],
+        "energy": row[5], "pokedex": row[6], "stats_caught": row[7], "stats_shiny": row[8]
     }
     conn.close()
     return data
 
-# Синхронизация и сохранение данных игрока
 @app.post("/api/user/save")
 async def save_user(user: UserSync):
     conn = sqlite3.connect("database.db")
@@ -109,20 +97,14 @@ async def save_user(user: UserSync):
         INSERT INTO users (user_id, username, coins, candies, pokeballs, energy, pokedex, stats_caught, stats_shiny)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(user_id) DO UPDATE SET
-            username=excluded.username,
-            coins=excluded.coins,
-            candies=excluded.candies,
-            pokeballs=excluded.pokeballs,
-            energy=excluded.energy,
-            pokedex=excluded.pokedex,
-            stats_caught=excluded.stats_caught,
-            stats_shiny=excluded.stats_shiny
+            username=excluded.username, coins=excluded.coins, candies=excluded.candies,
+            pokeballs=excluded.pokeballs, energy=excluded.energy, pokedex=excluded.pokedex,
+            stats_caught=excluded.stats_caught, stats_shiny=excluded.stats_shiny
     """, (user.user_id, user.username, user.coins, user.candies, user.pokeballs, user.energy, user.pokedex, user.stats_caught, user.stats_shiny))
     conn.commit()
     conn.close()
     return {"status": "saved"}
 
-# Статистика сервера для админки
 @app.get("/api/admin/stats")
 async def get_server_stats():
     conn = sqlite3.connect("database.db")
@@ -130,22 +112,42 @@ async def get_server_stats():
     cursor.execute("SELECT COUNT(*), SUM(coins), SUM(stats_caught) FROM users")
     row = cursor.fetchone()
     conn.close()
-    return {
-        "online_users": row[0] or 1,
-        "total_coins": row[1] or 500,
-        "total_caught": row[2] or 1
-    }
+    return {"online_users": row[0] or 1, "total_coins": row[1] or 500, "total_caught": row[2] or 1}
 
-# Уведомление о нападении на арене
+# Админ-выдача покемона по никнейму игрока
+@app.post("/api/admin/give-poke")
+async def admin_give_poke(data: AdminPokeGive):
+    clean_target = data.target_username.replace("@", "").strip().lower()
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id, pokedex FROM users WHERE LOWER(username) = ?", (clean_target,))
+    row = cursor.fetchone()
+    
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Игрок с таким ником не найден в базе!")
+    
+    user_id, pokedex_json = row[0], row[1]
+    pokedex = json.loads(pokedex_json or "[]")
+    
+    new_poke = {"id": data.poke_id, "name": data.poke_name, "cp": data.poke_cp, "is_shiny": False}
+    pokedex.unshift(new_poke) if hasattr(pokedex, 'unshift') else pokedex.insert(0, new_poke)
+    
+    cursor.execute("UPDATE users SET pokedex = ? WHERE user_id = ?", (json.dumps(pokedex), user_id))
+    conn.commit()
+    conn.close()
+    
+    try:
+        await bot.send_message(chat_id=user_id, text=f"🎁 Администратор выдал вам покемона: <b>{data.poke_name}</b> ({data.poke_cp} CP)!", parse_mode="HTML")
+    except:
+        pass
+        
+    return {"status": "success"}
+
 @app.post("/api/attack")
 async def notify_attack(data: AttackNotify):
     try:
-        text = (
-            f"⚔️ <b>ВНИМАНИЕ! На вас напали на Арене!</b>\n\n"
-            f"👤 Нападающий: <b>{data.attacker_name}</b>\n"
-            f"🛡 Авто-защита выбрала вашего сильнейшего покемона: <b>{data.defender_poke}</b> ({data.defender_cp} CP)\n\n"
-            f"Зайдите в игру, чтобы дать отпор!"
-        )
+        text = f"⚔️ <b>На вас напали!</b>\n\n👤 Нападающий: <b>{data.attacker_name}</b>\n🛡 Защитник: <b>{data.defender_poke}</b> ({data.defender_cp} CP)"
         await bot.send_message(chat_id=data.defender_id, text=text, parse_mode="HTML")
         return {"status": "success"}
     except Exception as e:
@@ -156,13 +158,9 @@ async def start_handler(message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="🎮 Играть в PokéHunter MMO", web_app=WebAppInfo(url=WEB_APP_URL))]
     ])
-    await message.answer(
-        "👋 Добро пожаловать в PokéHunter MMO (Online Server Mode)!\n\nНажми кнопку ниже, чтобы запустить игру:",
-        reply_markup=keyboard
-    )
+    await message.answer("👋 Добро пожаловать в PokéHunter MMO!", reply_markup=keyboard)
 
 async def run_bot():
-    print("🤖 Telegram-бот запущен...")
     await dp.start_polling(bot)
 
 @app.on_event("startup")
