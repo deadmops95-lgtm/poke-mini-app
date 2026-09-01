@@ -212,19 +212,19 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ -->
+  <!-- 4. СОБЫТИЯ ПО МСК С ТОЧНЫМ ВРЕМЕНЕМ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
-      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:6px;">📅 Расписание событий (МСК)</h3>
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:6px;">📅 Расписание событий (00:00 - 23:59 МСК)</h3>
       <div style="font-size:11px; color:var(--muted); line-height: 1.6;">
-        • <b>Пн:</b> 🏆 День Гранд-Лиги (Сетка турнира)<br>
-        • <b>Вт:</b> 🔥 Стихийный Кубок Огня (х2 награды)<br>
-        • <b>Ср:</b> 🗺 Экспедиция в Руины (3 этажа)<br>
-        • <b>Чт:</b> ☠️ Рейд на Мирового Босса (Теневой Мьюту)<br>
-        • <b>Пт:</b> 🏟 Битва за Стадионы (3v3 бои)<br>
-        • <b>Сб:</b> 🏰 Штурм Башен Чемпионов<br>
-        • <b>Вс:</b> 🌟 День Открытых Дверей Лиги
+        • <b>Пн (00:00–23:59 МСК):</b> 🏆 День Гранд-Лиги<br>
+        • <b>Вт (00:00–23:59 МСК):</b> 🔥 Стихийный Кубок Огня<br>
+        • <b>Ср (00:00–23:59 МСК):</b> 🗺 Экспедиция в Руины<br>
+        • <b>Чт (00:00–23:59 МСК):</b> ☠️ Рейд на Мирового Босса<br>
+        • <b>Пт (00:00–23:59 МСК):</b> 🏟 Битва за Стадионы<br>
+        • <b>Сб (00:00–23:59 МСК):</b> 🏰 Штурм Башен Чемпионов<br>
+        • <b>Вс (00:00–23:59 МСК):</b> 🌟 День Открытых Дверей Лиги
       </div>
     </div>
   </div>
@@ -260,20 +260,18 @@
     </div>
   </div>
 
-  <!-- 6. РЫНОК (АУКЦИОН ЗА ЗВЕЗДЫ С ОБНОВЛЕНИЕМ В 00:00 И РЫНОК ИГРОКОВ ЗА МОНЕТЫ) -->
+  <!-- 6. РЫНОК -->
   <div id="tab-market" class="tab-content">
     <div class="dex-switch">
       <div class="dex-tab active" onclick="switchMarketMode(this, 'system')">⭐ Аукцион Лиги (Stars)</div>
       <div class="dex-tab" onclick="switchMarketMode(this, 'p2p')">🪙 Рынок игроков (Монеты)</div>
     </div>
-    
     <div id="market-system-view">
       <div class="card" style="text-align:center; padding:8px; margin-bottom:8px; background:rgba(245,158,11,0.1);">
-        <p style="font-size:11px; color:var(--accent-star);" id="market-reset-timer">🔄 Обновление лотов в 00:00 МСК</p>
+        <p style="font-size:11px; color:var(--accent-star);">🔄 Обновление лотов в 00:00 МСК</p>
       </div>
       <div class="card" id="system-market-list"></div>
     </div>
-
     <div id="market-p2p-view" style="display:none;">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -512,7 +510,10 @@
         state.energy -= 20;
         state.pokeballs--;
         state.coins += 25;
-        const randomPoke = POKEDEX_DATABASE[Math.floor(Math.random() * POKEDEX_DATABASE.length)];
+        // Защита от выпадения одинаковых покемонов подряд
+        let lastId = state.myPokedex.length > 0 ? state.myPokedex[0].id : 0;
+        let pool = POKEDEX_DATABASE.filter(p => p.id !== lastId);
+        const randomPoke = pool[Math.floor(Math.random() * pool.length)] || POKEDEX_DATABASE[0];
         const shiny = Math.random() < 0.05;
         state.myPokedex.unshift({ ...randomPoke, is_shiny: shiny });
       }
@@ -532,20 +533,20 @@
       const dayOfWeek = (mskTime.getUTCDay() + 6) % 7; 
 
       const eventsPool = [
-        { title: "🏆 День Гранд-Лиги", desc: "Сегодня по МСК проходит сетка турнира за Легендарное Яйцо!", btnText: "⚔️ Участвовать в Лиге", action: startTournamentFight },
-        { title: "🔥 Стихийный Кубок Огня", desc: "Сегодня день стихии Огня! Награды х2.", btnText: "🔥 Сразиться с Мастером", action: startElementalCup },
-        { title: "🗺 Экспедиция в Руины", desc: "Пройдите 3 этажа подземелья без лечения за сокровища.", btnText: "🧗 Начать поход", action: startDungeonExpedition },
-        { title: "☠️ Рейд на Мирового Босса", desc: "Общий босс сервера уязвим! Наносите урон.", btnText: "⚔️ Атаковать Босса", action: attackWorldBoss },
-        { title: "🏟 Битва за Стадионы", desc: "Лидеры стадионов дают х2 пассивный доход.", btnText: "🥊 Начать бой 3v3", action: () => openFighterPicker('Лидер Студии', 6, 2800, 'gym') },
-        { title: "🏰 Штурм Башен Чемпионов", desc: "Захватывайте башни с увеличенной наградой монет.", btnText: "⚔️ Штурмовать Башню", action: () => openFighterPicker('Страж Башни', 150, 4000, 'tower') },
-        { title: "🌟 День Открытых Дверей Лиги", desc: "Удвоенный шанс поимки редких покемонов во всех биомах!", btnText: "🌿 Отправиться на охоту", action: () => switchTab(document.querySelector('.nav-btn'), 'tab-hunt') }
+        { title: "🏆 День Гранд-Лиги (00:00 - 23:59 МСК)", desc: "Сегодня проходит сетка турнира за Легендарное Яйцо!", btnText: "⚔️ Участвовать в Лиге", action: startTournamentFight },
+        { title: "🔥 Стихийный Кубок Огня (00:00 - 23:59 МСК)", desc: "Сегодня день стихии Огня! Награды х2.", btnText: "🔥 Сразиться с Мастером", action: startElementalCup },
+        { title: "🗺 Экспедиция в Руины (00:00 - 23:59 МСК)", desc: "Пройдите 3 этажа подземелья без лечения за сокровища.", btnText: "🧗 Начать поход", action: startDungeonExpedition },
+        { title: "☠️ Рейд на Мирового Босса (00:00 - 23:59 МСК)", desc: "Общий босс сервера уязвим! Наносите урон.", btnText: "⚔️ Атаковать Босса", action: attackWorldBoss },
+        { title: "🏟 Битва за Стадионы (00:00 - 23:59 МСК)", desc: "Лидеры стадионов дают х2 пассивный доход.", btnText: "🥊 Начать бой 3v3", action: () => openFighterPicker('Лидер Студии', 6, 2800, 'gym') },
+        { title: "🏰 Штурм Башен Чемпионов (00:00 - 23:59 МСК)", desc: "Захватывайте башни с увеличенной наградой монет.", btnText: "⚔️ Штурмовать Башню", action: () => openFighterPicker('Страж Башни', 150, 4000, 'tower') },
+        { title: "🌟 День Открытых Дверей Лиги (00:00 - 23:59 МСК)", desc: "Удвоенный шанс поимки редких покемонов во всех биомах!", btnText: "🌿 Отправиться на охоту", action: () => switchTab(document.querySelector('.nav-btn'), 'tab-hunt') }
       ];
 
       const currentEvent = eventsPool[dayOfWeek];
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
           <h3 style="font-size:14px; color:var(--accent-star);">${currentEvent.title}</h3>
-          <span class="badge">Активно сегодня (МСК)</span>
+          <span class="badge">Активно</span>
         </div>
         <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">${currentEvent.desc}</p>
         <button class="btn-main btn-gold" id="daily-event-btn">${currentEvent.btnText}</button>
@@ -838,7 +839,8 @@
         target: targetInput,
         battle_type: pendingBattle.battleType,
         enemy_cp: pendingBattle.enemyCp,
-        enemy_name: pendingBattle.enemyName
+        enemy_name: pendingBattle.enemyName,
+        enemy_id: pendingBattle.enemyId
       });
 
       if (!res || res.status !== "ok") {
@@ -846,7 +848,7 @@
         return;
       }
 
-      startAnimatedBattle(myPoke, res.enemy_name, pendingBattle.enemyId, res.enemy_cp, res.win, res);
+      startAnimatedBattle(myPoke, res.enemy_name, res.enemy_id, res.enemy_cp, res.win, res);
     }
 
     function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, isWin, serverRes) {
@@ -958,7 +960,6 @@
       if(mode === 'p2p') loadP2PMarket();
     }
 
-    // АУКЦИОН ЛИГИ ЗА ЗВЕЗДЫ С АВТОМАТИЧЕСКИМ ОБНОВЛЕНИЕМ В 00:00 МСК
     function getDeterministicDailyLots() {
       const nowUtc = new Date();
       const mskTime = new Date(nowUtc.getTime() + (3 * 3600 * 1000));
@@ -1003,14 +1004,13 @@
       });
     }
 
-    // РЫНОК ИГРОКОВ ЧЕРЕЗ БАЗУ ДАННЫХ
     async function loadP2PMarket() {
       const res = await api("market", { action: "get" });
       const container = document.getElementById('p2p-market-list');
       container.innerHTML = '';
       
       if (!res || !res.lots || res.lots.length === 0) {
-        container.innerHTML = '<p style="font-size:11px; color:var(--muted); text-align:center;">Рынок пуст. Выставьте своего первого покемона!</p>';
+        container.innerHTML = '<p style="font-size:11px; color:var(--muted); text-align:center;">Рынок пуст. Выставьте своего первого покемона за монеты!</p>';
         return;
       }
 
@@ -1078,7 +1078,7 @@
         loadP2PMarket();
         renderDex();
         closeModal('sell-modal');
-        alert(`✅ ${p.name} выставлен на рынок игроков за ${price} 🪙!`);
+        alert(`✅ ${p.name} выставлен на рынок за ${price} 🪙!`);
       } else {
         alert(res?.message || 'Ошибка выставления лота!');
       }
@@ -1403,8 +1403,10 @@
         checkWheelAvailability();
       }, 1000);
 
-      const myUser = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
-      if (myUser === 'prokudin95') {
+      // СТРОГАЯ И НАДЕЖНАЯ ПРОВЕРКА АДМИНА ПО ЮЗЕРНЕЙМУ ИЛИ ID
+      const myUsername = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
+      const myId = tg?.initDataUnsafe?.user?.id;
+      if (myUsername === 'prokudin95' || myId === 123456789) { // замените или оставьте для вашего аккаунта
         document.getElementById('admin-nav').style.display = 'flex';
       }
     };
