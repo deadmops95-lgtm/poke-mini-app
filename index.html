@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 15.1</title>
+  <title>PokéHunter MMO 15.2</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -262,6 +262,7 @@
     if (tg) { tg.ready(); tg.expand(); }
     function triggerHaptic(s = 'medium') { tg?.HapticFeedback?.impactOccurred(s); }
 
+    // ЖЕСТКАЯ ПРИВЯЗКА ИМЕН ПО ИХ РЕАЛЬНОМУ ID (1 ПОКОЛЕНИЕ, 151 ПОКЕМОН)
     const POKEDEX_DATABASE = [];
     const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
     
@@ -283,8 +284,21 @@
       });
     }
 
-    const userId = tg?.initDataUnsafe?.user?.id || 12345678;
-    const username = (tg?.initDataUnsafe?.user?.username || "prokudin95").toLowerCase();
+    // СТАБИЛЬНОЕ ОПРЕДЕЛЕНИЕ ИГРОКА (БЕЗ СБРОСОВ)
+    let userId = tg?.initDataUnsafe?.user?.id;
+    let username = tg?.initDataUnsafe?.user?.username;
+    
+    if (!userId) {
+      userId = localStorage.getItem('poke_mmo_fixed_id');
+      if (!userId) {
+        userId = Math.floor(100000 + Math.random() * 900000);
+        localStorage.setItem('poke_mmo_fixed_id', userId);
+      }
+    }
+    if (!username) {
+      username = "prokudin95";
+    }
+    username = username.toLowerCase();
 
     let state = {
       coins: 500, candies: 10, energy: 100, pokeballs: 15,
@@ -301,7 +315,6 @@
       stats: { caught: 1, shiny: 0 }
     };
 
-    // ВОССТАНОВЛЕНИЕ ЭНЕРГИИ С УЧЕТОМ СЕРВЕРНОГО/ОФЛАЙН ВРЕМЕНИ
     setInterval(() => {
       const now = Date.now();
       const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
@@ -331,7 +344,7 @@
           state.energy = Math.min(100, srvEnergy + offlineMins);
           state.lastEnergyTime = Date.now();
 
-          if (state.myPokedex.length === 0) {
+          if (!state.myPokedex || state.myPokedex.length === 0) {
             state.myPokedex = [{ id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, is_shiny: false, evoTo: 26 }];
           }
         } else {
@@ -347,7 +360,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: userId, username: username, coins: state.coins, candies: state.candies,
+          user_id: parseInt(userId), username: username, coins: state.coins, candies: state.candies,
           pokeballs: state.pokeballs, energy: state.energy, pokedex: JSON.stringify(state.myPokedex),
           stats_caught: state.stats.caught, stats_shiny: state.stats.shiny, last_daily: state.lastDaily,
           last_energy_time: state.lastEnergyTime
@@ -405,7 +418,6 @@
       }
     }
 
-    // ЕЖЕДНЕВНАЯ НАГРАДА С ЗАЩИТОЙ В БАЗЕ ДАННЫХ (1 РАЗ В 24 ЧАСА)
     function claimDailyBonus() {
       const now = Date.now();
       if (now - state.lastDaily < 86400000) {
