@@ -18,11 +18,32 @@ PORT = int(os.environ.get("PORT", 8080))
 MAX_ENERGY = 100
 ENERGY_RECOVERY_SECONDS = 120
 
-POKEMON_DB = {
-    "Legendary": [(144, "Артикуно", 1), (150, "Мьюту", 1), (384, "Райкваза", 3), (493, "Аркеус", 4), (643, "Реширам", 5)],
-    "Epic": [(3, "Венузавр", 1), (6, "Чаризард", 1), (9, "Бластойз", 1), (94, "Генгар", 1), (149, "Драгонайт", 1)],
-    "Rare": [(25, "Пикачу", 1), (26, "Райчу", 1), (133, "Иви", 1), (134, "Вапореон", 1)],
-    "Common": [(1, "Бульбазавр", 1), (4, "Чармандер", 1), (7, "Сквиртл", 1), (152, "Чикорита", 2), (155, "Синдаквил", 2)]
+# 6 ЛОГИЧНЫХ БИОМОВ ПОКЕМОНОВ
+BIOME_POKEMON_DB = {
+    "forest": [
+        (1, "Бульбазавр", 1, "Common", 420), (2, "Ивизавр", 1, "Uncommon", 950), (3, "Венузавр", 1, "Epic", 2800),
+        (25, "Пикачу", 1, "Rare", 750), (133, "Иви", 1, "Rare", 650), (152, "Чикорита", 2, "Common", 410)
+    ],
+    "lake": [
+        (7, "Сквиртл", 1, "Common", 430), (8, "Вартортл", 1, "Uncommon", 940), (9, "Бластойз", 1, "Epic", 2850),
+        (134, "Вапореон", 1, "Epic", 2600), (158, "Тотодайл", 2, "Common", 430), (249, "Лугия", 2, "Legendary", 4350)
+    ],
+    "volcano": [
+        (4, "Чармандер", 1, "Common", 460), (5, "Чармелеон", 1, "Uncommon", 980), (6, "Чаризард", 1, "Epic", 2950),
+        (155, "Синдаквил", 2, "Common", 450), (248, "Тиранитар", 2, "Epic", 3300), (643, "Реширам", 5, "Legendary", 4450)
+    ],
+    "power": [
+        (25, "Пикачу", 1, "Rare", 750), (26, "Райчу", 1, "Epic", 2400), (145, "Запдос", 1, "Legendary", 4200),
+        (403, "Шинкс", 4, "Common", 430), (405, "Люксрэй", 4, "Rare", 2200)
+    ],
+    "cave": [
+        (74, "Геодуд", 1, "Common", 400), (95, "Оникс", 1, "Uncommon", 1100), (448, "Лукарио", 4, "Epic", 2900),
+        (383, "Граудон", 3, "Legendary", 4600), (530, "Экскадрил", 5, "Rare", 2300)
+    ],
+    "ruins": [
+        (94, "Генгар", 1, "Epic", 2700), (150, "Мьюту", 1, "Legendary", 4300), (384, "Райкваза", 3, "Legendary", 4500),
+        (493, "Аркеус", 4, "Legendary", 5000), (571, "Зороарк", 5, "Epic", 2850)
+    ]
 }
 
 def get_db():
@@ -131,6 +152,7 @@ async def api_hunt_handler(request):
     try:
         data = await request.json()
         uid = int(data.get("user_id", 0))
+        biome = data.get("biome", "forest")
         u = get_user_data(uid)
         
         if u["energy"] < 20:
@@ -140,12 +162,11 @@ async def api_hunt_handler(request):
         cur = conn.cursor()
         cur.execute("UPDATE users SET energy = energy - 20, coins = coins + 25, last_energy_calc = ? WHERE user_id = ?", (time.time(), uid))
 
-        roll = random.random()
-        rarity = "Rare" if roll > 0.85 else "Common"
-        pool = POKEMON_DB.get(rarity, POKEMON_DB["Common"])
-        pid, name, gen = random.choice(pool)
+        pool = BIOME_POKEMON_DB.get(biome, BIOME_POKEMON_DB["forest"])
+        pid, name, gen, rarity, base_cp = random.choice(pool)
         shiny = 1 if random.random() < 0.05 else 0
-        cp = random.randint(300, 800) if rarity == "Common" else random.randint(1200, 2000)
+        cp = base_cp + random.randint(-50, 150)
+        if shiny: cp = int(cp * 1.15)
 
         cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, ?, ?, ?, ?, ?)", (uid, pid, name, gen, rarity, shiny, cp))
         inv_id = cur.lastrowid
@@ -157,12 +178,12 @@ async def api_hunt_handler(request):
             "status": "ok",
             "energy": u["energy"] - 20,
             "coins": u["coins"] + 25,
-            "pokemon": {"inv_id": inv_id, "id": pid, "name": name, "gen": gen, "type": "⚪️ Обычный", "cp": cp, "is_shiny": bool(shiny)}
+            "pokemon": {"inv_id": inv_id, "id": pid, "name": name, "gen": gen, "type": "🌿 Стихия", "cp": cp, "is_shiny": bool(shiny)}
         })
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# ЧЕСТНЫЙ ДВИЖОК БОЕВ С ПРОВЕРКОЙ CP И УВЕДОМЛЕНИЯМИ
+# СБАЛАНСИРОВАННЫЙ И ЧЕСТНЫЙ ДВИЖОК БОЕВ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -188,20 +209,15 @@ async def api_battle_handler(request):
                 if p_row:
                     enemy_name = f"@{clean_target} ({p_row[0]})"
                     enemy_cp = p_row[1]
-                
                 try:
-                    await bot_instance.send_message(
-                        target_uid, 
-                        f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>\nСоперник проверил вашу защиту.",
-                        parse_mode="HTML"
-                    )
+                    await bot_instance.send_message(target_uid, f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>", parse_mode="HTML")
                 except Exception:
                     pass
             cur.close()
             conn.close()
 
-        # Честная проверка победы по CP
-        is_win = my_cp >= enemy_cp
+        # Честный баланс: победа, если CP вашего покемона хотя бы на 85% от силы противника или выше
+        is_win = my_cp >= int(enemy_cp * 0.85)
 
         reward_coins = 50
         reward_candies = 0
@@ -210,22 +226,17 @@ async def api_battle_handler(request):
         conn = get_db()
         cur = conn.cursor()
         if is_win:
-            if battle_type == "tourney":
-                reward_coins = 200
-            elif battle_type == "elemental_cup":
-                reward_coins = 500
-                reward_candies = 20
+            if battle_type == "tourney": reward_coins = 200
+            elif battle_type == "elemental_cup": reward_coins = 500; reward_candies = 20
             elif battle_type == "dungeon":
-                reward_coins = 150
-                reward_candies = 5
+                reward_coins = 150; reward_candies = 5
                 cur.execute("SELECT dungeon_floor FROM users WHERE user_id = ?", (uid,))
                 r = cur.fetchone()
                 current_f = r[0] if r else 1
-                dungeon_floor = 1 if current_f >= 3 else current_f + 1
+                dungeon_floor = 1 if current_f >= 5 else current_f + 1
                 cur.execute("UPDATE users SET dungeon_floor = ? WHERE user_id = ?", (dungeon_floor, uid))
             elif battle_type in ["tower", "gym"]:
-                reward_coins = 150
-                reward_candies = 3
+                reward_coins = 150; reward_candies = 3
 
             cur.execute("UPDATE users SET coins = coins + ?, candies = candies + ? WHERE user_id = ?", (reward_coins, reward_candies, uid))
             conn.commit()
@@ -251,7 +262,7 @@ async def cmd_start(message: types.Message):
     get_user_data(message.from_user.id, message.from_user.username or "")
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="🎮 Открыть PokéHunter MMO 3.0", web_app=WebAppInfo(url=WEBAPP_URL)))
-    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b>", reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Локации, магазин и бои обновлены.", reply_markup=builder.as_markup(), parse_mode="HTML")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
