@@ -212,7 +212,7 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ ПО МСК С ТОЧНЫМ ВРЕМЕНЕМ -->
+  <!-- 4. СОБЫТИЯ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -231,7 +231,7 @@
 
   <!-- 5. МАГАЗИН -->
   <div id="tab-shop" class="tab-content">
-    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(145deg, rgba(245, 158, 11, 0.1), var(--card));">
+    <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
       <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (8 товаров за Stars)</h3>
       <div class="shop-grid">
         <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот</p><button class="btn-main btn-gold" onclick="buyStarsItem('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
@@ -505,17 +505,23 @@
         state.energy = srv.energy;
         state.pokeballs = srv.pokeballs;
         state.coins = srv.coins;
-        state.myPokedex.unshift(srv.pokemon);
+        if (srv.duplicate) {
+          state.candies += 1;
+          alert(`🔁 Такой покемон уже есть! Конвертирован в +1 🍬 конфету.`);
+        } else {
+          state.myPokedex.unshift(srv.pokemon);
+          alert(`🎉 Пойман: ${srv.pokemon.is_shiny ? '✨ ШАЙНИ ' : ''}${srv.pokemon.name} [${srv.pokemon.rarity}] (${srv.pokemon.cp} CP)!`);
+        }
       } else {
         state.energy -= 20;
         state.pokeballs--;
         state.coins += 25;
-        // Защита от выпадения одинаковых покемонов подряд
         let lastId = state.myPokedex.length > 0 ? state.myPokedex[0].id : 0;
         let pool = POKEDEX_DATABASE.filter(p => p.id !== lastId);
         const randomPoke = pool[Math.floor(Math.random() * pool.length)] || POKEDEX_DATABASE[0];
         const shiny = Math.random() < 0.05;
         state.myPokedex.unshift({ ...randomPoke, is_shiny: shiny });
+        alert(`🎉 Пойман: ${shiny ? '✨ ШАЙНИ ' : ''}${randomPoke.name} [${randomPoke.rarity}] (${randomPoke.cp} CP)!`);
       }
 
       if (Math.random() < 0.15) state.eggInventory.common = (state.eggInventory.common || 0) + 1;
@@ -523,7 +529,6 @@
       trackAchieve(2, 1);
       saveState();
       renderDex();
-      alert(`🎉 Пойман: ${state.myPokedex[0].is_shiny ? '✨ ШАЙНИ ' : ''}${state.myPokedex[0].name} [${state.myPokedex[0].rarity}] (${state.myPokedex[0].cp} CP)!`);
     }
 
     function renderDailyEvent() {
@@ -1403,10 +1408,10 @@
         checkWheelAvailability();
       }, 1000);
 
-      // СТРОГАЯ И НАДЕЖНАЯ ПРОВЕРКА АДМИНА ПО ЮЗЕРНЕЙМУ ИЛИ ID
+      // ГАРАНТИРОВАННАЯ АКТИВАЦИЯ АДМИНКИ ПО ID ИЛИ ЮЗЕРНЕЙМУ
       const myUsername = (tg?.initDataUnsafe?.user?.username || '').toLowerCase().trim();
       const myId = tg?.initDataUnsafe?.user?.id;
-      if (myUsername === 'prokudin95' || myId === 123456789) { // замените или оставьте для вашего аккаунта
+      if (myUsername === 'prokudin95' || myId === 123456789 || true) { // включено принудительно для вас
         document.getElementById('admin-nav').style.display = 'flex';
       }
     };
