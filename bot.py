@@ -1,54 +1,30 @@
+import asyncio
 import os
-import logging
-from aiohttp import web
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardButton, WebAppInfo
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import Message, WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 
-# Настройка логирования, чтобы в панели BotHost появились те самые логи
-logging.basicConfig(level=logging.INFO)
+# Токен берется из переменных окружения Render (или можно вписать напрямую для теста)
+TOKEN = os.getenv("BOT_TOKEN", "ТВОЙ_ТОКЕН_БОТА_ОТ_BOTFATHER")
+# Ссылка на твой сайт (когда опубликуешь на Render, укажи её здесь)
+WEB_APP_URL = os.getenv("WEB_APP_URL", "https://poke-hunter-mmo.onrender.com")
 
-BOT_TOKEN = "8838508680:AAHguMr07zwQ7hbSUKjyaNDB7bXd1DTh8b0"
-PORT = int(os.environ.get("PORT", 8080))
+dp = Dispatcher()
 
-# Веб-сервер отдает ваш index.html прямо с сервера BotHost
-async def handle_index(request):
-    try:
-        with open("index.html", "r", encoding="utf-8") as f:
-            content = f.read()
-        return web.Response(text=content, content_type="text/html")
-    except FileNotFoundError:
-        return web.Response(text="Ошибка: файл index.html не загружен в корневую папку BotHost!", status=404)
+@dp.message(Command("start"))
+async def start_handler(message: Message):
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎮 Играть в PokéHunter MMO", web_app=WebAppInfo(url=WEB_APP_URL))]
+    ])
+    await message.answer(
+        "👋 Добро пожаловать в PokéHunter MMO!\n\nНажми кнопку ниже, чтобы запустить игру:",
+        reply_markup=keyboard
+    )
 
 async def main():
-    bot = Bot(token=BOT_TOKEN)
-    dp = Dispatcher()
-
-    @dp.message(CommandStart())
-    async def cmd_start(message: types.Message):
-        # Получаем адрес нашего сервера на BotHost автоматически
-        # (или вставьте сюда вашу прямую ссылку от BotHost, например: https://your-bot.othost.ru/)
-        bot_info = await bot.get_me()
-        
-        # Создаем кнопку, ведущую на сервер BotHost
-        builder = InlineKeyboardBuilder()
-        # Вместо ДАНОГО примера подставьте домен, который вам выдал BotHost
-        builder.row(InlineKeyboardButton(text="🎮 Играть в PokéHunter", web_app=WebAppInfo(url="ЗДЕСЬ_ССЫЛКА_ОТ_BOTHOST")))
-        
-        await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO!</b>", reply_markup=builder.as_markup(), parse_mode="HTML")
-
-    app = web.Application()
-    app.router.add_get("/", handle_index)
-
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", PORT)
-    await site.start()
-    logging.info(f"🚀 Веб-сервер и бот успешно запущены на порту {PORT}!")
-
+    bot = Bot(token=TOKEN)
+    print("Бот запущен и ожидает подключения...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
