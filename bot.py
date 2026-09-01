@@ -34,7 +34,8 @@ def init_db():
             energy INTEGER DEFAULT 100,
             pokedex TEXT DEFAULT '[]',
             stats_caught INTEGER DEFAULT 1,
-            stats_shiny INTEGER DEFAULT 0
+            stats_shiny INTEGER DEFAULT 0,
+            last_daily INTEGER DEFAULT 0
         )
     """)
     conn.commit()
@@ -52,12 +53,15 @@ class UserSync(BaseModel):
     pokedex: str
     stats_caught: int
     stats_shiny: int
+    last_daily: int
 
-class AdminPokeGive(BaseModel):
+class AdminGive(BaseModel):
     target_username: str
-    poke_id: int
-    poke_name: str
-    poke_cp: int
+    item_type: str  # poke, coins, candies, pokeballs
+    poke_id: int = 0
+    poke_name: str = ""
+    poke_cp: int = 0
+    amount: int = 0
 
 class AttackNotify(BaseModel):
     defender_username: str
@@ -84,7 +88,8 @@ async def get_user(user_id: int):
     data = {
         "exists": True, "user_id": row[0], "username": row[1],
         "coins": row[2], "candies": row[3], "pokeballs": row[4],
-        "energy": row[5], "pokedex": row[6], "stats_caught": row[7], "stats_shiny": row[8]
+        "energy": row[5], "pokedex": row[6], "stats_caught": row[7],
+        "stats_shiny": row[8], "last_daily": row[9]
     }
     conn.close()
     return data
@@ -94,18 +99,17 @@ async def save_user(user: UserSync):
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO users (user_id, username, coins, candies, pokeballs, energy, pokedex, stats_caught, stats_shiny)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (user_id, username, coins, candies, pokeballs, energy, pokedex, stats_caught, stats_shiny, last_daily)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(user_id) DO UPDATE SET
             username=excluded.username, coins=excluded.coins, candies=excluded.candies,
             pokeballs=excluded.pokeballs, energy=excluded.energy, pokedex=excluded.pokedex,
-            stats_caught=excluded.stats_caught, stats_shiny=excluded.stats_shiny
-    """, (user.user_id, user.username, user.coins, user.candies, user.pokeballs, user.energy, user.pokedex, user.stats_caught, user.stats_shiny))
+            stats_caught=excluded.stats_caught, stats_shiny=excluded.stats_shiny, last_daily=excluded.last_daily
+    """, (user.user_id, user.username, user.coins, user.candies, user.pokeballs, user.energy, user.pokedex, user.stats_caught, user.stats_shiny, user.last_daily))
     conn.commit()
     conn.close()
     return {"status": "saved"}
 
-# Статистика: только онлайн и сколько всего зарегистрировалось
 @app.get("/api/admin/stats")
 async def get_server_stats():
     conn = sqlite3.connect("database.db")
@@ -118,33 +122,48 @@ async def get_server_stats():
         "total_registered": total_users
     }
 
-@app.post("/api/admin/give-poke")
-async def admin_give_poke(data: AdminPokeGive):
+@app.post("/api/admin/give")
+async def admin_give(data: AdminGive):
     clean_target = data.target_username.replace("@", "").strip().lower()
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT user_id, pokedex FROM users WHERE LOWER(username) = ?", (clean_target,))
+    cursor.execute("SELECT user_id, coins, candies, pokeballs, pokedex FROM users WHERE LOWER(username) = ?", (clean_target,))
     row = cursor.fetchone()
     
     if not row:
         conn.close()
         raise HTTPException(status_code=404, detail="Игрок не найден в базе данных!")
     
-    user_id, pokedex_json = row[0], row[1]
+    user_id, coins, candies, pokeballs, pokedex_json = row[0], row[1], row[2], row[3], row[4]
     try:
         pokedex = json.loads(pokedex_json or "[]")
     except:
         pokedex = []
     
-    new_poke = {"id": data.poke_id, "name": data.poke_name, "cp": data.poke_cp, "is_shiny": False}
-    pokedex.insert(0, new_poke)
-    
-    cursor.execute("UPDATE users SET pokedex = ? WHERE user_id = ?", (json.dumps(pokedex), user_id))
+    msg_text = ""
+    if data.item_type == "poke":
+        new_poke = {"id": data.poke_id, "name": data.poke_name, "cp": data.poke_cp, "is_shiny": False}
+        pokedex.insert(0, new_poke)
+        cursor.execute("UPDATE users SET pokedex = ? WHERE user_id = ?", (json.dumps(pokedex), user_id))
+        msg_text = f"🎁 Администратор подарил вам покемона: <b>{data.poke_name}</b> ({data.poke_cp} CP)!"
+    elif data.item_type == "coins":
+        coins += data.amount
+        cursor.execute("UPDATE users SET coins = ? WHERE user_id = ?", (coins, user_id))
+        msg_text = f"🎁 Администратор начислил вам монеты: <b>+{data.amount} 🪙</b>!"
+    elif data.item_type == "candies":
+        candies += data.amount
+        cursor.execute("UPDATE users SET candies = ? WHERE user_id = ?", (candies, user_id))
+        msg_text = f"🎁 Администратор начислил конфеты: <b>+{data.amount} 🍬</b>!"
+    elif data.item_type == "pokeballs":
+        pokeballs += data.amount
+        cursor.execute("UPDATE users SET pokeballs = ? WHERE user_id = ?", (pokeballs, user_id))
+        msg_text = f"🎁 Администратор начислил покеболы: <b>+{data.amount} 🔴</b>!"
+
     conn.commit()
     conn.close()
     
     try:
-        await bot.send_message(chat_id=user_id, text=f"🎁 Админ выдал вам покемона: <b>{data.poke_name}</b> ({data.poke_cp} CP)!", parse_mode="HTML")
+        await bot.send_message(chat_id=user_id, text=msg_text, parse_mode="HTML")
     except:
         pass
         
