@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 3.3</title>
+  <title>PokéHunter MMO 3.5</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -43,7 +43,6 @@
     .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
     .btn-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; }
     .btn-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
-    .btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
 
     .dex-switch { display: flex; gap: 8px; margin-bottom: 10px; }
     .dex-tab { flex: 1; text-align: center; padding: 8px; background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
@@ -212,7 +211,7 @@
     <div id="gyms-list"></div>
   </div>
 
-  <!-- 4. СОБЫТИЯ ПО МСК -->
+  <!-- 4. СОБЫТИЯ -->
   <div id="tab-events" class="tab-content">
     <div class="card" id="daily-event-card"></div>
     <div class="card">
@@ -357,7 +356,7 @@
     <div class="nav-btn" onclick="switchTab(this, 'tab-market')"><span>🏷</span><span>Рынок</span></div>
     <div class="nav-btn" onclick="switchTab(this, 'tab-games')"><span>🎰</span><span>Игры</span></div>
     <div class="nav-btn" onclick="switchTab(this, 'tab-achieve')"><span>🎖</span><span>Ачивки</span></div>
-    <div class="nav-btn" id="admin-nav" style="display:none;" onclick="switchTab(this, 'tab-admin')"><span>👑</span><span>Админ</span></div>
+    <div class="nav-btn" id="admin-nav" onclick="switchTab(this, 'tab-admin')"><span>👑</span><span>Админ</span></div>
   </nav>
 
   <script>
@@ -1278,9 +1277,9 @@
       if (state.isVip) document.getElementById('vip-tag').style.display = 'inline-block';
     }
 
-    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v13';
+    const MASTER_STORAGE_KEY = 'poke_mmo_master_save_v15';
     function loadSavedState() {
-      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v12');
+      const saved = localStorage.getItem(MASTER_STORAGE_KEY) || localStorage.getItem('poke_mmo_master_save_v14');
       if (saved) {
         try {
           const p = JSON.parse(saved);
@@ -1350,7 +1349,7 @@
         checkWheelAvailability();
       }, 1000);
 
-      // ГАРАНТИРОВАННОЕ ПОКАЗЫВАНИЕ АДМИН-МЕНЮ ДЛЯ ПРОКУДИНА И ТОТСАВА (@totcav)
+      // АДМИНКА ПРИНУДИТЕЛЬНО ВКЛЮЧЕНА (ДЛЯ ВАС И ВСЕХ ИГРОКОВ)
       document.getElementById('admin-nav').style.display = 'flex';
     };
   </script>
