@@ -18,7 +18,7 @@ PORT = int(os.environ.get("PORT", 8080))
 MAX_ENERGY = 100
 ENERGY_RECOVERY_SECONDS = 120
 
-# ПОЛНАЯ БАЗА С ЧЕТКИМ ДЕЛЕНИЕМ НА РЕДКОСТИ И БИОМЫ
+# ПОЛНАЯ БАЗА ПОКЕМОНОВ С РЕДКОСТЯМИ ПО БИОМАМ
 BIOME_POKEMON_DB = {
     "forest": {
         "Common": [(1, "Бульбазавр", 1, 420), (16, "Пиджи", 1, 380), (152, "Чикорита", 2, 410)],
@@ -82,7 +82,9 @@ def init_db():
             last_energy_calc REAL DEFAULT 0,
             dungeon_floor INTEGER DEFAULT 1,
             tourney_stage INTEGER DEFAULT 1,
-            extra_incubator INTEGER DEFAULT 0
+            eggs_common INTEGER DEFAULT 2,
+            eggs_rare INTEGER DEFAULT 1,
+            eggs_legend INTEGER DEFAULT 0
         );
     """)
     cur.execute("""
@@ -108,14 +110,19 @@ def get_user_data(user_id: int, username: str = ""):
     u = cur.fetchone()
     now = time.time()
     
+    clean_uname = username.lstrip("@").lower() if username else f"user_{user_id}"
+
     if not u:
-        cur.execute("INSERT INTO users (user_id, username, coins, candies, energy, last_energy_calc) VALUES (?, ?, 500, 10, 100, ?)", (user_id, username, now))
+        cur.execute("INSERT INTO users (user_id, username, coins, candies, energy, last_energy_calc) VALUES (?, ?, 500, 10, 100, ?)", (user_id, clean_uname, now))
         cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, 25, 'Пикачу', 1, 'Rare', 0, 750)", (user_id,))
         conn.commit()
-        cur.close()
-        conn.close()
-        return get_user_data(user_id, username)
+    else:
+        if clean_uname and clean_uname != "user_123456789":
+            cur.execute("UPDATE users SET username = ? WHERE user_id = ?", (clean_uname, user_id))
+            conn.commit()
 
+    cur.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
+    u = cur.fetchone()
     col_names = [desc[0] for desc in cur.description]
     user_dict = dict(zip(col_names, u))
     cur.close()
@@ -154,23 +161,24 @@ async def api_admin_stats_handler(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# РАБОТАЮЩИЙ АДМИНСКИЙ ИНСПЕКТОР И ВЫДАЧА ПРЕДМЕТОВ В БАЗУ
+# ИСПРАВЛЕННЫЙ ПОИСК ИГРОКОВ В АДМИНКЕ
 async def api_admin_action_handler(request):
     try:
         data = await request.json()
-        target_username = data.get("target_username", "").lstrip("@").lower()
+        target_username = data.get("target_username", "").lstrip("@").lower().strip()
         action_type = data.get("action_type", "")
         value = data.get("value", 0)
         poke_id = data.get("poke_id", 384)
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT user_id FROM users WHERE LOWER(username) = ?", (target_username,))
+        cur.execute("SELECT user_id FROM users WHERE LOWER(TRIM(username)) = ?", (target_username,))
         row = cur.fetchone()
+        
         if not row:
             cur.close()
             conn.close()
-            return web.json_response({"status": "error", "message": "Игрок не найден в базе!"})
+            return web.json_response({"status": "error", "message": f"Игрок @{target_username} не найден в базе бэкенда!"})
         
         target_uid = row[0]
 
@@ -185,10 +193,9 @@ async def api_admin_action_handler(request):
         cur.close()
         conn.close()
 
-        # Отправляем уведомление игроку в Telegram
         bot_instance = request.app['bot']
         try:
-            await bot_instance.send_message(target_uid, f"👑 <b>Администратор выдал вам подарок!</b> Проверьте баланс.", parse_mode="HTML")
+            await bot_instance.send_message(target_uid, f"👑 <b>Администратор выдал вам подарок!</b>", parse_mode="HTML")
         except Exception:
             pass
 
@@ -200,8 +207,9 @@ async def api_hunt_handler(request):
     try:
         data = await request.json()
         uid = int(data.get("user_id", 0))
+        username = data.get("username", "")
         biome = data.get("biome", "forest")
-        u = get_user_data(uid)
+        u = get_user_data(uid, username)
         
         if u["energy"] < 20:
             return web.json_response({"status": "error", "message": "Недостаточно энергии!"})
@@ -210,7 +218,7 @@ async def api_hunt_handler(request):
         cur = conn.cursor()
         cur.execute("UPDATE users SET energy = energy - 20, coins = coins + 25 WHERE user_id = ?", (uid,))
 
-        # СТРОГОЕ РАСПРЕДЕЛЕНИЕ ШАНСОВ РЕДКОСТИ
+        # СТРОГИЕ ШАНСЫ РЕДКОСТИ
         roll = random.random()
         if roll < 0.60: rarity = "Common"
         elif roll < 0.80: rarity = "Uncommon"
@@ -245,6 +253,9 @@ async def api_battle_handler(request):
     try:
         data = await request.json()
         uid = int(data.get("user_id", 0))
+        username = data.get("username", "")
+        get_user_data(uid, username)
+        
         my_cp = int(data.get("my_cp", 500))
         target_query = data.get("target", "")
         battle_type = data.get("battle_type", "pvp")
@@ -253,10 +264,10 @@ async def api_battle_handler(request):
 
         bot_instance = request.app['bot']
         if battle_type == "pvp" and target_query:
-            clean_target = target_query.lstrip("@").lower()
+            clean_target = target_query.lstrip("@").lower().strip()
             conn = get_db()
             cur = conn.cursor()
-            cur.execute("SELECT user_id FROM users WHERE LOWER(username) = ?", (clean_target,))
+            cur.execute("SELECT user_id FROM users WHERE LOWER(TRIM(username)) = ?", (clean_target,))
             row = cur.fetchone()
             if row:
                 target_uid = row[0]
@@ -311,7 +322,7 @@ async def cmd_start(message: types.Message):
     get_user_data(message.from_user.id, message.from_user.username or "")
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="🎮 Открыть PokéHunter MMO 3.0", web_app=WebAppInfo(url=WEBAPP_URL)))
-    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Баланс редкостей и админка обновлены.", reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> База данных синхронизирована.", reply_markup=builder.as_markup(), parse_mode="HTML")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
