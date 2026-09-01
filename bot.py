@@ -5,6 +5,7 @@ import os
 import random
 import sqlite3
 import time
+from datetime import datetime, timezone, timedelta
 from aiohttp import web
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
@@ -18,7 +19,6 @@ PORT = int(os.environ.get("PORT", 8080))
 MAX_ENERGY = 100
 ENERGY_RECOVERY_SECONDS = 120
 
-# ПОЛНАЯ БАЗА ПОКЕМОНОВ С РЕДКОСТЯМИ ПО БИОМАМ
 BIOME_POKEMON_DB = {
     "forest": {
         "Common": [(1, "Бульбазавр", 1, 420), (16, "Пиджи", 1, 380), (152, "Чикорита", 2, 410)],
@@ -79,12 +79,11 @@ def init_db():
             coins INTEGER DEFAULT 500,
             candies INTEGER DEFAULT 10,
             energy INTEGER DEFAULT 100,
+            pokeballs INTEGER DEFAULT 15,
             last_energy_calc REAL DEFAULT 0,
             dungeon_floor INTEGER DEFAULT 1,
             tourney_stage INTEGER DEFAULT 1,
-            eggs_common INTEGER DEFAULT 2,
-            eggs_rare INTEGER DEFAULT 1,
-            eggs_legend INTEGER DEFAULT 0
+            extra_incubator INTEGER DEFAULT 0
         );
     """)
     cur.execute("""
@@ -113,7 +112,7 @@ def get_user_data(user_id: int, username: str = ""):
     clean_uname = username.lstrip("@").lower() if username else f"user_{user_id}"
 
     if not u:
-        cur.execute("INSERT INTO users (user_id, username, coins, candies, energy, last_energy_calc) VALUES (?, ?, 500, 10, 100, ?)", (user_id, clean_uname, now))
+        cur.execute("INSERT INTO users (user_id, username, coins, candies, energy, pokeballs, last_energy_calc) VALUES (?, ?, 500, 10, 100, 15, ?)", (user_id, clean_uname, now))
         cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, 25, 'Пикачу', 1, 'Rare', 0, 750)", (user_id,))
         conn.commit()
     else:
@@ -161,7 +160,6 @@ async def api_admin_stats_handler(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-# ИСПРАВЛЕННЫЙ ПОИСК ИГРОКОВ В АДМИНКЕ
 async def api_admin_action_handler(request):
     try:
         data = await request.json()
@@ -192,13 +190,6 @@ async def api_admin_action_handler(request):
         conn.commit()
         cur.close()
         conn.close()
-
-        bot_instance = request.app['bot']
-        try:
-            await bot_instance.send_message(target_uid, f"👑 <b>Администратор выдал вам подарок!</b>", parse_mode="HTML")
-        except Exception:
-            pass
-
         return web.json_response({"status": "ok"})
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
@@ -213,12 +204,14 @@ async def api_hunt_handler(request):
         
         if u["energy"] < 20:
             return web.json_response({"status": "error", "message": "Недостаточно энергии!"})
+        
+        if u["pokeballs"] <= 0:
+            return web.json_response({"status": "error", "message": "📭 У вас закончились Покеболы! Купите их в магазине."})
 
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("UPDATE users SET energy = energy - 20, coins = coins + 25 WHERE user_id = ?", (uid,))
+        cur.execute("UPDATE users SET energy = energy - 20, pokeballs = pokeballs - 1, coins = coins + 25 WHERE user_id = ?", (uid,))
 
-        # СТРОГИЕ ШАНСЫ РЕДКОСТИ
         roll = random.random()
         if roll < 0.60: rarity = "Common"
         elif roll < 0.80: rarity = "Uncommon"
@@ -236,19 +229,25 @@ async def api_hunt_handler(request):
 
         cur.execute("INSERT INTO inventory (user_id, pokemon_id, pokemon_name, gen, rarity, is_shiny, cp) VALUES (?, ?, ?, ?, ?, ?, ?)", (uid, pid, name, gen, rarity, shiny, cp))
         inv_id = cur.lastrowid
+        
+        cur.execute("SELECT pokeballs, energy FROM users WHERE user_id = ?", (uid,))
+        upd = cur.fetchone()
+
         conn.commit()
         cur.close()
         conn.close()
 
         return web.json_response({
             "status": "ok",
-            "energy": u["energy"] - 20,
+            "energy": upd[1],
+            "pokeballs": upd[0],
             "coins": u["coins"] + 25,
             "pokemon": {"inv_id": inv_id, "id": pid, "name": name, "gen": gen, "rarity": rarity, "cp": cp, "is_shiny": bool(shiny)}
         })
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
+# ИСПРАВЛЕННЫЙ ВЫБОР САМОГО СИЛЬНОГО ПОКЕМОНА ПРОТИВНИКА НА АРЕНЕ
 async def api_battle_handler(request):
     try:
         data = await request.json()
@@ -271,13 +270,14 @@ async def api_battle_handler(request):
             row = cur.fetchone()
             if row:
                 target_uid = row[0]
+                # Берем САМОГО СИЛЬНОГО покемона из инвентаря игрока по максимальному CP
                 cur.execute("SELECT pokemon_name, cp FROM inventory WHERE user_id = ? ORDER BY cp DESC LIMIT 1", (target_uid,))
                 p_row = cur.fetchone()
                 if p_row:
                     enemy_name = f"@{clean_target} ({p_row[0]})"
                     enemy_cp = p_row[1]
                 try:
-                    await bot_instance.send_message(target_uid, f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b>", parse_mode="HTML")
+                    await bot_instance.send_message(target_uid, f"⚔️ <b>Вас вызвали на дуэль на PvP Арену!</b> Соперник сражался с вашим сильнейшим покемоном.", parse_mode="HTML")
                 except Exception:
                     pass
             cur.close()
@@ -322,7 +322,7 @@ async def cmd_start(message: types.Message):
     get_user_data(message.from_user.id, message.from_user.username or "")
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="🎮 Открыть PokéHunter MMO 3.0", web_app=WebAppInfo(url=WEBAPP_URL)))
-    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> База данных синхронизирована.", reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("👋 <b>Добро пожаловать в PokéHunter MMO 3.0!</b> Поиск сильнейших покемонов на арене настроен.", reply_markup=builder.as_markup(), parse_mode="HTML")
 
 async def main():
     logging.basicConfig(level=logging.INFO)
