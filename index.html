@@ -114,20 +114,22 @@
     </div>
   </header>
 
-  <!-- 1. ОХОТА -->
+  <!-- 1. ОХОТА (6 ЛОГИЧНЫХ БИОМОВ) -->
   <div id="tab-hunt" class="tab-content active">
     <div class="card">
-      <h3 style="font-size:14px; margin-bottom:8px;">📍 Биом для поиска</h3>
-      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:12px;" id="biome-selector">
+      <h3 style="font-size:14px; margin-bottom:8px;">📍 6 Локаций для Охоты</h3>
+      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:12px;" id="biome-selector">
         <button class="chip active" onclick="selectBiome(this, 'forest')">🌲 Густой Лес</button>
         <button class="chip" onclick="selectBiome(this, 'lake')">🌊 Озеро Валора</button>
         <button class="chip" onclick="selectBiome(this, 'volcano')">🌋 Вулкан Лаваридж</button>
+        <button class="chip" onclick="selectBiome(this, 'power')">⚡️ Электро-Станция</button>
+        <button class="chip" onclick="selectBiome(this, 'cave')">🪨 Горная Пещера</button>
         <button class="chip" onclick="selectBiome(this, 'ruins')">🌌 Руины Синно</button>
       </div>
       <button class="btn-main" onclick="huntPokemonAction()">🌿 Искать покемона (-20 ⚡️)</button>
     </div>
 
-    <!-- Инкубаторы (Слот 1 и Слот 2) -->
+    <!-- Инкубаторы -->
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <h3 style="font-size:14px;">🥚 Инкубаторы Яиц</h3>
@@ -144,7 +146,6 @@
         <button class="chip active" id="egg-action-btn-1" style="background:var(--accent-star); color:#000; display:none;" onclick="handleEggAction(1)">🐣 Вылупить</button>
       </div>
 
-      <!-- Второй слот инкубатора -->
       <div id="incubator-slot-2-wrap" style="border-top:1px solid var(--border); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:10px;">
           <div id="egg-icon-2" style="font-size:32px;">🥚</div>
@@ -158,6 +159,7 @@
       </div>
     </div>
 
+    <!-- Питомник -->
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:4px;">🧬 Питомник (Скрещивание за 1ч)</h3>
       <div class="nursery-slots">
@@ -246,23 +248,34 @@
     </div>
   </div>
 
-  <!-- 5. МАГАЗИН (С доп. слотом за звезды) -->
+  <!-- 5. МАГАЗИН (РОВНО 8 ТОВАРОВ ЗА STARS И 10 ЗА МОНЕТЫ) -->
   <div id="tab-shop" class="tab-content">
     <div class="card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), var(--card));">
-      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат (Telegram Stars)</h3>
+      <h3 style="font-size:14px; color:var(--accent-star); margin-bottom:8px;">⭐ Донат-Магазин (8 товаров за Telegram Stars)</h3>
       <div class="shop-grid">
-        <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот для яиц</p><button class="btn-main btn-gold" onclick="buyStarsItem('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
+        <div class="shop-card featured"><div class="shop-icon">🥚</div><h4>Доп. Инкубатор</h4><p>Второй слот</p><button class="btn-main btn-gold" onclick="buyStarsItem('Доп. Инкубатор', 100, 'extra_incubator')">100 ⭐</button></div>
         <div class="shop-card featured"><div class="shop-icon">🟡</div><h4>Легендарное Яйцо</h4><p>3500+ CP</p><button class="btn-main btn-gold" onclick="buyStarsItem('Легендарное Яйцо', 150, 'egg_legend')">150 ⭐</button></div>
-        <div class="shop-card featured"><div class="shop-icon">👑</div><h4>VIP (30 дней)</h4><p>Реген x2, +25% 🪙</p><button class="btn-main btn-gold" onclick="buyStarsItem('VIP Статус', 250, 'vip_30')">250 ⭐</button></div>
-        <div class="shop-card featured"><div class="shop-icon">💰</div><h4>Кошель 1 000 🪙</h4><p>Быстрый старт</p><button class="btn-main btn-gold" onclick="buyStarsItem('1000 Монет', 50, 'coins_1000')">50 ⭐</button></div>
+        <div class="shop-card featured"><div class="shop-icon">👑</div><h4>VIP Статус</h4><p>Реген x2, +25% 🪙</p><button class="btn-main btn-gold" onclick="buyStarsItem('VIP Статус', 250, 'vip_30')">250 ⭐</button></div>
+        <div class="shop-card featured"><div class="shop-icon">💰</div><h4>Кошель (1 000 🪙)</h4><p>Быстрый старт</p><button class="btn-main btn-gold" onclick="buyStarsItem('1000 Монет', 50, 'coins_1000')">50 ⭐</button></div>
+        <div class="shop-card featured"><div class="shop-icon">💎</div><h4>Сундук (5 000 🪙)</h4><p>Выгода +25%</p><button class="btn-main btn-gold" onclick="buyStarsItem('5000 Монет', 200, 'coins_5000')">200 ⭐</button></div>
+        <div class="shop-card featured"><div class="shop-icon">✨</div><h4>Шайни Амулет</h4><p>Шанс Шайни х5</p><button class="btn-main btn-gold" onclick="buyStarsItem('Шайни Амулет', 75, 'shiny_charm')">75 ⭐</button></div>
+        <div class="shop-card featured"><div class="shop-icon">🟣</div><h4>Мастербол</h4><p>100% любая поимка</p><button class="btn-main btn-gold" onclick="buyStarsItem('Мастербол', 100, 'masterball')">100 ⭐</button></div>
+        <div class="shop-card featured"><div class="shop-icon">⚡️</div><h4>Безлимит Энергии</h4><p>7 дней без затрат</p><button class="btn-main btn-gold" onclick="buyStarsItem('Безлимит Энергии', 300, 'unlimited_energy')">300 ⭐</button></div>
       </div>
     </div>
-    <h3 style="font-size:14px; margin: 12px 0 8px 0;">🪙 За игровые монеты</h3>
+
+    <h3 style="font-size:14px; margin: 12px 0 8px 0;">🪙 Товары за игровые монеты (10 товаров)</h3>
     <div class="shop-grid">
-      <div class="shop-card"><div class="shop-icon">🍖</div><h4>Приманка</h4><p>+100 ⚡️</p><button class="btn-main" onclick="buyCoinItem('lure', 15)">15 🪙</button></div>
-      <div class="shop-card"><div class="shop-icon">⚡️</div><h4>Энергетик</h4><p>+50 ⚡️</p><button class="btn-main" onclick="buyCoinItem('energy_drink', 8)">8 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">🍖</div><h4>Приманка</h4><p>+100 ⚡️ Энергии</p><button class="btn-main" onclick="buyCoinItem('lure', 15)">15 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">⚡️</div><h4>Энергетик</h4><p>+50 ⚡️ Энергии</p><button class="btn-main" onclick="buyCoinItem('energy_drink', 8)">8 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">🔘</div><h4>Ультрабол</h4><p>Надёжный шар</p><button class="btn-main" onclick="buyCoinItem('ultraball', 25)">25 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">🔴</div><h4>Покеболы x10</h4><p>Запас шаров</p><button class="btn-main" onclick="buyCoinItem('pokeballs_10', 30)">30 🪙</button></div>
       <div class="shop-card"><div class="shop-icon">🍬</div><h4>Конфеты x5</h4><p>Для эволюций</p><button class="btn-main" onclick="buyCoinItem('candies_5', 50)">50 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">🍬</div><h4>Мешок Конфет x20</h4><p>Выгодный пак</p><button class="btn-main" onclick="buyCoinItem('candies_20', 180)">180 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">🥚</div><h4>Обычное Яйцо</h4><p>Инкубатор 30 мин</p><button class="btn-main" onclick="buyCoinItem('egg_common', 40)">40 🪙</button></div>
       <div class="shop-card"><div class="shop-icon">🥚</div><h4>Редкое Яйцо</h4><p>Инкубатор 1.5ч</p><button class="btn-main" onclick="buyCoinItem('egg_rare', 100)">100 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">🛡</div><h4>Щит Арены</h4><p>Защита от PvP</p><button class="btn-main" onclick="buyCoinItem('shield', 60)">60 🪙</button></div>
+      <div class="shop-card"><div class="shop-icon">🧪</div><h4>Зелье Опыта</h4><p>+200 CP покемону</p><button class="btn-main" onclick="buyCoinItem('exp_potion', 120)">120 🪙</button></div>
     </div>
   </div>
 
@@ -353,8 +366,8 @@
 
   <!-- МОДАЛКИ -->
   <div class="modal" id="egg-select-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:8px;">🥚 Инвентарь Яиц</h3><div id="egg-inventory-list" style="margin-bottom:12px;"></div><button class="chip" style="width:100%;" onclick="closeModal('egg-select-modal')">Закрыть</button></div></div>
-  <div class="modal" id="picker-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:4px;">⚔️ Выберите бойца</h3><p style="font-size:11px; color:var(--accent-star); margin-bottom:10px;" id="picker-timer">Автовыбор антикласса через: 5с</p><div style="max-height:220px; overflow-y:auto; margin-bottom:10px;" id="picker-list"></div><button class="chip" style="width:100%;" onclick="closeModal('picker-modal')">Отмена</button></div></div>
-  <div class="modal" id="battle-modal"><div class="modal-content"><h3 id="battle-title" style="font-size:15px; margin-bottom:4px;">⚔️ Битва</h3><div class="battle-field"><div class="fighter"><img id="b-p1-img" src=""><h5 id="b-p1-name" style="font-size:11px;">Мой Боец</h5><div class="hp-bar-bg"><div class="hp-bar-fill" id="b-p1-hp"></div></div></div><div style="font-weight:900; font-size:16px; color:var(--accent-danger);">VS</div><div class="fighter"><img id="b-p2-img" src=""><h5 id="b-p2-name" style="font-size:11px;">Противник</h5><div class="hp-bar-bg"><div class="hp-bar-fill" id="b-p2-hp"></div></div></div></div><p id="battle-log" style="font-size:12px; color:var(--muted); min-height:38px; margin-bottom:12px;">Раунд 1: Битва началась!</p><button class="btn-main" id="b-close-btn" style="display:none;" onclick="closeBattleModal()">Завершить бой</button></div></div>
+  <div class="modal" id="picker-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:4px;">⚔️ Выберите бойца</h3><p style="font-size:11px; color:var(--accent-star); margin-bottom:10px;" id="picker-timer">Автовыбор через: 5с</p><div style="max-height:220px; overflow-y:auto; margin-bottom:10px;" id="picker-list"></div><button class="chip" style="width:100%;" onclick="closeModal('picker-modal')">Отмена</button></div></div>
+  <div class="modal" id="battle-modal"><div class="modal-content"><h3 id="battle-title" style="font-size:15px; margin-bottom:4px;">⚔️ Битва</h3><div class="battle-field"><div class="fighter"><img id="b-p1-img" src=""><h5 id="b-p1-name" style="font-size:11px;">Мой Боец</h5><div class="hp-bar-bg"><div class="hp-bar-fill" id="b-p1-hp"></div></div></div><div style="font-weight:900; font-size:16px; color:var(--accent-danger);">VS</div><div class="fighter"><img id="b-p2-img" src=""><h5 id="b-p2-name" style="font-size:11px;">Противник</h5><div class="hp-bar-bg"><div class="hp-bar-fill" id="b-p2-hp"></div></div></div></div><p id="battle-log" style="font-size:12px; color:var(--muted); min-height:38px; margin-bottom:12px;">Раунд 1: Сравнение CP...</p><button class="btn-main" id="b-close-btn" style="display:none;" onclick="closeBattleModal()">Завершить бой</button></div></div>
   <div class="modal" id="egg-modal"><div class="modal-content"><h3 style="font-size:16px; margin-bottom:6px;">🥚 Инкубатор</h3><p style="font-size:11px; color:var(--muted); margin-bottom:12px;">Тапайте по яйцу!</p><div class="egg-pulse" id="egg-tap-icon" onclick="tapCrackEgg()">🥚</div><p id="egg-clicks-left" style="font-size:12px; margin-top:8px; font-weight:bold; color:var(--accent-star);">Осталось тапов: 3</p></div></div>
   <div class="modal" id="poke-modal"><div class="modal-content"><img id="m-poke-img" src="" style="width:110px; height:110px; object-fit:contain; margin: 4px auto 8px auto;"><h3 id="m-poke-name" style="font-size:16px;">Пикачу</h3><p id="m-poke-stats" style="font-size:12px; color:var(--muted); margin-bottom:12px;">⚡️ Электро | 480 CP</p><button class="btn-main btn-purple" id="m-evo-btn" onclick="evolveSelectedPokemon()" style="margin-bottom:8px;">🧬 Эволюция (3 🍬 + 150 🪙)</button><button class="chip" style="width:100%;" onclick="closeModal('poke-modal')">Закрыть</button></div></div>
   <div class="modal" id="nursery-picker-modal"><div class="modal-content"><h3 style="font-size:15px; margin-bottom:6px;">🧬 Выберите покемона</h3><div style="max-height:220px; overflow-y:auto; margin-bottom:10px;" id="nursery-list-select"></div><button class="chip" style="width:100%;" onclick="closeModal('nursery-picker-modal')">Отмена</button></div></div>
@@ -390,54 +403,27 @@
       { id: 7, name: "Сквиртл", gen: 1, type: "💧 Вода", rarity: "Common", cp: 430, evoTo: 8, biome: "lake" },
       { id: 8, name: "Вартортл", gen: 1, type: "💧 Вода", rarity: "Uncommon", cp: 940, evoTo: 9, biome: "lake" },
       { id: 9, name: "Бластойз", gen: 1, type: "💧 Вода", rarity: "Epic", cp: 2850, biome: "lake" },
-      { id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, evoTo: 26, biome: "forest" },
-      { id: 26, name: "Райчу", gen: 1, type: "⚡️ Электро", rarity: "Epic", cp: 2400, biome: "forest" },
+      { id: 25, name: "Пикачу", gen: 1, type: "⚡️ Электро", rarity: "Rare", cp: 750, evoTo: 26, biome: "power" },
+      { id: 26, name: "Райчу", gen: 1, type: "⚡️ Электро", rarity: "Epic", cp: 2400, biome: "power" },
+      { id: 74, name: "Геодуд", gen: 1, type: "🪨 Камень", rarity: "Common", cp: 400, evoTo: 75, biome: "cave" },
       { id: 94, name: "Генгар", gen: 1, type: "👻 Призрак", rarity: "Epic", cp: 2700, biome: "ruins" },
+      { id: 95, name: "Оникс", gen: 1, type: "🪨 Камень", rarity: "Uncommon", cp: 1100, biome: "cave" },
       { id: 133, name: "Иви", gen: 1, type: "⚪️ Обычный", rarity: "Rare", cp: 650, evoTo: 134, biome: "forest" },
       { id: 134, name: "Вапореон", gen: 1, type: "💧 Вода", rarity: "Epic", cp: 2600, biome: "lake" },
-      { id: 149, name: "Драгонайт", gen: 1, type: "🐲 Дракон", rarity: "Epic", cp: 3200, biome: "ruins" },
+      { id: 145, name: "Запдос", gen: 1, type: "⚡️ Электро", rarity: "Legendary", cp: 4200, biome: "power" },
       { id: 150, name: "Мьюту", gen: 1, type: "🔮 Психик", rarity: "Legendary", cp: 4300, biome: "ruins" },
       { id: 152, name: "Чикорита", gen: 2, type: "🌿 Трава", rarity: "Common", cp: 410, evoTo: 153, biome: "forest" },
-      { id: 153, name: "Бейлиф", gen: 2, type: "🌿 Трава", rarity: "Uncommon", cp: 930, evoTo: 154, biome: "forest" },
-      { id: 154, name: "Меганиум", gen: 2, type: "🌿 Трава", rarity: "Epic", cp: 2750, biome: "forest" },
       { id: 155, name: "Синдаквил", gen: 2, type: "🔥 Огонь", rarity: "Common", cp: 450, evoTo: 156, biome: "volcano" },
-      { id: 156, name: "Квилава", gen: 2, type: "🔥 Огонь", rarity: "Uncommon", cp: 960, evoTo: 157, biome: "volcano" },
-      { id: 157, name: "Тайфложн", gen: 2, type: "🔥 Огонь", rarity: "Epic", cp: 2900, biome: "volcano" },
       { id: 158, name: "Тотодайл", gen: 2, type: "💧 Вода", rarity: "Common", cp: 430, evoTo: 159, biome: "lake" },
-      { id: 159, name: "Кроконав", gen: 2, type: "💧 Вода", rarity: "Uncommon", cp: 940, evoTo: 160, biome: "lake" },
-      { id: 160, name: "Фералигатр", gen: 2, type: "💧 Вода", rarity: "Epic", cp: 2850, biome: "lake" },
       { id: 248, name: "Тиранитар", gen: 2, type: "🪨 Камень", rarity: "Epic", cp: 3300, biome: "volcano" },
       { id: 249, name: "Лугия", gen: 2, type: "🔮 Психик", rarity: "Legendary", cp: 4350, biome: "lake" },
-      { id: 252, name: "Трико", gen: 3, type: "🌿 Трава", rarity: "Common", cp: 430, evoTo: 253, biome: "forest" },
-      { id: 253, name: "Гровайл", gen: 3, type: "🌿 Трава", rarity: "Uncommon", cp: 950, evoTo: 254, biome: "forest" },
-      { id: 254, name: "Септиль", gen: 3, type: "🌿 Трава", rarity: "Epic", cp: 2850, biome: "forest" },
-      { id: 255, name: "Торчик", gen: 3, type: "🔥 Огонь", rarity: "Common", cp: 460, evoTo: 256, biome: "volcano" },
-      { id: 256, name: "Комбаскен", gen: 3, type: "🔥 Огонь", rarity: "Uncommon", cp: 980, evoTo: 257, biome: "volcano" },
-      { id: 257, name: "Блейзикен", gen: 3, type: "🔥 Огонь", rarity: "Epic", cp: 2950, biome: "volcano" },
-      { id: 258, name: "Мадкип", gen: 3, type: "💧 Вода", rarity: "Common", cp: 450, evoTo: 259, biome: "lake" },
-      { id: 259, name: "Марштомп", gen: 3, type: "💧 Вода", rarity: "Uncommon", cp: 960, evoTo: 260, biome: "lake" },
-      { id: 260, name: "Свамперт", gen: 3, type: "💧 Вода", rarity: "Epic", cp: 2900, biome: "lake" },
+      { id: 383, name: "Граудон", gen: 3, type: "🏜 Земля", rarity: "Legendary", cp: 4600, biome: "cave" },
       { id: 384, name: "Райкваза", gen: 3, type: "🐲 Дракон", rarity: "Legendary", cp: 4500, biome: "ruins" },
-      { id: 387, name: "Туртвиг", gen: 4, type: "🌿 Трава", rarity: "Common", cp: 430, evoTo: 388, biome: "forest" },
-      { id: 388, name: "Гротл", gen: 4, type: "🌿 Трава", rarity: "Uncommon", cp: 950, evoTo: 389, biome: "forest" },
-      { id: 389, name: "Тортерра", gen: 4, type: "🌿 Трава", rarity: "Epic", cp: 2850, biome: "forest" },
-      { id: 390, name: "Чимчар", gen: 4, type: "🔥 Огонь", rarity: "Common", cp: 460, evoTo: 391, biome: "volcano" },
-      { id: 391, name: "Монферно", gen: 4, type: "🔥 Огонь", rarity: "Uncommon", cp: 980, evoTo: 392, biome: "volcano" },
-      { id: 392, name: "Инфернейп", gen: 4, type: "🔥 Огонь", rarity: "Epic", cp: 2950, biome: "volcano" },
-      { id: 393, name: "Пиплап", gen: 4, type: "💧 Вода", rarity: "Common", cp: 440, evoTo: 394, biome: "lake" },
-      { id: 394, name: "Принплап", gen: 4, type: "💧 Вода", rarity: "Uncommon", cp: 950, evoTo: 395, biome: "lake" },
-      { id: 395, name: "Эмполеон", gen: 4, type: "💧 Вода", rarity: "Epic", cp: 2900, biome: "lake" },
-      { id: 448, name: "Лукарио", gen: 4, type: "🥋 Боевой", rarity: "Epic", cp: 2900, biome: "ruins" },
+      { id: 403, name: "Шинкс", gen: 4, type: "⚡️ Электро", rarity: "Common", cp: 430, evoTo: 404, biome: "power" },
+      { id: 405, name: "Люксрэй", gen: 4, type: "⚡️ Электро", rarity: "Rare", cp: 2200, biome: "power" },
+      { id: 448, name: "Лукарио", gen: 4, type: "🥋 Боевой", rarity: "Epic", cp: 2900, biome: "cave" },
       { id: 493, name: "Аркеус", gen: 4, type: "⚪️ Обычный", rarity: "Legendary", cp: 5000, biome: "ruins" },
-      { id: 495, name: "Снайви", gen: 5, type: "🌿 Трава", rarity: "Common", cp: 430, evoTo: 496, biome: "forest" },
-      { id: 496, name: "Сервайн", gen: 5, type: "🌿 Трава", rarity: "Uncommon", cp: 940, evoTo: 497, biome: "forest" },
-      { id: 497, name: "Серпериор", gen: 5, type: "🌿 Трава", rarity: "Epic", cp: 2850, biome: "forest" },
-      { id: 498, name: "Тепиг", gen: 5, type: "🔥 Огонь", rarity: "Common", cp: 450, evoTo: 499, biome: "volcano" },
-      { id: 499, name: "Пигнайт", gen: 5, type: "🔥 Огонь", rarity: "Uncommon", cp: 960, evoTo: 500, biome: "volcano" },
-      { id: 500, name: "Эмбоар", gen: 5, type: "🔥 Огонь", rarity: "Epic", cp: 2900, biome: "volcano" },
-      { id: 501, name: "Ошавотт", gen: 5, type: "💧 Вода", rarity: "Common", cp: 440, evoTo: 502, biome: "lake" },
-      { id: 502, name: "Дьювотт", gen: 5, type: "💧 Вода", rarity: "Uncommon", cp: 950, evoTo: 503, biome: "lake" },
-      { id: 503, name: "Самуротт", gen: 5, type: "💧 Вода", rarity: "Epic", cp: 2900, biome: "lake" },
+      { id: 530, name: "Экскадрил", gen: 5, type: "⚙️ Сталь", rarity: "Rare", cp: 2300, biome: "cave" },
       { id: 571, name: "Зороарк", gen: 5, type: "🌑 Темный", rarity: "Epic", cp: 2850, biome: "ruins" },
       { id: 643, name: "Реширам", gen: 5, type: "🐲 Дракон", rarity: "Legendary", cp: 4450, biome: "volcano" }
     ];
@@ -556,8 +542,18 @@
       } else {
         state.energy -= 20;
         state.coins += 25;
-        const pool = POKEDEX_DATABASE.filter(p => p.biome === state.currentBiome || p.rarity === 'Common');
-        const randomPoke = pool[Math.floor(Math.random() * pool.length)];
+        // Клиентский запасной пул по биомам
+        const biomeMap = {
+          forest: [1, 2, 3, 25, 133, 152],
+          lake: [7, 8, 9, 134, 158, 249],
+          volcano: [4, 5, 6, 155, 248, 643],
+          power: [25, 26, 145, 403, 405],
+          cave: [74, 95, 448, 383, 530],
+          ruins: [94, 150, 384, 493, 571]
+        };
+        const allowedIds = biomeMap[state.currentBiome] || [1, 4, 7];
+        const filteredDb = POKEDEX_DATABASE.filter(p => allowedIds.includes(p.id));
+        const randomPoke = filteredDb[Math.floor(Math.random() * filteredDb.length)] || POKEDEX_DATABASE[0];
         const shiny = Math.random() < 0.05;
         state.myPokedex.unshift({ ...randomPoke, cp: randomPoke.cp + Math.floor(Math.random() * 80), is_shiny: shiny });
       }
@@ -570,7 +566,6 @@
       alert(`🎉 Пойман: ${state.myPokedex[0].is_shiny ? '✨ ШАЙНИ ' : ''}${state.myPokedex[0].name} (${state.myPokedex[0].cp} CP)! +25 🪙`);
     }
 
-    // ИНКУБАТОРЫ С ВЫБОРОМ СЛОТА
     let selectedIncubatorSlot = 1;
     function openEggSelectModal(slotNum) {
       selectedIncubatorSlot = slotNum;
@@ -597,7 +592,6 @@
       if ((state.eggInventory[key] || 0) <= 0) { alert('У вас нет яиц этого типа!'); return; }
       state.eggInventory[key]--;
       const data = { type: type, hatchTime: Date.now() + (durationSec * 1000) };
-      
       if (selectedIncubatorSlot === 1) state.activeIncubator1 = data;
       else state.activeIncubator2 = data;
 
@@ -608,7 +602,6 @@
     }
 
     function renderIncubatorUI() {
-      // Слот 1
       const inc1 = state.activeIncubator1;
       if (!inc1) {
         document.getElementById('egg-title-1').innerText = "Слот 1: Пуст";
@@ -626,7 +619,6 @@
         }
       }
 
-      // Слот 2 (Доп.)
       const slot2Wrap = document.getElementById('incubator-slot-2-wrap');
       if (!state.hasExtraIncubator) {
         slot2Wrap.style.display = 'none';
@@ -670,7 +662,6 @@
         triggerHaptic('heavy');
         closeModal('egg-modal');
         const incType = (activeCrackingSlot === 1 ? state.activeIncubator1?.type : state.activeIncubator2?.type) || 'Rare';
-        
         if (activeCrackingSlot === 1) state.activeIncubator1 = null;
         else state.activeIncubator2 = null;
 
@@ -740,9 +731,7 @@
           document.getElementById('nursery-start-btn').innerText = "🎁 Забрать полученное яйцо";
           document.getElementById('nursery-start-btn').onclick = claimNurseryEgg;
         } else {
-          const m = Math.floor(rem / 60);
-          const s = rem % 60;
-          document.getElementById('nursery-status-text').innerText = `Скрещивание... Осталось: ${m}м ${s}с`;
+          document.getElementById('nursery-status-text').innerText = `Скрещивание... Осталось: ${Math.floor(rem/60)}м ${rem%60}с`;
           document.getElementById('nursery-start-btn').innerText = "⏳ В процессе...";
         }
       }
@@ -814,7 +803,7 @@
     }
 
     function startDungeonExpedition() {
-      openFighterPicker(`Страж Подземелья (Этаж ${state.dungeonFloor})`, 94, 1800 + (state.dungeonFloor * 400), 'dungeon');
+      openFighterPicker(`Страж Подземелья (Этаж ${state.dungeonFloor})`, 94, 1500 + (state.dungeonFloor * 500), 'dungeon');
     }
 
     function attackWorldBoss() {
@@ -875,7 +864,6 @@
       }, 1000);
     }
 
-    // ОТПРАВКА БОЯ НА СЕРВЕР ДЛЯ ЧЕСТНОЙ ПРОВЕРКИ
     async function selectFighterAndSendToAPI(myPoke) {
       clearInterval(pickerTimerInterval);
       closeModal('picker-modal');
@@ -894,7 +882,7 @@
         return;
       }
 
-      startAnimatedBattle(myPoke, res.enemy_name, pendingBattle.enemyId, res.enemy_cp, pendingBattle.win, res);
+      startAnimatedBattle(myPoke, res.enemy_name, pendingBattle.enemyId, res.enemy_cp, res.win, res);
     }
 
     function startAnimatedBattle(myPoke, enemyName, enemyId, enemyCp, isWin, serverRes) {
@@ -903,7 +891,6 @@
       document.getElementById('b-p2-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${enemyId}.png`;
       document.getElementById('b-p2-name').innerText = `${enemyName} (${enemyCp} CP)`;
 
-      let p1_hp = 100, p2_hp = 100;
       document.getElementById('b-p1-hp').style.width = '100%';
       document.getElementById('b-p2-hp').style.width = '100%';
       document.getElementById('b-close-btn').style.display = 'none';
@@ -920,9 +907,9 @@
           if (pendingBattle.battleType === 'tourney') state.tourneyStage++;
           if (pendingBattle.battleType === 'dungeon') state.dungeonFloor = serverRes.dungeon_floor;
           
-          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) >= Соперника (${enemyCp}). Награда: +${serverRes.reward_coins} 🪙`;
+          document.getElementById('battle-log').innerText = `🏆 ПОБЕДА! Ваш CP (${myPoke.cp}) достаточен против (${enemyCp}). Награда: +${serverRes.reward_coins} 🪙`;
         } else {
-          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) оказался слабее соперника (${enemyCp}).`;
+          document.getElementById('battle-log').innerText = `❌ ПОРАЖЕНИЕ! Ваш CP (${myPoke.cp}) ниже силы противника (${enemyCp}).`;
         }
         saveState();
         renderTourneyUI();
