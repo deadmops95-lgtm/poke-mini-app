@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PokéHunter MMO 2.0 — Fixed</title>
+  <title>PokéHunter MMO 2.0 Complete</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -27,7 +27,7 @@
     .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .user-info { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
     .badge { font-size: 10px; background: var(--accent-star); color: #000; padding: 1px 6px; border-radius: 6px; font-weight: 800; }
-    .badge-vip { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .badge-vip { background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; }
     .stats-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     .stat-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; }
     .energy-wrap { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 4px; }
@@ -45,7 +45,6 @@
     .btn-gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
     .btn-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; }
     .btn-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
-    .btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
 
     .dex-switch { display: flex; gap: 8px; margin-bottom: 10px; }
     .dex-tab { flex: 1; text-align: center; padding: 8px; background: var(--card-inner); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
@@ -96,7 +95,6 @@
     .nav-btn span:first-child { font-size: 16px; }
 
     .timer-text { font-size: 10px; color: var(--accent-star); font-weight: 700; }
-    .type-badge { font-size: 9px; padding: 1px 5px; border-radius: 4px; background: var(--card-inner); display: inline-block; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -125,7 +123,7 @@
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:8px;">📍 Главная Поляна Охоты</h3>
       <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">Энергия восстанавливается на <span id="regen-rate">1</span> ед. каждую минуту.</p>
-      <button class="btn-main" id="hunt-btn" onclick="huntPokemonAction()">🌿 Искать покемона (-10 ⚡️, -1 🔴)</button>
+      <button class="btn-main" onclick="huntPokemonAction()">🌿 Искать покемона (-10 ⚡️, -1 🔴)</button>
     </div>
 
     <div class="card">
@@ -237,7 +235,6 @@
     </div>
   </div>
 
-  <!-- Modals -->
   <div class="modal" id="egg-select-modal" onclick="closeModalOnBackdrop(event, 'egg-select-modal')">
     <div class="modal-content">
       <h3 style="font-size:15px; margin-bottom:8px;">🥚 Выберите тип яйца</h3>
@@ -278,10 +275,6 @@
   <div class="modal" id="egg-modal" onclick="closeModalOnBackdrop(event, 'egg-modal')">
     <div class="modal-content">
       <h3 style="font-size:16px; margin-bottom:6px;">🥚 Вылупление!</h3>
-      <p style="font-size
-        <div class="modal" id="egg-modal" onclick="closeModalOnBackdrop(event, 'egg-modal')">
-    <div class="modal-content">
-      <h3 style="font-size:16px; margin-bottom:6px;">🥚 Вылупление!</h3>
       <p style="font-size:11px; color:var(--muted); margin-bottom:12px;">Яйцо созрело!</p>
       <div class="egg-pulse" onclick="tapCrackEgg()">🥚</div>
       <button class="chip" style="width:100%; margin-top:12px;" onclick="closeModal('egg-modal')">Закрыть</button>
@@ -320,7 +313,6 @@
       setTimeout(() => { t.classList.remove('show'); }, 3000);
     }
 
-    // Жесткая база 151 покемона
     const POKEDEX_DATABASE = [];
     const baseNames = ["Бульбазавр","Ивизавр","Венузавр","Чармандер","Чармелеон","Чаризард","Сквиртл","Вартортл","Бластойз","Катерпи","Метапод","Батерфри","Видл","Кокун","Бидрилл","Пиджи","Пиджеотто","Пиджеот","Раттата","Ратикат","Спириар","Арбок","Пикачу","Райчу","Сэндшрув","Сэндслэш","Нидран","Нидина","Нидинокто","Клефери","Клефейбл","Вулпикс","Найнтейлс","Джиглипуф","Вигглитуф","Зубат","Голбат","Оддиш","Глум","Вайлплум","Парас","Парасект","Веномот","Веномот","Диглетт","Дугтрио","Мяут","Персиан","Псайдак","Голдак","Манки","Праймэйп","Гроулит","Арканайн","Поливаг","Поливирл","Поливрайт","Абра","Кадабра","Алаказам","Мачоп","Мачоп","Мачамп","Беллспоут","Випинбелл","Виктрибелл","Тентенкул","Тентенруэл","Геодуд","Гравлер","Голем","Понита","Рапидаш","Слоупок","Слоубро","Магнемит","Магнетон","Фарфетч","Додуо","Додурио","Сидл","Дюгонг","Гример","Мук","Шелдер","Клойстер","Гастли","Хонтер","Генгар","Оникс","Дроузи","Хипно","Крабби","Крабби","Волторб","Электрод","Экзеггут","Экзегектор","Кубон","Маровак","Хитмончан","Хитмонли","Ликитунгу","Коффинг","Визинг","Рейхорн","Рейдон","Чанси","Танжела","Кангасхан","Хорси","Сидра","Голдин","Сиакинг","Стари","Старми","Мистер Мюм","Сайтер","Жинкус","Электабаз","Магмар","Пинсир","Таурос","Магикарп","Гярадос","Лапрас","Дитто","Иви","Вапореон","Джолтеон","Флареон","Поригон","Оманайт","Омастар","Кабуто","Кабутопс","Аэродактиль","Снорлакс","Артикуно","Запдос","Молтрес","Дратини","Драгонир","Драгонайт","Мьюту","Мью"];
     
@@ -417,7 +409,6 @@
       } catch(e) {}
     }
 
-    // Регенерация энергии (VIP удваивает скорость)
     setInterval(() => {
       const now = Date.now();
       const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
@@ -847,7 +838,6 @@
         regenRate.innerText = '1';
       }
 
-      // Обновление таймера ежедневной награды
       const dailyBtn = document.getElementById('daily-btn');
       const dailyTimer = document.getElementById('daily-timer');
       const now = Date.now();
