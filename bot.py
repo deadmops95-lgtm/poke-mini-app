@@ -14,7 +14,6 @@ import uvicorn
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 
-# Получение переменных окружения
 TOKEN = os.getenv("BOT_TOKEN", "ТВОЙ_ТОКЕН")
 WEB_APP_URL = os.getenv("WEB_APP_URL", "https://poke-mini-app.onrender.com")
 PORT = int(os.getenv("PORT", 10000))
@@ -23,7 +22,7 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 app = FastAPI()
 
-# Инициализация надежной базы данных SQLite для защиты от накрутки
+# Инициализация базы данных SQLite
 def init_db():
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
@@ -51,7 +50,6 @@ def init_db():
 
 init_db()
 
-# Pydantic модель для безопасной валидации данных при сохранении
 class UserSync(BaseModel):
     user_id: int
     username: str
@@ -67,7 +65,6 @@ class UserSync(BaseModel):
     active_incubator: str = None
     egg_inventory: str = '{"common":3,"rare":2,"legend":1}'
 
-# Маршрут для отдачи главной страницы клиента
 @app.get("/", response_class=HTMLResponse)
 async def serve_game():
     if os.path.exists("index.html"):
@@ -75,7 +72,6 @@ async def serve_game():
             return f.read()
     return "<h1>Файл index.html не найден на сервере!</h1>"
 
-# API получения данных пользователя из базы
 @app.get("/api/user/{user_id}")
 async def get_user(user_id: int):
     conn = sqlite3.connect("database.db")
@@ -105,7 +101,6 @@ async def get_user(user_id: int):
     conn.close()
     return data
 
-# API безопасного сохранения прогресса на сервере
 @app.post("/api/user/save")
 async def save_user(user: UserSync):
     conn = sqlite3.connect("database.db")
@@ -135,7 +130,15 @@ async def save_user(user: UserSync):
     conn.close()
     return {"status": "saved"}
 
-# Обработчик команды /start в Telegram боте
+@app.get("/api/admin/stats")
+async def get_server_stats():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0] or 1
+    conn.close()
+    return {"online_users": total_users, "total_registered": total_users}
+
 @dp.message(Command("start"))
 async def start_handler(message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
