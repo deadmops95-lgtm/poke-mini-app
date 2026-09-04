@@ -226,7 +226,13 @@ async def admin_give(data: AdminGive):
     
     msg_text = ""
     if data.item_type == "poke":
-        new_poke = {"id": data.poke_id, "cp": 300 + (data.poke_id * 8), "is_shiny": False}
+        new_poke = {
+            "uniqueKey": f"adm_{data.poke_id}_{asyncio.get_event_loop().time()}",
+            "id": data.poke_id,
+            "name": f"Покемон #{data.poke_id}",
+            "cp": 300 + (data.poke_id * 8),
+            "is_shiny": False
+        }
         pokedex.insert(0, new_poke)
         cursor.execute("UPDATE users SET pokedex = ? WHERE user_id = ?", (json.dumps(pokedex), user_id))
         msg_text = f"🎁 Администратор подарил вам покемона <b>#{data.poke_id}</b>!"
