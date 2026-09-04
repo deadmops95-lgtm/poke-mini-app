@@ -125,6 +125,7 @@
       <h3 style="font-size:15px; margin-bottom:4px;">🏰 Башня Подземелья (30 Уровней)</h3>
       <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">Пробивайся сквозь этажи, побеждай стражей и забирай растущие награды!</p>
       <div class="stat-pill" style="display:inline-block; margin-bottom:10px;">Твой текущий этаж: <b id="dg-level" style="color:var(--accent-star);">1</b> / 30</div>
+      <p class="timer-text" id="dungeon-timer" style="margin-bottom:8px; font-size:10px; color:var(--muted);"></p>
       <button class="btn-main" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9);" onclick="startDungeonFight()">⚔️ Атаковать этаж <span id="dg-btn-lvl">1</span></button>
     </div>
   </div>
@@ -282,11 +283,10 @@
     let state = {
       coins: 500, candies: 10, pokeballs: 15, energy: 100,
       myPokedex: [{ id: 25, name: "Пикачу", cp: 750, is_shiny: false }],
-      dexMode: 'my', lastEnergyTime: Date.now()
+      dexMode: 'my', lastEnergyTime: Date.now(),
+      dungeonLevel: 1, dungeonResetTime: 0, lastWheelSpin: 0
     };
 
-    let dungeonLevel = 1;
-    let lastWheelSpin = 0;
     let pendingBattle = null;
 
     let gymsState = [
@@ -307,6 +307,9 @@
           state.pokeballs = data.pokeballs;
           state.energy = data.energy !== undefined ? data.energy : 100;
           state.lastEnergyTime = data.last_energy_time || Date.now();
+          state.dungeonLevel = data.dungeon_level || 1;
+          state.dungeonResetTime = data.dungeon_reset_time || 0;
+          state.lastWheelSpin = data.last_wheel_spin || 0;
           state.myPokedex = JSON.parse(data.pokedex || '[]');
           if (state.myPokedex.length === 0) {
             state.myPokedex = [{ id: 25, name: "Пикачу", cp: 750, is_shiny: false }];
@@ -314,8 +317,15 @@
         }
       } catch (e) {}
       
-      // Расчет оффлайн-регенерации энергии (1 ед. в минуту)
       const now = Date.now();
+      
+      // Проверка сброса башни подземелья раз в 24 часа (86400000 мс)
+      if (now >= state.dungeonResetTime) {
+        state.dungeonLevel = 1;
+        state.dungeonResetTime = now + 86400000;
+        saveState();
+      }
+
       const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
       if (diffMins > 0 && state.energy < 100) {
         state.energy = Math.min(100, state.energy + diffMins);
@@ -333,13 +343,13 @@
         body: JSON.stringify({
           user_id: userId, username: username, coins: state.coins, candies: state.candies,
           pokeballs: state.pokeballs, energy: state.energy, pokedex: JSON.stringify(state.myPokedex),
-          stats_caught: state.myPokedex.length, stats_shiny: 0, last_daily: 0, last_energy_time: state.lastEnergyTime
+          stats_caught: state.myPokedex.length, stats_shiny: 0, last_daily: 0, last_energy_time: state.lastEnergyTime,
+          dungeon_level: state.dungeonLevel, dungeon_reset_time: state.dungeonResetTime, last_wheel_spin: state.lastWheelSpin
         })
       }).catch(err => {});
       updateUI();
     }
 
-    // Регенерация энергии в реальном времени (каждую минуту)
     setInterval(() => {
       const now = Date.now();
       const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
@@ -350,7 +360,6 @@
       }
     }, 30000);
 
-    // Логика полноценной охоты с расходом энергии и покеболов
     function huntPokemonAction() {
       if (state.energy < 10) {
         alert('⚡️ Недостаточно энергии! Требуется 10 ⚡️.');
@@ -464,8 +473,20 @@
     function renderDungeonUI() {
       const lvlEl = document.getElementById('dg-level');
       const btnEl = document.getElementById('dg-btn-lvl');
-      if (lvlEl) lvlEl.innerText = dungeonLevel;
-      if (btnEl) btnEl.innerText = dungeonLevel;
+      const timerEl = document.getElementById('dungeon-timer');
+      if (lvlEl) lvlEl.innerText = state.dungeonLevel;
+      if (btnEl) btnEl.innerText = state.dungeonLevel;
+      
+      if (timerEl && state.dungeonResetTime) {
+        const leftMs = state.dungeonResetTime - Date.now();
+        if (leftMs > 0) {
+          const hours = Math.floor(leftMs / 3600000);
+          const mins = Math.floor((leftMs % 3600000) / 60000);
+          timerEl.innerText = `Сброс этажей через: ${hours} ч. ${mins} мин.`;
+        } else {
+          timerEl.innerText = "Этажи сброшены!";
+        }
+      }
     }
 
     function startDungeonFight() {
@@ -473,18 +494,18 @@
         alert('❌ У вас нет покемонов для боя!'); 
         return; 
       }
-      const enemyCp = 250 + (dungeonLevel * 110);
-      openFighterPicker(`Страж Этажа #${dungeonLevel}`, 143, enemyCp, 'dungeon', dungeonLevel);
+      const enemyCp = 250 + (state.dungeonLevel * 110);
+      openFighterPicker(`Страж Этажа #${state.dungeonLevel}`, 143, enemyCp, 'dungeon', state.dungeonLevel);
     }
 
     function handleDungeonWin() {
-      const rewardCoins = dungeonLevel * 60;
-      const rewardCandies = Math.max(1, Math.floor(dungeonLevel / 4));
+      const rewardCoins = state.dungeonLevel * 60;
+      const rewardCandies = Math.max(1, Math.floor(state.dungeonLevel / 4));
       state.coins += rewardCoins;
       state.candies += rewardCandies;
       
-      if (dungeonLevel < 30) {
-        dungeonLevel++;
+      if (state.dungeonLevel < 30) {
+        state.dungeonLevel++;
       } else {
         alert('🏆 Поздравляем! Ты полностью прошел Башню Подземелья до 30 этажа!');
       }
@@ -497,14 +518,14 @@
     function spinWheel() {
       const now = Date.now();
       const cooldown = 86400000;
-      if (now - lastWheelSpin < cooldown) {
-        const leftMs = cooldown - (now - lastWheelSpin);
+      if (now - state.lastWheelSpin < cooldown) {
+        const leftMs = cooldown - (now - state.lastWheelSpin);
         const hours = Math.floor(leftMs / 3600000);
         const mins = Math.floor((leftMs % 3600000) / 60000);
         alert(`⏳ Рулетка будет доступна через ${hours} ч. ${mins} мин.`);
         return;
       }
-      lastWheelSpin = now;
+      state.lastWheelSpin = now;
       const prizes = [
         { type: 'coins', val: 150, text: '150 монет 🪙' },
         { type: 'candies', val: 5, text: '5 конфет 🍬' },
@@ -526,8 +547,8 @@
       if (!btn || !timer) return;
       const now = Date.now();
       const cooldown = 86400000;
-      if (now - lastWheelSpin < cooldown) {
-        const leftMs = cooldown - (now - lastWheelSpin);
+      if (now - state.lastWheelSpin < cooldown) {
+        const leftMs = cooldown - (now - state.lastWheelSpin);
         const hours = Math.floor(leftMs / 3600000);
         const mins = Math.floor((leftMs % 3600000) / 60000);
         timer.innerText = `Следующая прокрутка через: ${hours} ч. ${mins} мин.`;
@@ -642,11 +663,12 @@
     }
 
     async function startRealPvP() {
-      const defenderUser = document.getElementById('pvp-target-input').value.trim();
+      let defenderUser = document.getElementById('pvp-target-input').value.trim();
       if (!defenderUser) { alert('Введите ник соперника (@username)!'); return; }
+      defenderUser = defenderUser.replace('@', '').toLowerCase();
       if (state.myPokedex.length === 0) { alert('У вас нет покемонов!'); return; }
       try {
-        const res = await fetch(`/api/pvp/find/${defenderUser}`);
+        const res = await fetch(`/api/pvp/find/${encodeURIComponent(defenderUser)}`);
         if (!res.ok) { alert('❌ Игрок не найден на сервере!'); return; }
         const data = await res.json();
         
