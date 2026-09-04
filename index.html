@@ -29,6 +29,10 @@
     .stats-row { display: flex; gap: 6px; }
     .stat-pill { background: var(--card-inner); border: 1px solid var(--border); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; }
     
+    .energy-wrap { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .energy-bar { flex: 1; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden; }
+    .energy-fill { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); width: 100%; transition: width 0.3s; }
+
     .tab-content { display: none; padding: 14px; animation: fadeIn 0.2s ease-out; }
     .tab-content.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -83,13 +87,18 @@
         <div class="stat-pill">🔴 <span id="u-balls">15</span></div>
       </div>
     </div>
+    <div class="energy-wrap">
+      <span>⚡️ <span id="u-energy">100</span>/100</span>
+      <div class="energy-bar"><div class="energy-fill" id="energy-fill"></div></div>
+    </div>
   </header>
 
   <!-- Вкладка 1: Охота -->
   <div id="tab-hunt" class="tab-content active">
     <div class="card">
       <h3 style="font-size:14px; margin-bottom:8px;">📍 Поляна Охоты (Генерации 1-4)</h3>
-      <button class="btn-main" onclick="testCatchPokemon()">🌿 Поймать случайного покемона (1-4 ген)</button>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:10px;">Энергия восстанавливается на 1 ед. каждую минуту.</p>
+      <button class="btn-main" onclick="huntPokemonAction()">🌿 Поймать покемона (-10 ⚡️, -1 🔴)</button>
     </div>
   </div>
 
@@ -271,9 +280,9 @@
     const username = (tg?.initDataUnsafe?.user?.username || "prokudin95").toLowerCase();
 
     let state = {
-      coins: 500, candies: 10, pokeballs: 15,
+      coins: 500, candies: 10, pokeballs: 15, energy: 100,
       myPokedex: [{ id: 25, name: "Пикачу", cp: 750, is_shiny: false }],
-      dexMode: 'my'
+      dexMode: 'my', lastEnergyTime: Date.now()
     };
 
     let dungeonLevel = 1;
@@ -296,34 +305,94 @@
           state.coins = data.coins;
           state.candies = data.candies;
           state.pokeballs = data.pokeballs;
+          state.energy = data.energy !== undefined ? data.energy : 100;
+          state.lastEnergyTime = data.last_energy_time || Date.now();
           state.myPokedex = JSON.parse(data.pokedex || '[]');
           if (state.myPokedex.length === 0) {
             state.myPokedex = [{ id: 25, name: "Пикачу", cp: 750, is_shiny: false }];
           }
         }
       } catch (e) {}
+      
+      // Расчет оффлайн-регенерации энергии (1 ед. в минуту)
+      const now = Date.now();
+      const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
+      if (diffMins > 0 && state.energy < 100) {
+        state.energy = Math.min(100, state.energy + diffMins);
+        state.lastEnergyTime = now;
+      }
+
       renderDex(); updateUI(); renderGyms(); renderDungeonUI(); updateWheelUI();
     }
 
     function saveState() {
+      state.lastEnergyTime = Date.now();
       fetch('/api/user/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: userId, username: username, coins: state.coins, candies: state.candies,
-          pokeballs: state.pokeballs, energy: 100, pokedex: JSON.stringify(state.myPokedex),
-          stats_caught: state.myPokedex.length, stats_shiny: 0, last_daily: 0, last_energy_time: Date.now()
+          pokeballs: state.pokeballs, energy: state.energy, pokedex: JSON.stringify(state.myPokedex),
+          stats_caught: state.myPokedex.length, stats_shiny: 0, last_daily: 0, last_energy_time: state.lastEnergyTime
         })
       }).catch(err => {});
       updateUI();
     }
 
-    function testCatchPokemon() {
+    // Регенерация энергии в реальном времени (каждую минуту)
+    setInterval(() => {
+      const now = Date.now();
+      const diffMins = Math.floor((now - state.lastEnergyTime) / 60000);
+      if (diffMins > 0 && state.energy < 100) {
+        state.energy = Math.min(100, state.energy + diffMins);
+        state.lastEnergyTime = now;
+        saveState();
+      }
+    }, 30000);
+
+    // Логика полноценной охоты с расходом энергии и покеболов
+    function huntPokemonAction() {
+      if (state.energy < 10) {
+        alert('⚡️ Недостаточно энергии! Требуется 10 ⚡️.');
+        return;
+      }
+      if (state.pokeballs <= 0) {
+        alert('📭 У вас закончились покеболы 🔴! Купите их в магазине.');
+        return;
+      }
+
+      state.energy -= 10;
+      state.lastEnergyTime = Date.now();
+      state.pokeballs--;
+
+      const roll = Math.random();
+      if (roll < 0.15) {
+        alert('🚨 Команда Р напала и отобрала 30 монет!');
+        state.coins = Math.max(0, state.coins - 30);
+        saveState();
+        return;
+      }
+      if (roll < 0.35) {
+        alert('💨 Дикий покемон испугался и убежал!');
+        saveState();
+        return;
+      }
+
+      state.coins += 25;
       const randomPoke = POKEDEX_DATABASE[Math.floor(Math.random() * POKEDEX_DATABASE.length)];
-      state.myPokedex.unshift({ ...randomPoke, is_shiny: false });
+      const shiny = Math.random() < 0.05;
+
+      const exists = state.myPokedex.some(p => p.id === randomPoke.id && p.is_shiny === shiny);
+      if (exists) {
+        state.candies += 1;
+        alert(`🔁 Покемон #${randomPoke.id} уже есть в коллекции! Награда: +25 🪙 и +1 🍬 конфета.`);
+      } else {
+        state.myPokedex.unshift({ ...randomPoke, is_shiny: shiny });
+        alert(`🎉 Пойман: ${shiny ? '✨ ШАЙНИ ' : ''}#${randomPoke.id} (${randomPoke.cp} CP)! Награда: +25 🪙`);
+      }
+      
       saveState();
       renderDex();
-      alert(`🎉 Пойман: #${randomPoke.id} (${randomPoke.cp} CP)!`);
     }
 
     function switchDexMode(el, mode) {
@@ -648,7 +717,7 @@
     function openPokeModal(p) {
       const base = POKEDEX_DATABASE.find(item => item.id === (p.id || p)) || p;
       document.getElementById('m-poke-img').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${base.id}.png`;
-      document.getElementById('m-poke-name',).innerText = `Покемон #${base.id}`;
+      document.getElementById('m-poke-name').innerText = `Покемон #${base.id}`;
       document.getElementById('m-poke-stats').innerText = `${p.cp || base.cp} CP`;
       openModal('poke-modal');
     }
@@ -661,6 +730,8 @@
       document.getElementById('u-coins').innerText = state.coins;
       document.getElementById('u-candies').innerText = state.candies;
       document.getElementById('u-balls').innerText = state.pokeballs;
+      document.getElementById('u-energy').innerText = state.energy;
+      document.getElementById('energy-fill').style.width = `${state.energy}%`;
       document.getElementById('u-name').innerText = username;
     }
 
