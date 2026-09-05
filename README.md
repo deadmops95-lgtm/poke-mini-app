@@ -1,1 +1,1 @@
-# poke-mini-app
+# pocket-game66
